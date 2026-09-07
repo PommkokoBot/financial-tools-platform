@@ -1,0 +1,788 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Structured Note Comprehensive Simulator & FAQs</title>
+    <!-- Tailwind CSS CDN (pinned to the version actually tested) -->
+    <script src="https://cdn.jsdelivr.net/npm/@tailwindcss/browser@4.3.3"></script>
+    <!-- Chart.js CDN (pinned to the version actually tested) -->
+    <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.4"></script>
+    <style>
+        .faq-answer { display: none; }
+        .faq-active .faq-answer { display: block; }
+    </style>
+</head>
+<body class="bg-gray-50 text-gray-800 font-sans">
+    <div class="max-w-6xl mx-auto p-6">
+        <header class="mb-8 text-center">
+            <h1 class="text-3xl font-bold text-blue-900 mb-2">Structured Note Comprehensive Simulator</h1>
+            <p class="text-gray-600">จำลองผลตอบแทนครบทุก Scenario พร้อม FAQ เจาะลึกสำหรับนักลงทุน</p>
+            <p class="text-xs text-gray-400 mt-1">ตัวเลขทั้งหมดเป็นภาพประกอบเพื่อการศึกษาเท่านั้น ไม่ใช่ Term Sheet จริงหรือการเสนอขาย</p>
+        </header>
+        <!-- Product Selector & Form -->
+        <div class="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
+            <!-- Sidebar / Input Parameters -->
+            <div class="bg-white p-6 rounded-lg shadow-md md:col-span-1 border border-gray-200">
+                <h2 class="text-xl font-semibold mb-4 text-gray-700">กำหนดเงื่อนไข (Inputs)</h2>
+
+                <div class="mb-4">
+                    <label class="block text-sm font-medium text-gray-700 mb-1">เลือกประเภทผลิตภัณฑ์</label>
+                    <select id="productType" class="w-full border-gray-300 rounded-md p-2 border focus:ring-blue-500 focus:border-blue-500" onchange="renderDynamicInputs()"></select>
+                </div>
+                <div class="mb-4">
+                    <label class="block text-sm font-medium text-gray-700 mb-1">เงินลงทุนเริ่มต้น (USD)</label>
+                    <input type="number" id="principal" value="50000" class="w-full border-gray-300 rounded-md p-2 border">
+                </div>
+                <!-- Dynamic Inputs Container -->
+                <div id="dynamicInputs"></div>
+                <button onclick="calculateScenarios()" class="w-full bg-blue-600 text-white py-2 px-4 rounded-md hover:bg-blue-700 transition duration-200 font-semibold mt-4">
+                    แสดงผลทุก Scenarios พร้อมกราฟ
+                </button>
+            </div>
+            <!-- Results Section -->
+            <div class="bg-white p-6 rounded-lg shadow-md md:col-span-2 border border-gray-200">
+                <h2 class="text-xl font-semibold mb-4 text-gray-700">ผลการจำลองทุก Scenarios ที่เป็นไปได้</h2>
+                <div id="resultsContainer" class="space-y-6">
+                    <p class="text-gray-500 italic">กรุณากดปุ่ม "แสดงผลทุก Scenarios พร้อมกราฟ" เพื่อคำนวณ</p>
+                </div>
+            </div>
+        </div>
+        <!-- Timeline strip (common to all products) -->
+        <div class="bg-white p-6 rounded-lg shadow-md border border-gray-200 mb-8">
+            <h2 class="text-lg font-bold text-gray-800 mb-3">Timeline มาตรฐานของหุ้นกู้ที่มีอนุพันธ์แฝง (ทุกผลิตภัณฑ์)</h2>
+            <div class="grid grid-cols-2 md:grid-cols-5 gap-3 text-center text-xs">
+                <div class="p-3 bg-teal-50 rounded border border-teal-200">
+                    <div class="font-bold text-teal-700">Trade Date (T)</div>
+                    <div class="text-gray-600 mt-1">วันที่นักลงทุนตกลงซื้อ กำหนดราคาเริ่มต้นของหุ้นอ้างอิง</div>
+                </div>
+                <div class="p-3 bg-cyan-50 rounded border border-cyan-200">
+                    <div class="font-bold text-cyan-700">Issue Date (T+14)</div>
+                    <div class="text-gray-600 mt-1">วันออกตราสาร ชำระค่าตราสารให้ผู้ออก (หลัง Trade Date 14 วัน)</div>
+                </div>
+                <div class="p-3 bg-purple-50 rounded border border-purple-200">
+                    <div class="font-bold text-purple-700">Observation Date(s)</div>
+                    <div class="text-gray-600 mt-1">วันดูราคาเพื่อ Auto-call (รายเดือน) และ/หรือ Knock-In/Barrier (รายวัน แล้วแต่ผลิตภัณฑ์)</div>
+                </div>
+                <div class="p-3 bg-lime-50 rounded border border-lime-200">
+                    <div class="font-bold text-lime-700">Final Fixing Date (S)</div>
+                    <div class="text-gray-600 mt-1">วันกำหนดค่าหลักทรัพย์วันสุดท้าย/วันสิ้นสุดสัญญา</div>
+                </div>
+                <div class="p-3 bg-blue-50 rounded border border-blue-200">
+                    <div class="font-bold text-blue-700">Maturity Date (S+3)</div>
+                    <div class="text-gray-600 mt-1">วันครบกำหนดไถ่ถอน ได้รับเงิน/หุ้นคืน (หลัง Final Fixing 3 วันทำการ)</div>
+                </div>
+            </div>
+        </div>
+        <!-- FAQs Section -->
+        <div class="bg-white p-6 rounded-lg shadow-md border border-gray-200 mb-12">
+            <div class="flex justify-between items-center mb-6">
+                <h2 class="text-2xl font-bold text-gray-800">คำถามที่พบบ่อย (FAQs) เจาะลึก</h2>
+                <span class="text-xs bg-blue-100 text-blue-800 font-semibold px-2.5 py-0.5 rounded">คลายความสงสัยทุกแง่มุม</span>
+            </div>
+            <div id="faqContainer" class="space-y-3"></div>
+        </div>
+    </div>
+    <script>
+        // ====================================================================
+        // PAYOFF ENGINE
+        // ====================================================================
+        // Design: a shared library of canonical monthly price paths (PATH_LIB)
+        // and shared scan primitives (autocall / knock-in / knock-out) drive a
+        // small set of payoffType "narrators" reused across products that share
+        // the same payoff shape. Each product is declared once in
+        // PRODUCT_CATALOG (inputs + payoffType + which shared paths to
+        // illustrate + FAQs) - adding a new product means adding a catalog
+        // entry and reusing/extending a narrator, not writing bespoke
+        // per-product branching logic.
+        //
+        // Barrier/Knock-In features are simulated on MONTHLY closes only (not
+        // synthetic daily ticks) - for products whose real-world observation
+        // is daily, a disclaimer is shown under the chart instead (see
+        // `barrierDaily` on the catalog entry and its render below).
+        // ====================================================================
+
+        const PATH_LIB = {
+            rallyEarlyCall:      [100, 103, 107, 110, 113, 116],
+            lateRallyCall:       [100, 97, 101, 98, 103, 107],
+            mildUpNoTrigger:     [100, 97, 101, 98, 103, 102],
+            mildDownAboveFloor:  [100, 92, 88, 90, 85, 90],
+            deepDownBreachFloor: [100, 88, 80, 75, 72, 68],
+            dipRecoverAboveFloor:[100, 75, 55, 70, 80, 85],
+            deepBreachNoRecover: [100, 70, 55, 60, 58, 50],
+            spikeThenFade:       [100, 115, 132, 125, 118, 110],
+            fadeNoSpike:         [100, 95, 90, 85, 82, 80],
+            driftUpNoSpike:      [100, 105, 110, 108, 115, 118],
+            bigDownRecoverSome:  [100, 85, 68, 75, 80, 90],
+            stepDownEase:        [100, 96, 94, 97, 99, 101],
+            stepDownMidRange:    [100, 88, 82, 85, 84, 88],
+            strongRally:         [100, 105, 110, 118, 125, 130],
+            elnAboveStrike:      [100, 98, 101, 99, 103, 105],
+            elnBelowStrike:      [100, 96, 92, 88, 91, 90],
+            megaRally:           [100, 110, 122, 138, 152, 165],
+            phoenixMissThenCatchUp: [100, 65, 68, 75, 85, 90],
+            phoenixNeverCatchUp:    [100, 65, 68, 65, 68, 65],
+            phoenixWorstCase:       [100, 55, 50, 48, 45, 40],
+            snowballDipRecoverKO:   [100, 68, 62, 90, 108, 108]
+        };
+        const CHART_LABELS = ['Start', 'M1', 'M2', 'M3', 'M4', 'M5/Final'];
+        const TOTAL_PERIODS = CHART_LABELS.length - 1;
+
+        function scanAutocall(prices, thresholdAt) {
+            const getThresh = typeof thresholdAt === 'function' ? thresholdAt : () => thresholdAt;
+            for (let i = 1; i < prices.length; i++) if (prices[i] >= getThresh(i)) return i;
+            return null;
+        }
+        function scanBreachDown(prices, level, uptoIndex) {
+            for (let i = 1; i <= uptoIndex; i++) if (prices[i] <= level) return i;
+            return -1;
+        }
+        function scanBreachUp(prices, level, uptoIndex) {
+            for (let i = 1; i <= uptoIndex; i++) if (prices[i] >= level) return i;
+            return -1;
+        }
+        function fmt(n) { return n.toLocaleString(undefined, { maximumFractionDigits: 0 }); }
+        function fmt1(n) { return n.toFixed(1); }
+
+        function computeAutocallCoupon(cfg, inputs, pathKey) {
+            const prices = PATH_LIB[pathKey].slice();
+            const P = inputs.principal;
+            const strikeL = inputs.strikeLevel;
+            const hasKI = !!cfg.hasKnockIn;
+            const stepDown = !!cfg.stepDown;
+            const noAutocall = inputs.callLevel === undefined; // e.g. Reverse Convertible: no Call Level at all, always held to maturity
+            let callSchedule = null, thresholdAt;
+            if (stepDown) {
+                const initCall = inputs.callLevel, step = inputs.stepDown;
+                callSchedule = [0, 1, 2, 3, 4, 5].map(i => Math.max(initCall - step * i, strikeL));
+                thresholdAt = i => callSchedule[i];
+            } else {
+                thresholdAt = inputs.callLevel;
+            }
+            const callIdx = scanAutocall(prices, thresholdAt);
+            const finalIdx = callIdx === null ? TOTAL_PERIODS : callIdx;
+            const autocalled = callIdx !== null && callIdx < TOTAL_PERIODS;
+            const finalPrice = prices[finalIdx];
+            const totalCouponFull = P * (inputs.couponRate / 100) * (inputs.tenor / 12);
+            const couponReceived = totalCouponFull * (finalIdx / TOTAL_PERIODS);
+            let knockedIn = false;
+            if (hasKI) knockedIn = scanBreachDown(prices, inputs.kiLevel, finalIdx) !== -1;
+            const callLevelText = stepDown
+                ? `Call Level งวดที่ ${finalIdx} ซึ่งลดขั้นบันไดลงมาที่ ${fmt1(callSchedule[finalIdx])}% แล้ว (เริ่มต้นที่ ${inputs.callLevel}%)`
+                : `Call Level (${inputs.callLevel}%)`;
+            const heldToMaturityPhrase = noAutocall ? `ถือครบกำหนดสัญญาเสมอ (ไม่มีเงื่อนไข Auto-Call)` : `ไม่ถูก Auto-Call ระหว่างทาง`;
+            let title, desc, payoff;
+            if (autocalled) {
+                title = `Scenario: Auto-Call เกิดขึ้นที่งวดสังเกตการณ์ที่ ${finalIdx} (Early Redemption)`;
+                desc = `ราคาหุ้น "ทุกตัว" ในตะกร้าแตะ/เกิน ${callLevelText} พร้อมกัน ในการสังเกตการณ์งวดที่ ${finalIdx}` +
+                    (hasKI ? ` (ยังไม่เคยแตะ Knock-In Level ${inputs.kiLevel}% มาก่อนหน้านี้)` : '');
+                payoff = `ได้รับเงินต้นคืน 100% ($${fmt(P)}) + ดอกเบี้ย ${finalIdx} งวด ($${fmt(couponReceived)}) สัญญาจบลงทันที`;
+            } else if (hasKI && !knockedIn) {
+                title = `Scenario: ถือครบกำหนด & ไม่เคยแตะ Knock-In (KI Protection Works!)`;
+                desc = `ไม่ถูก Auto-Call ระหว่างทาง และไม่เคยแตะ Knock-In Level (${inputs.kiLevel}%) เลยตลอดอายุสัญญา (ในทางปฏิบัติตรวจสอบแบบ Daily-close) — ราคาปิดวันสุดท้ายอยู่ที่ ${finalPrice}%` +
+                    (finalPrice <= strikeL ? ` ซึ่งต่ำกว่า Strike Level (${strikeL}%) ก็ตาม` : ` (เหนือ Strike Level ${strikeL}%)`);
+                payoff = `ได้รับเงินต้นคืนครบ 100% ($${fmt(P)}) เป็นเงินสด + ดอกเบี้ยครบ ${inputs.tenor} งวด ($${fmt(totalCouponFull)}) — ไม่โดนแปลงเป็นหุ้นแม้ราคาจะต่ำกว่า Strike ก็ตาม เพราะไม่เคยแตะ KI`;
+            } else if (finalPrice > strikeL) {
+                title = hasKI ? `Scenario: เคยแตะ KI ระหว่างทาง แต่กลับมาปิดเหนือ Strike Level` : `Scenario: ถือครบกำหนด & หุ้นทุกตัวปิดเหนือ Strike Level`;
+                desc = hasKI
+                    ? `เคยดิ่งลงแตะ Knock-In (${inputs.kiLevel}%) ระหว่างทาง แต่ฟื้นตัวกลับมาปิดที่ ${finalPrice}% (เหนือ Strike Level ${strikeL}%) ณ วันสุดท้าย`
+                    : (noAutocall
+                        ? `${heldToMaturityPhrase} ณ วัน Final Fixing หุ้นทุกตัวปิดที่ ${finalPrice}% ซึ่งเหนือ Strike Level (${strikeL}%)`
+                        : `ไม่ถูก Auto-Call ระหว่างทาง แต่ ณ วัน Final Fixing หุ้นทุกตัวปิดที่ ${finalPrice}% ซึ่งเหนือ Strike Level (${strikeL}%)`);
+                payoff = `ได้รับเงินต้นคืน 100% ($${fmt(P)}) เป็นเงินสด + ดอกเบี้ยครบ ${inputs.tenor} งวด ($${fmt(totalCouponFull)})`;
+            } else {
+                title = `Scenario: ถือครบกำหนด & ปิดที่ Strike Level หรือต่ำกว่า`;
+                desc = (hasKI ? `เคยแตะ Knock-In (${inputs.kiLevel}%) และ ` : (noAutocall ? `${heldToMaturityPhrase} และ ` : `ไม่เกิด Auto-Call และ `)) +
+                    `ณ วันสุดท้าย หุ้น Worst-off ปิดที่ ${finalPrice}% (ต่ำกว่าหรือเท่ากับ Strike Level ${strikeL}%)`;
+                payoff = `ได้รับดอกเบี้ยครบ ${inputs.tenor} งวด ($${fmt(totalCouponFull)}) + รับคืนเป็น "หุ้น Worst-off" ที่ราคา Strike Level แทนเงินสด`;
+            }
+            const displayPrices = prices.map((p, i) => (i <= finalIdx ? p : null));
+            const levels = { 'Strike Level': strikeL };
+            if (stepDown) {
+                levels['Call Level (Step Down)'] = callSchedule;
+            } else if (!noAutocall) {
+                levels['Call Level'] = inputs.callLevel;
+            }
+            if (hasKI) levels['Knock-In Level'] = inputs.kiLevel;
+            return { title, desc, payoff, prices: displayPrices, levels };
+        }
+
+        function computeBonusParticipation(cfg, inputs, pathKey) {
+            const prices = PATH_LIB[pathKey];
+            const P = inputs.principal;
+            const finalPrice = prices[prices.length - 1];
+            const strikeL = inputs.strikeLevel, bonusL = inputs.bonusLevel, bonusRate = inputs.bonusRate;
+            let title, desc, payoff;
+            if (finalPrice >= bonusL) {
+                const gain = finalPrice - 100;
+                title = `Scenario: หุ้นทุกตัว ≥ Bonus Level ณ วันสุดท้าย`;
+                desc = `ราคาหุ้น Worst-off ปรับตัวขึ้นปิดที่ ${finalPrice}% (เกินกว่า Bonus Level ${bonusL}%)`;
+                payoff = `ได้รับเงินต้น 100% ($${fmt(P)}) + ผลตอบแทนตามจริงของหุ้น Worst-off (+${fmt1(gain)}%) — ไม่มี Cap จำกัดผลตอบแทนขาขึ้น`;
+            } else if (finalPrice > strikeL) {
+                title = `Scenario: หุ้นอยู่ระหว่าง Strike Level และ Bonus Level ณ วันสุดท้าย`;
+                desc = `ราคาหุ้น Worst-off ปิดที่ ${finalPrice}% (ไม่อยู่ในเงื่อนไขการขึ้นแรง แต่ไม่หลุด Strike ${strikeL}%)`;
+                payoff = `ได้รับเงินต้น 100% ($${fmt(P)}) + ผลตอบแทน Bonus Rate ที่กำหนด (${bonusRate}%)`;
+            } else {
+                title = `Scenario: มีหุ้นอย่างน้อย 1 ตัว ≤ Strike Level ณ วันสุดท้าย`;
+                desc = `ราคาหุ้น Worst-off ปรับตัวลงต่ำกว่า Strike Level ปิดที่ ${finalPrice}%`;
+                payoff = `ได้รับคืนเป็นหุ้น Worst-off ที่ราคา Strike Level (รับผลขาดทุนตามการปรับลดลง)`;
+            }
+            return { title, desc, payoff, prices, levels: { 'Bonus Level': bonusL, 'Strike Level': strikeL } };
+        }
+
+        function computeTwinWin(cfg, inputs, pathKey) {
+            const prices = PATH_LIB[pathKey];
+            const P = inputs.principal;
+            const prot = inputs.protectionLevel, upper = inputs.upperLevel, lower = inputs.lowerLevel;
+            const finalIdx = prices.length - 1;
+            const breachIdxUp = scanBreachUp(prices, upper, finalIdx);
+            const breachIdxDown = scanBreachDown(prices, lower, finalIdx);
+            const knockedOut = breachIdxUp !== -1 || breachIdxDown !== -1;
+            const finalPrice = prices[finalIdx];
+            const cap = upper - 100;
+            let title, desc, payoff;
+            if (knockedOut) {
+                title = `Scenario: เคยชน Upper หรือ Lower Barrier ระหว่างทาง (Knock-Out)`;
+                desc = `ระหว่างทางราคาเคย${breachIdxUp !== -1 ? `พุ่งทะลุ Upper Barrier (${upper}%)` : `ลงหลุด Lower Barrier (${lower}%)`} แม้เพียงวันเดียว (ตรวจสอบแบบ Daily-close ในทางปฏิบัติ)`;
+                payoff = `Twin-Win Feature ถูก Knock-Out ทันที ได้รับเงินต้นคืนตามระดับ Protection Level (${prot}%) เท่านั้น ไม่ได้รับผลตอบแทนเพิ่มเติมอีก`;
+            } else if (finalPrice >= 100) {
+                const gain = finalPrice - 100;
+                title = `Scenario: หุ้นปรับตัวขึ้น และตลอดสัญญาไม่เคยทะลุกรอบ`;
+                desc = `ราคาหุ้นปิดบวก +${fmt1(gain)}% (ปิดที่ ${finalPrice}%) โดยไม่เคยแตะ Upper Barrier (${upper}%) ตลอดอายุสัญญา`;
+                payoff = `ได้รับเงินต้นคืนตาม Protection (${prot}%) + ผลตอบแทนขาขึ้น (+${fmt1(gain)}%) = ${fmt1(prot + gain)}% (มี Cap ไม่เกิน ${fmt1(cap)}% ตามระยะห่างของ Upper Barrier จากราคาเริ่มต้น)`;
+            } else {
+                const gain = 100 - finalPrice;
+                title = `Scenario: หุ้นปรับตัวลง และตลอดสัญญาไม่เคยทะลุกรอบ`;
+                desc = `ราคาหุ้นปิดลบ -${fmt1(gain)}% (ปิดที่ ${finalPrice}%) โดยไม่เคยแตะ Lower Barrier (${lower}%) ตลอดอายุสัญญา`;
+                payoff = `ได้รับเงินต้นคืนตาม Protection (${prot}%) + ผลตอบแทน Absolute ขาลง (+${fmt1(gain)}%) = ${fmt1(prot + gain)}% (มี Cap ไม่เกิน ${fmt1(cap)}% เช่นกัน)`;
+            }
+            return { title, desc, payoff, prices, levels: { 'Upper Barrier': upper, 'Lower Barrier': lower } };
+        }
+
+        function computeCapitalGuaranteed(cfg, inputs, pathKey) {
+            const prices = PATH_LIB[pathKey];
+            const finalIdx = prices.length - 1;
+            const finalPrice = prices[finalIdx];
+            const prot = inputs.protectionLevel, partRate = inputs.participationRate, cap = inputs.cap;
+            let title, desc, payoff;
+            if (finalPrice > 100) {
+                const rawGain = finalPrice - 100;
+                const participatedGain = rawGain * (partRate / 100);
+                const finalGain = Math.min(participatedGain, cap);
+                title = `Scenario: หุ้นปรับตัวขึ้น ณ วันครบกำหนดสัญญา`;
+                desc = `ราคาหุ้นอ้างอิงปิดที่ ${finalPrice}% (+${fmt1(rawGain)}% จากราคาเริ่มต้น) ณ วันครบกำหนดสัญญา ไม่มีเงื่อนไข Barrier ใดๆ ตลอดอายุสัญญา`;
+                payoff = `ได้รับเงินต้นคืนตาม Protection Level (${prot}%) + ผลตอบแทน Participation ${partRate}% ของการขึ้น = ${fmt1(finalGain)}%` +
+                    (participatedGain > cap ? ` (ผลตอบแทนที่คำนวณได้จริงคือ ${fmt1(participatedGain)}% แต่ถูกจำกัดที่ Cap สูงสุด ${cap}%)` : '');
+            } else {
+                title = `Scenario: หุ้นทรงตัวหรือปรับตัวลง ณ วันครบกำหนดสัญญา`;
+                desc = `ราคาหุ้นอ้างอิงปิดที่ ${finalPrice}% (ไม่สูงกว่าราคาเริ่มต้น) ณ วันครบกำหนดสัญญา`;
+                payoff = `ได้รับเงินต้นคืนเต็มตาม Protection Level (${prot}%) เท่านั้น ไม่มีผลตอบแทนเพิ่มเติม ไม่ว่าราคาจะลดลงมากน้อยเพียงใดก็ตาม (ไม่มีความเสี่ยงจากฝั่งหุ้นอ้างอิงเลย เพราะไม่มีเงื่อนไข Barrier ที่จะทำให้เสียการคุ้มครอง)`;
+            }
+            return { title, desc, payoff, prices, levels: { 'Protection Level': prot } };
+        }
+
+        function computePhoenixMemory(cfg, inputs, pathKey) {
+            const prices = PATH_LIB[pathKey].slice();
+            const P = inputs.principal;
+            const autocallL = inputs.autocallLevel;
+            const couponB = inputs.couponBarrier;
+            const strikeL = inputs.strikeLevel;
+            const perPeriodCoupon = P * (inputs.couponRate / 100) * (inputs.tenor / 12) / TOTAL_PERIODS;
+
+            let missedCount = 0;
+            let totalCouponPaid = 0;
+            let autocallIdx = null;
+            const periodLog = [];
+
+            for (let i = 1; i <= TOTAL_PERIODS; i++) {
+                const price = prices[i];
+                if (price >= autocallL) {
+                    const paidNow = (missedCount + 1) * perPeriodCoupon;
+                    totalCouponPaid += paidNow;
+                    periodLog.push(`งวดที่ ${i}: ราคา ${price}% ≥ Autocall Level (${autocallL}%) → Auto-Call ทันที จ่ายคูปองสะสม ${missedCount + 1} งวด ($${fmt(paidNow)}) + เงินต้นคืน 100%`);
+                    autocallIdx = i;
+                    break;
+                } else if (price >= couponB) {
+                    const paidNow = (missedCount + 1) * perPeriodCoupon;
+                    totalCouponPaid += paidNow;
+                    periodLog.push(`งวดที่ ${i}: ราคา ${price}% ≥ Coupon Barrier (${couponB}%) → จ่ายคูปอง${missedCount > 0 ? `สะสม ${missedCount + 1} งวดรวมกัน (Memory Catch-up)` : 'งวดนี้'} ($${fmt(paidNow)})`);
+                    missedCount = 0;
+                } else {
+                    missedCount += 1;
+                    periodLog.push(`งวดที่ ${i}: ราคา ${price}% ต่ำกว่า Coupon Barrier (${couponB}%) → พลาดคูปองงวดนี้ สะสมรอ Memory (ค้างสะสม ${missedCount} งวด)`);
+                }
+            }
+
+            const autocalled = autocallIdx !== null;
+            const finalIdx = autocalled ? autocallIdx : TOTAL_PERIODS;
+            const finalPrice = prices[finalIdx];
+            const displayPrices = prices.map((p, i) => (i <= finalIdx ? p : null));
+            const trace = periodLog.join('<br>');
+
+            let title, desc, payoff;
+            if (autocalled) {
+                title = `Scenario: Auto-Call เกิดขึ้นที่งวดที่ ${finalIdx}`;
+                desc = `ประวัติการสังเกตการณ์แต่ละงวด:<br>${trace}`;
+                payoff = `ได้รับเงินต้นคืน 100% ($${fmt(P)}) + คูปองสะสมทั้งหมด $${fmt(totalCouponPaid)} สัญญาจบลงทันที`;
+            } else if (finalPrice > strikeL) {
+                if (missedCount > 0) {
+                    title = `Scenario: ถือครบกำหนด & เงินต้นปลอดภัย แต่มีคูปองที่พลาดถาวร`;
+                    payoff = `ได้รับเงินต้นคืน 100% ($${fmt(P)}) เป็นเงินสด (ราคาปิดเหนือ Strike/Protection Level ${strikeL}%) + คูปองที่จ่ายจริงตลอดสัญญา $${fmt(totalCouponPaid)} — มี ${missedCount} งวดที่พลาด Coupon Barrier และไม่มีงวดไหนดึงกลับมา Catch-up ได้ทันก่อนครบกำหนด จึงสูญเสียคูปองส่วนนั้นไปถาวร`;
+                } else {
+                    title = `Scenario: ถือครบกำหนด & ได้คูปองครบทุกงวด (Memory Catch-up ทันครบ)`;
+                    payoff = `ได้รับเงินต้นคืน 100% ($${fmt(P)}) เป็นเงินสด + คูปองครบทุกงวด $${fmt(totalCouponPaid)} (แม้บางงวดระหว่างทางจะเคยพลาด Coupon Barrier ไปก็ตาม แต่ดึงกลับมาได้ครบด้วย Memory)`;
+                }
+                desc = `ประวัติการสังเกตการณ์แต่ละงวด:<br>${trace}<br>ราคาปิดสุดท้าย ${finalPrice}% อยู่เหนือ Strike/Protection Level (${strikeL}%)`;
+            } else {
+                title = `Scenario: ถือครบกำหนด & ปิดที่ Strike/Protection Level หรือต่ำกว่า`;
+                desc = `ประวัติการสังเกตการณ์แต่ละงวด:<br>${trace}<br>ราคาปิดสุดท้าย ${finalPrice}% ต่ำกว่าหรือเท่ากับ Strike/Protection Level (${strikeL}%)`;
+                payoff = `รับคืนเป็น "หุ้น Worst-off" ที่ราคา Strike Level แทนเงินสด (ขาดทุนเงินต้นตามการปรับตัวลง) + คูปองที่จ่ายจริงตลอดสัญญา $${fmt(totalCouponPaid)}` +
+                    (missedCount > 0 ? ` (มี ${missedCount} งวดที่พลาดและไม่ได้คืนถาวรเช่นกัน)` : '');
+            }
+
+            return {
+                title, desc, payoff, prices: displayPrices,
+                levels: { 'Coupon Barrier': couponB, 'Autocall Level': autocallL, 'Strike/Protection Level': strikeL }
+            };
+        }
+
+        function computeSnowball(cfg, inputs, pathKey) {
+            const prices = PATH_LIB[pathKey].slice();
+            const P = inputs.principal;
+            const koLevel = inputs.knockOutLevel;
+            const kiLevel = inputs.knockInLevel;
+
+            const koIdx = scanAutocall(prices, koLevel);
+            const knockedOut = koIdx !== null;
+            const finalIdx = knockedOut ? koIdx : TOTAL_PERIODS;
+            const finalPrice = prices[finalIdx];
+
+            const perPeriodCoupon = P * (inputs.couponRate / 100) * (inputs.tenor / 12) / TOTAL_PERIODS;
+            const totalCouponFull = perPeriodCoupon * TOTAL_PERIODS;
+            const couponAccrued = perPeriodCoupon * finalIdx;
+
+            const kiIdx = scanBreachDown(prices, kiLevel, finalIdx);
+            const knockedIn = kiIdx !== -1;
+
+            const displayPrices = prices.map((p, i) => (i <= finalIdx ? p : null));
+
+            let title, desc, payoff;
+            if (knockedOut) {
+                title = `Scenario: Knock-Out เกิดขึ้นที่งวดสังเกตการณ์ที่ ${finalIdx} (Early Redemption)`;
+                desc = `ราคาแตะ/เกิน Knock-out Level (${koLevel}%) ในการสังเกตการณ์งวดที่ ${finalIdx}` +
+                    (knockedIn ? ` — แม้ระหว่างทางเคยแตะ Knock-In Level (${kiLevel}%) มาก่อนหน้านี้ในงวดที่ ${kiIdx} แต่การ Knock-Out จะ "ล้าง" ความเสี่ยงนั้นและคืนผลตอบแทนเต็มจำนวนทันที` : ` (ไม่เคยแตะ Knock-In Level ${kiLevel}% เลยก่อนหน้านี้)`);
+                payoff = `ได้รับเงินต้นคืนเต็ม 100% ($${fmt(P)}) + คูปองที่สะสม (Snowball) มาแล้วตลอด ${finalIdx} งวด จ่ายเป็นก้อนเดียว ($${fmt(couponAccrued)}) สัญญาจบลงทันที`;
+            } else if (!knockedIn) {
+                title = `Scenario: ถือครบกำหนด & ไม่เคยแตะ Knock-In (Full Snowball)`;
+                desc = `ไม่เกิด Knock-Out และไม่เคยแตะ Knock-In Level (${kiLevel}%) เลยตลอดอายุสัญญา (ในทางปฏิบัติตรวจสอบแบบ Daily-close) — ราคาปิดวันสุดท้ายอยู่ที่ ${finalPrice}%`;
+                payoff = `ได้รับเงินต้นคืนเต็ม 100% ($${fmt(P)}) เป็นเงินสด + คูปองที่สะสม (Snowball) มาครบทุกงวดตลอด ${TOTAL_PERIODS} งวด จ่ายเป็นก้อนเดียวเมื่อครบกำหนด ($${fmt(totalCouponFull)})`;
+            } else if (finalPrice > kiLevel) {
+                title = `Scenario: เคยแตะ Knock-In ระหว่างทาง แต่ราคาสุดท้ายฟื้นกลับมาเหนือ Knock-In Level`;
+                desc = `เคยแตะ Knock-In Level (${kiLevel}%) ในงวดที่ ${kiIdx} ระหว่างทาง แต่ไม่เกิด Knock-Out และราคาปิดฟื้นตัวกลับมาที่ ${finalPrice}% (เหนือ Knock-In Level ${kiLevel}%) ณ วันสุดท้าย`;
+                payoff = `ได้รับเงินต้นคืนเต็ม 100% ($${fmt(P)}) เป็นเงินสด + คูปองที่สะสม (Snowball) มาครบทุกงวดตลอด ${TOTAL_PERIODS} งวด จ่ายเป็นก้อนเดียว ($${fmt(totalCouponFull)}) — การแตะ Knock-In ระหว่างทางจะไม่ทำให้เสียสิทธิ์ ตราบใดที่ราคาสุดท้ายไม่ได้ปิดต่ำกว่าหรือเท่ากับ Knock-In Level`;
+            } else {
+                title = `Scenario: ถือครบกำหนด & ปิดที่ Knock-In Level หรือต่ำกว่า (Capital at Risk)`;
+                desc = `เคยแตะ Knock-In Level (${kiLevel}%) ในงวดที่ ${kiIdx} และไม่เกิด Knock-Out เลยตลอดอายุสัญญา — ราคาปิดวันสุดท้ายอยู่ที่ ${finalPrice}% (ต่ำกว่าหรือเท่ากับ Knock-In Level ${kiLevel}%)`;
+                payoff = `ได้รับคืนเป็น "หุ้นอ้างอิง" ที่ราคา Knock-In Level (${kiLevel}%) แทนเงินสด (ขาดทุนเงินต้นตามการปรับตัวลง) + คูปองที่สะสม (Snowball) มาครบทุกงวดตลอด ${TOTAL_PERIODS} งวด จ่ายเป็นก้อนเดียว ($${fmt(totalCouponFull)}) — คูปองยังได้รับเต็มจำนวนแม้เงินต้นจะขาดทุน เพราะ Snowball ไม่มีเงื่อนไข Coupon Barrier แยกต่างหากแบบ Phoenix`;
+            }
+
+            return {
+                title, desc, payoff, prices: displayPrices,
+                levels: { 'Knock-In Level': kiLevel, 'Knock-out Level': koLevel }
+            };
+        }
+
+        function computeSharkfin(cfg, inputs, pathKey) {
+            const prices = PATH_LIB[pathKey];
+            const dir = cfg.direction;
+            const prot = inputs.protectionLevel, rebate = inputs.rebateRate;
+            const barrierLevel = dir === 'up' ? inputs.upperLevel : inputs.lowerLevel;
+            const finalIdx = prices.length - 1;
+            const breachIdx = dir === 'up' ? scanBreachUp(prices, barrierLevel, finalIdx) : scanBreachDown(prices, barrierLevel, finalIdx);
+            const knockedOut = breachIdx !== -1;
+            const finalPrice = prices[finalIdx];
+            const favorable = dir === 'up' ? finalPrice > 100 : finalPrice < 100;
+            const barrierLabel = dir === 'up' ? 'Upper Barrier' : 'Lower Barrier';
+            let title, desc, payoff;
+            if (knockedOut) {
+                title = `Scenario: ชน ${barrierLabel} ระหว่างทาง (Knock-Out Barrier Hit)`;
+                desc = `ระหว่างทางราคา${dir === 'up' ? 'พุ่งแตะ' : 'ดิ่งลงแตะ'} ${barrierLabel} (${barrierLevel}%) ในงวดที่ ${breachIdx} แม้ภายหลังราคาจะเคลื่อนไหวต่อไปอีกเท่าไรก็ตาม`;
+                payoff = `Knock-Out ทันที ได้รับเงินต้นคืนตาม Protection (${prot}%) + ผลตอบแทนชดเชย Rebate คงที่ (${rebate}%) เท่านั้น`;
+            } else if (favorable) {
+                const gain = dir === 'up' ? finalPrice - 100 : 100 - finalPrice;
+                title = `Scenario: หุ้นปรับตัว${dir === 'up' ? 'ขึ้น' : 'ลง'} และไม่เคยแตะ ${barrierLabel}`;
+                desc = `ราคาหุ้นปรับ${dir === 'up' ? 'ขึ้นปิดที่' : 'ตัวลงปิดที่'} ${finalPrice}% (ไม่เคยแตะ ${barrierLabel} ${barrierLevel}%)`;
+                payoff = `ได้รับเงินต้นคืนตาม Protection (${prot}%) + ผลตอบแทนตามจริง (+${fmt1(gain)}%)`;
+            } else {
+                title = `Scenario: หุ้นปรับตัว${dir === 'up' ? 'ลดลง ต่ำกว่า' : 'ขึ้น สูงกว่า'}ราคาเริ่มต้น ณ วันสุดท้าย`;
+                desc = `ราคาหุ้นอ้างอิงปิดที่ ${finalPrice}% ซึ่งเคลื่อนไหว${dir === 'up' ? 'สวนทาง (ลง)' : 'สวนทาง (ขึ้น)'}จากมุมมองที่คาดไว้`;
+                payoff = `ได้รับเงินต้นคืนตามระดับ Protection Level (${prot}%) ครบ 100% ไม่มีผลตอบแทนเพิ่มเติม`;
+            }
+            const levels = {}; levels[barrierLabel] = barrierLevel;
+            return { title, desc, payoff, prices, levels };
+        }
+
+        function computeDiscountEntry(cfg, inputs, pathKey) {
+            const prices = PATH_LIB[pathKey];
+            const P = inputs.principal;
+            const discount = inputs.discountPrice, strikeL = inputs.strikeLevel, tenor = inputs.tenor;
+            const finalPrice = prices[prices.length - 1];
+            const amountPaid = P * (discount / 100);
+            const impliedYield = ((100 / discount) - 1) * (12 / tenor) * 100;
+            let title, desc, payoff;
+            if (finalPrice > strikeL) {
+                title = `Scenario: ราคาหุ้นอ้างอิง > Strike Level ณ Final Fixing Date`;
+                desc = `นักลงทุนจ่ายเงินจริง $${fmt(amountPaid)} (${discount}% ของ Notional) ณ วันสุดท้าย ราคาหุ้นปิดที่ ${finalPrice}% เหนือ Strike Level (${strikeL}%)`;
+                payoff = `ได้รับเงินต้นคืนเต็ม 100% ของ Notional ($${fmt(P)}) เป็นเงินสด เทียบเท่า Implied Yield ~${fmt1(impliedYield)}% ต่อปี`;
+            } else {
+                title = `Scenario: ราคาหุ้นอ้างอิง ≤ Strike Level ณ Final Fixing Date`;
+                desc = `ราคาหุ้นปิดที่ ${finalPrice}% (ต่ำกว่าหรือเท่ากับ Strike Level ${strikeL}%) ณ วัน Final Fixing`;
+                payoff = `ได้รับหุ้นอ้างอิงคืนแทนเงินสด คำนวณจำนวนหุ้นที่ราคา Strike Level (เท่ากับได้ซื้อหุ้นที่ราคา Strike ซึ่งต่ำกว่าราคาตลาด ณ วันเริ่มลงทุน)`;
+            }
+            return { title, desc, payoff, prices, levels: { 'Strike Level': strikeL } };
+        }
+
+        const NARRATORS = {
+            autocallCoupon: computeAutocallCoupon,
+            bonusParticipation: computeBonusParticipation,
+            twinWin: computeTwinWin,
+            capitalGuaranteed: computeCapitalGuaranteed,
+            phoenixMemory: computePhoenixMemory,
+            snowball: computeSnowball,
+            sharkfin: computeSharkfin,
+            discountEntry: computeDiscountEntry
+        };
+        function computeScenario(cfg, inputs, pathKey) { return NARRATORS[cfg.payoffType](cfg, inputs, pathKey); }
+
+        // ====================================================================
+        // PRODUCT CATALOG (declarative - add a new product here, reusing an
+        // existing payoffType narrator wherever the payoff shape matches)
+        // ====================================================================
+        const PRODUCT_CATALOG = [
+            {
+                id: 'FCN', label: 'Fixed Coupon Note (FCN)', group: 'Fixed Coupon Note (FCN)',
+                payoffType: 'autocallCoupon', hasKnockIn: false, stepDown: false, barrierDaily: false,
+                inputs: [
+                    { id: 'couponRate', label: 'Coupon Rate (% ต่อปี)', default: 12 },
+                    { id: 'callLevel', label: 'Call Level (%)', default: 105 },
+                    { id: 'strikeLevel', label: 'Strike Level (%)', default: 80 },
+                    { id: 'tenor', label: 'ระยะเวลาถือครอง (เดือน)', default: 6 }
+                ],
+                paths: ['rallyEarlyCall', 'lateRallyCall', 'mildDownAboveFloor', 'deepDownBreachFloor'],
+                faqs: [
+                    { q: " Worst-off หมายถึงอะไร และคิดคำนวณอย่างไร?", a: "หากในตะกร้ามีหุ้นอ้างอิงหลายตัว (เช่น 3 ตัว) การวัดผลตอบแทนหรือเงื่อนไขการไถ่ถอนจะใช้ 'หุ้นตัวที่ปรับตัวลงรุนแรงที่สุดเทียบกับราคาเริ่มต้น (Initial Fixing)' เป็นตัวอ้างอิงหลักเสมอ" },
+                    { q: "ทำไมบางเดือนราคาหุ้นตัวหนึ่งเกิน Call Level แล้ว แต่ยังไม่ Auto-Call?", a: "เพราะเงื่อนไข Auto-Call ของ FCN แบบ Worst-off ต้องให้ราคาหุ้น 'ทุกตัว' ในตะกร้ายืนเหนือ Call Level พร้อมกัน ณ วันสังเกตการณ์เดียวกัน หากมีหุ้นตัวใดตัวหนึ่งยังต่ำกว่า Call Level แม้ตัวอื่นจะเกินแล้ว ก็จะยังไม่เกิด Auto-Call และต้องรอดูผลในวันสังเกตการณ์เดือนถัดไป" },
+                    { q: "ถ้าถูก Auto-Call กลางทาง จะได้ดอกเบี้ยกี่งวด?", a: "จะได้ดอกเบี้ยตามสัดส่วนจำนวนงวดที่ผ่านไปจนถึงงวดที่ถูก Auto-Call พร้อมรับเงินต้นคืน 100% แล้วสัญญาจะจบลงทันที ไม่ได้รับดอกเบี้ยของงวดที่เหลือ" },
+                    { q: "กรณีต้องรับมอบหุ้น จะคำนวณจำนวนหุ้นที่ได้รับอย่างไร?", a: "คำนวณจาก (เงินต้น ÷ ราคา Strike Level ของหุ้น Worst-off) ซึ่งหมายความว่าคุณได้ซื้อหุ้นดังกล่าวที่ราคา Strike ไม่ใช่ราคาตลาด ณ วันส่งมอบ" },
+                    { q: "ผลขาดทุนสูงสุด (Max Loss) จากฝั่งหุ้นอ้างอิงของ FCN คือเท่าไร?", a: "กรณีแย่ที่สุดหากบริษัทอ้างอิงล้มละลายจนราคาหุ้นกลายเป็น 0 คุณอาจสูญเสียเงินต้นทั้ง 100% (แต่ยังได้รับดอกเบี้ยตามงวดสัญญาที่กำหนด) ทั้งนี้เป็นความเสี่ยงจากฝั่งหุ้นอ้างอิงเท่านั้น ยังมีความเสี่ยงด้านเครดิตของผู้ออกตราสารเองแยกต่างหาก (ดู FAQ ความเสี่ยงร่วมด้านล่าง)" }
+                ]
+            },
+            {
+                id: 'KIKO', label: 'Fixed Coupon Note with KI (KIKO FCN)', group: 'Fixed Coupon Note (FCN)',
+                payoffType: 'autocallCoupon', hasKnockIn: true, stepDown: false, barrierDaily: true,
+                inputs: [
+                    { id: 'couponRate', label: 'Coupon Rate (% ต่อปี)', default: 12 },
+                    { id: 'callLevel', label: 'Call Level (%)', default: 105 },
+                    { id: 'strikeLevel', label: 'Strike Level (%)', default: 80 },
+                    { id: 'tenor', label: 'ระยะเวลาถือครอง (เดือน)', default: 6 },
+                    { id: 'kiLevel', label: 'Knock-In Level (%)', default: 60 }
+                ],
+                paths: ['rallyEarlyCall', 'mildDownAboveFloor', 'deepDownBreachFloor', 'dipRecoverAboveFloor', 'deepBreachNoRecover'],
+                faqs: [
+                    { q: " Knock-In Level ตรวจสอบถี่แค่ไหน (Intraday vs Daily Close)?", a: "โดยทั่วไปในข้อกำหนดสิทธิของ KIKO FCN จะตรวจสอบจาก 'ราคาปิดประจำวัน (Daily Closing Price)' ของหุ้นอ้างอิง ไม่ได้ใช้ราคาที่ผันผวนระหว่างวัน ในขณะที่ Auto-Call จะตรวจสอบเฉพาะวัน Observation Date รายเดือนเท่านั้น (เครื่องมือนี้จำลองด้วยความถี่รายเดือนเพื่อความง่าย ดูหมายเหตุใต้กราฟ)" },
+                    { q: "ถ้าหุ้นเคยแตะ KI ไปแล้ว สัญญาจะจบลงทันทีเลยไหม?", a: "ไม่จบ! สัญญายังคงดำเนินต่อและจ่ายดอกเบี้ยรายเดือนตามปกติ เพียงแต่ 'เกราะคุ้มครองเงินต้นได้สลายไปแล้ว' ต้องไปลุ้นราคาปิด ณ วัน Final Fixing ว่าจะยืนเหนือ Strike ได้หรือไม่" },
+                    { q: "ถ้าหุ้นดิ่งทะลุ Knock-In แต่เด้งกลับมาปิดเหนือ Strike Level ในวันสุดท้าย จะเกิดอะไรขึ้น?", a: "คุณยังคงได้รับเงินต้นคืนครบ 100% เป็นเงินสด พร้อมดอกเบี้ยครบถ้วน ไม่ต้องรับมอบหุ้น" },
+                    { q: "KIKO ต่างจาก FCN ปกติอย่างไร ให้ดอกเบี้ยคุ้มกว่าไหม?", a: "KIKO ให้ความปลอดภัยมากกว่าจากเงื่อนไข KI แต่มักให้อัตราดอกเบี้ย (Coupon Rate) ต่ำกว่า FCN แบบธรรมดาเล็กน้อยเพื่อแลกกับ Protection Level ที่เพิ่มเข้ามา" }
+                ]
+            },
+            {
+                id: 'STEPDOWN', label: 'Step Down FCN', group: 'Fixed Coupon Note (FCN)',
+                payoffType: 'autocallCoupon', hasKnockIn: false, stepDown: true, barrierDaily: false,
+                inputs: [
+                    { id: 'couponRate', label: 'Coupon Rate (% ต่อปี)', default: 12 },
+                    { id: 'callLevel', label: 'Call Level เริ่มต้น (%)', default: 105 },
+                    { id: 'stepDown', label: 'Step Down ต่องวด (%)', default: 3 },
+                    { id: 'strikeLevel', label: 'Strike Level (%)', default: 80 },
+                    { id: 'tenor', label: 'ระยะเวลาถือครอง (เดือน)', default: 6 }
+                ],
+                paths: ['stepDownEase', 'mildDownAboveFloor', 'stepDownMidRange', 'deepDownBreachFloor'],
+                faqs: [
+                    { q: "Step Down FCN ต่างจาก FCN ปกติอย่างไร?", a: "กลไก Payoff (Coupon/Strike/รับมอบหุ้น) เหมือน FCN ปกติทุกประการ แต่ 'Call Level' จะลดขั้นบันไดลงเรื่อยๆ ตามเวลาที่ผ่านไป ทำให้ยิ่งถือนานยิ่งมีโอกาส Auto-Call ง่ายขึ้น" },
+                    { q: "ทำไมผู้ออกตราสารถึงออกแบบให้ Call Level ลดลงเรื่อยๆ?", a: "เพื่อเพิ่มโอกาสให้เกิด Auto-Call เร็วขึ้นในกรณีที่ราคาหุ้นทรงตัวหรือย่อตัวเล็กน้อย ซึ่งเหมาะกับนักลงทุนที่มองตลาด Sideways ถึง Sideways Down เล็กน้อย" },
+                    { q: "Call Level จะลดลงจนต่ำกว่า Strike Level ได้หรือไม่?", a: "โดยปกติโครงสร้าง Step Down จะกำหนดให้ Call Level ลดลงได้จนถึงระดับหนึ่ง (เท่ากับ Strike Level) เป็นอย่างต่ำ ไม่ลดต่ำไปกว่านั้น เพื่อไม่ให้ Call Level และ Strike Level สลับตำแหน่งกัน" }
+                ]
+            },
+            {
+                id: 'PHOENIX', label: 'Phoenix Memory Coupon', group: 'Fixed Coupon Note (FCN)',
+                payoffType: 'phoenixMemory', barrierDaily: false,
+                inputs: [
+                    { id: 'couponRate', label: 'Coupon Rate (% ต่อปี)', default: 15 },
+                    { id: 'autocallLevel', label: 'Autocall Level (%)', default: 100 },
+                    { id: 'couponBarrier', label: 'Coupon Barrier (%)', default: 70 },
+                    { id: 'strikeLevel', label: 'Strike/Protection Level (%)', default: 60 },
+                    { id: 'tenor', label: 'ระยะเวลาถือครอง (เดือน)', default: 6 }
+                ],
+                paths: ['rallyEarlyCall', 'mildDownAboveFloor', 'phoenixMissThenCatchUp', 'phoenixNeverCatchUp', 'phoenixWorstCase'],
+                faqs: [
+                    { q: "Memory Coupon คืออะไร ต่างจาก FCN ธรรมดาอย่างไร?", a: "FCN ธรรมดาจ่ายคูปองทุกงวดแบบไม่มีเงื่อนไข (ไม่ขึ้นกับราคาหุ้น) แต่ Phoenix Memory Coupon จะจ่ายคูปองเฉพาะงวดที่ราคาหุ้นยืนเหนือ Coupon Barrier เท่านั้น หากงวดไหนราคาต่ำกว่า Coupon Barrier จะ 'พลาด' คูปองงวดนั้นไปก่อน แต่ระบบจะ 'จำ' ไว้ (Memory) และจ่ายคืนสะสมทั้งหมดในงวดถัดไปที่ราคากลับมายืนเหนือ Coupon Barrier ได้" },
+                    { q: "ทำไม Autocall Level ถึงต่างจาก Coupon Barrier?", a: "Autocall Level (มักตั้งสูงกว่า) เป็นเงื่อนไขจบสัญญาก่อนกำหนดพร้อมรับเงินต้นคืนทันที ส่วน Coupon Barrier (ตั้งต่ำกว่า) เป็นเพียงเงื่อนไขว่าจะได้รับคูปองงวดนั้นหรือไม่เท่านั้น สัญญายังไม่จบแม้ราคาจะต่ำกว่า Autocall Level ตราบใดที่ยังไม่ครบกำหนดหรือไม่แตะ Autocall Level" },
+                    { q: "ถ้าพลาดคูปองแล้วไม่มีงวดไหนดึงกลับมา Catch-up ได้เลยจนจบสัญญา จะเกิดอะไรขึ้น?", a: "คูปองงวดที่พลาดไปจะสูญเสียไปอย่างถาวร ไม่ได้รับคืนแม้จะครบกำหนดสัญญาแล้วก็ตาม แม้ว่าเงินต้นอาจยังปลอดภัยอยู่ก็ตาม (หากราคาปิดสุดท้ายยังเหนือ Strike/Protection Level) นี่คือความเสี่ยงหลักที่ต่างจาก FCN ธรรมดาซึ่งคูปองจ่ายแน่นอนทุกงวดไม่มีเงื่อนไข" }
+                ]
+            },
+            {
+                id: 'SNOWBALL', label: 'Snowball Note (Knock-out/Knock-in)', group: 'Fixed Coupon Note (FCN)',
+                payoffType: 'snowball', barrierDaily: true,
+                inputs: [
+                    { id: 'couponRate', label: 'Coupon Rate (% ต่อปี)', default: 18 },
+                    { id: 'knockOutLevel', label: 'Knock-out Level (%)', default: 100 },
+                    { id: 'knockInLevel', label: 'Knock-in Level (%)', default: 75 },
+                    { id: 'tenor', label: 'ระยะเวลาถือครอง (เดือน)', default: 6 }
+                ],
+                paths: ['rallyEarlyCall', 'mildDownAboveFloor', 'snowballDipRecoverKO', 'dipRecoverAboveFloor', 'deepDownBreachFloor'],
+                faqs: [
+                    { q: "Snowball ต่างจาก Phoenix Memory Coupon อย่างไร?", a: "Snowball ไม่มี Coupon Barrier แยกต่างหากแบบ Phoenix — คูปองไม่มีความเสี่ยงจากราคาหุ้นเลย จะได้รับครบทุกงวดเสมอไม่ว่าราคาจะเคลื่อนไหวอย่างไร (ตราบใดที่ผู้ออกตราสารไม่ผิดนัดชำระหนี้) ความเสี่ยงทั้งหมดของ Snowball อยู่ที่ 'เงินต้น' ผ่านเงื่อนไข Knock-In เพียงอย่างเดียว ต่างจาก Phoenix ที่ทั้งคูปองและเงินต้นมีเงื่อนไขแยกกันคนละชุด" },
+                    { q: "ทำไมถึงเรียกว่า 'Snowball'?", a: "เพราะคูปองจะ 'สะสม (Snowball)' เพิ่มขึ้นเรื่อยๆ ทุกงวดที่สัญญายังไม่จบ (ไม่ Knock-Out และไม่ครบกำหนด) แล้วจ่ายออกมาเป็นก้อนเดียวทีเดียวเมื่อสัญญาจบลง ไม่ว่าจะจบด้วย Knock-Out หรือครบกำหนดสัญญาก็ตาม ต่างจาก FCN ทั่วไปที่มักอธิบายเป็นดอกเบี้ยรายงวดตรงไปตรงมา" },
+                    { q: "ถ้าเคยแตะ Knock-In ระหว่างทาง แต่ราคากลับมาปิดเหนือ Knock-In Level ในวันครบกำหนด (โดยยังไม่ถึง Knock-out) ยังเสียเงินต้นหรือไม่?", a: "ไม่เสีย — เงื่อนไข Knock-In จะ 'มีผล' ก็ต่อเมื่อราคาปิด ณ วันครบกำหนดสัญญายังคงอยู่ต่ำกว่าหรือเท่ากับ Knock-In Level เท่านั้น หากราคาฟื้นตัวกลับมาปิดเหนือ Knock-In Level ได้สำเร็จ (แม้เคยแตะระหว่างทางมาแล้วก็ตาม) จะได้รับเงินต้นคืนเต็ม 100% เป็นเงินสดตามปกติ พร้อมคูปองเต็มจำนวน" },
+                    { q: "ทำไม Knock-out Level ของ Snowball มักตั้งไว้ที่หรือใกล้เคียง 100% ซึ่งต่ำกว่า Call Level ของ FCN ทั่วไปที่มักตั้งไว้ 105%?", a: "เป็นลักษณะเฉพาะของโครงสร้าง Snowball ที่พบได้บ่อยในตลาดจริง (เช่นที่อิงดัชนีอย่าง CSI500 ที่ขายในรูป QDII) ซึ่งมักออกแบบให้ Knock-out Level อยู่ที่หรือใกล้เคียงราคาเริ่มต้น ทำให้มีโอกาส Knock-Out และได้รับผลตอบแทนคืนเร็วกว่า FCN ทั่วไป โดยแลกมาด้วยอัตราคูปองที่สูงกว่าและ Knock-In Level ที่มักตั้งลึกกว่าเพื่อชดเชยความเสี่ยงเงินต้นที่มากขึ้น" }
+                ]
+            },
+            {
+                id: 'BEN', label: 'Bonus Enhanced Note (BEN)', group: 'Bonus Enhanced Note',
+                payoffType: 'bonusParticipation', barrierDaily: false,
+                inputs: [
+                    { id: 'bonusLevel', label: 'Bonus Level (%)', default: 120 },
+                    { id: 'bonusRate', label: 'Bonus Rate (%)', default: 13 },
+                    { id: 'strikeLevel', label: 'Strike Level (%)', default: 75 }
+                ],
+                paths: ['strongRally', 'mildUpNoTrigger', 'deepDownBreachFloor'],
+                faqs: [
+                    { q: " BEN จ่ายผลตอบแทนเมื่อไร? มีดอกเบี้ยรายเดือนไหม?", a: "BEN ไม่มีดอกเบี้ยรายเดือน ผลตอบแทนทั้งหมด (ทั้งเงินต้นและ Bonus/Gain) จะถูกคำนวณและจ่ายทีเดียว ณ วันครบกำหนดสัญญา (Maturity Date)" },
+                    { q: "ถ้าหุ้นขึ้นไปเกิน Bonus Level มากๆ จะได้กำไรเท่าไร?", a: "คุณจะได้ผลตอบแทนเต็มตามการปรับขึ้นจริงของหุ้น Worst-off โดยไม่มี ceiling แคปไว้" },
+                    { q: "ทำไม BEN ถึงเหมาะกับตลาด Sideways ถึง Sideways Up?", a: "เพราะหากหุ้นขึ้นเล็กน้อย หรือลดลงเล็กน้อยแต่ไม่หลุด Strike Level คุณก็ยังได้รับ Bonus Rate ที่แน่นอน ซึ่งสูงกว่าการถือหุ้นตรงๆ ในตลาดนิ่ง" }
+                ]
+            },
+            {
+                id: 'RC', label: 'Reverse Convertible (RCN)', group: 'Reverse Convertible (RCN)',
+                payoffType: 'autocallCoupon', hasKnockIn: false, stepDown: false, barrierDaily: false,
+                inputs: [
+                    { id: 'couponRate', label: 'Coupon Rate (% ต่อปี)', default: 10 },
+                    { id: 'strikeLevel', label: 'Strike Level (%)', default: 80 },
+                    { id: 'tenor', label: 'ระยะเวลาถือครอง (เดือน)', default: 6 }
+                ],
+                paths: ['mildUpNoTrigger', 'mildDownAboveFloor', 'dipRecoverAboveFloor', 'deepDownBreachFloor'],
+                faqs: [
+                    { q: "Reverse Convertible ต่างจาก FCN อย่างไร?", a: "Reverse Convertible ไม่มีเงื่อนไข Auto-Call เลย — ถือครบกำหนดสัญญาเสมอไม่ว่าราคาหุ้นจะขึ้นไปสูงแค่ไหน และจ่ายคูปองเต็มจำนวนทุกงวดโดยไม่มีเงื่อนไขใดๆ ต่างจาก FCN ที่มีโอกาสจบสัญญาเร็วกว่ากำหนดผ่าน Auto-Call" },
+                    { q: "ไม่มี Auto-Call แล้วยังน่าสนใจตรงไหน?", a: "คูปองมักได้รับแน่นอนครบทุกงวดตลอดอายุสัญญา (ไม่ถูกตัดจบก่อนกำหนดเหมือน FCN ที่ Auto-Call เร็วแล้วเสียโอกาสรับดอกเบี้ยงวดที่เหลือ) เหมาะกับนักลงทุนที่ต้องการกระแสเงินสดสม่ำเสมอที่แน่นอนตลอดอายุสัญญา และไม่กังวลเรื่อง Reinvestment Risk จากการถูก Auto-Call เร็ว" },
+                    { q: "ความเสี่ยงหลักของ Reverse Convertible คืออะไร?", a: "แม้จะได้รับคูปองครบทุกงวด แต่หากราคาหุ้น Worst-off ปิดต่ำกว่า Strike Level ณ วันครบกำหนด ยังคงต้องรับมอบหุ้นแทนเงินสดเช่นเดียวกับ FCN — คูปองที่ได้รับมาไม่ได้ช่วยชดเชยผลขาดทุนเงินต้นจากฝั่งหุ้นอ้างอิงเสมอไป" }
+                ]
+            },
+            {
+                id: 'CGN', label: 'Capital Guaranteed Note (PPN)', group: 'Principal Protected Note (PPN)',
+                payoffType: 'capitalGuaranteed', barrierDaily: false,
+                inputs: [
+                    { id: 'protectionLevel', label: 'Protection Level (%)', default: 100 },
+                    { id: 'participationRate', label: 'Participation Rate (%)', default: 80 },
+                    { id: 'cap', label: 'Cap ผลตอบแทนสูงสุด (%)', default: 25 }
+                ],
+                paths: ['mildUpNoTrigger', 'megaRally', 'deepDownBreachFloor'],
+                faqs: [
+                    { q: "Capital Guaranteed Note ต่างจาก Twin-Win/Sharkfin อย่างไร?", a: "คุ้มครองเงินต้นแบบไม่มีเงื่อนไขใดๆ เลย (ไม่มี Barrier หรือ Knock-Out) และรับผลตอบแทนได้ทิศทางเดียวคือขาขึ้นเท่านั้น ต่างจาก Twin-Win ที่ได้ผลตอบแทนทั้งสองทิศทาง และต่างจาก Sharkfin ที่มี Barrier ซึ่งอาจถูก Knock-Out ระหว่างทางได้" },
+                    { q: "ทำไมผลตอบแทนขาขึ้นถึงมีทั้ง Participation Rate และ Cap พร้อมกัน?", a: "เพราะต้นทุนในการซื้อความคุ้มครองเงินต้นแบบไม่มีเงื่อนไขเลยสูงกว่าสินค้าที่มี Barrier ผู้ออกตราสารจึงต้องจำกัดผลตอบแทนขาขึ้นด้วยทั้ง 2 กลไก (participation ต่ำกว่า 100% และมี Cap) เพื่อให้โครงสร้างคุ้มทุน" },
+                    { q: "ถ้าราคาหุ้นลงหนักมาก ยังได้เงินต้นคืนเต็มหรือไม่?", a: "ได้ครบตาม Protection Level เสมอ ไม่ว่าราคาหุ้นจะลงมากน้อยเพียงใดก็ตาม ตราบใดที่ผู้ออกตราสารไม่ผิดนัดชำระหนี้ — เป็นสินค้าที่ปลอดภัยที่สุดใน family PPN แต่แลกมาด้วยผลตอบแทนขาขึ้นที่จำกัดกว่า Twin-Win/Sharkfin" }
+                ]
+            },
+            {
+                id: 'TWN', label: 'Twin-Win Note (TWN - PPN)', group: 'Principal Protected Note (PPN)',
+                payoffType: 'twinWin', barrierDaily: true,
+                inputs: [
+                    { id: 'protectionLevel', label: 'Protection Level (%)', default: 103.9 },
+                    { id: 'upperLevel', label: 'Upper Barrier (%)', default: 120 },
+                    { id: 'lowerLevel', label: 'Lower Barrier (%)', default: 80 }
+                ],
+                paths: ['mildUpNoTrigger', 'mildDownAboveFloor', 'spikeThenFade'],
+                faqs: [
+                    { q: " Twin-Win คุ้มครองเงินต้นจริงหรือไม่? มีความเสี่ยงสูญเงินต้นไหม?", a: "คุ้มครองเงินต้นตามระดับ Protection Level ที่ระบุ แต่ยังมีความเสี่ยงด้านเครดิตหากผู้ออกตราสาร (Issuer) ล้มละลาย" },
+                    { q: "คำว่า Knock-Out ใน Twin-Win หมายถึงอะไร?", a: "หมายถึงกรณีราคาหุ้นทะลุ Upper Barrier หรือ Lower Barrier ระหว่างทาง (ตรวจสอบแบบ Daily-close ในทางปฏิบัติ) สิทธิการทำกำไรจากส่วนต่างราคาจะระงับลงทันที และคุณจะได้รับคืนเพียงเงินต้นตาม Protection Level เมื่อครบกำหนด" },
+                    { q: "ผลตอบแทนของ Twin-Win มี Cap สูงสุดหรือไม่?", a: "มี — ผลตอบแทนส่วนเพิ่ม (นอกเหนือจาก Protection Level) จะไม่เกินระยะห่างระหว่าง Upper/Lower Barrier กับราคาเริ่มต้น 100% เช่น หาก Upper Barrier = 120% และ Lower Barrier = 80% ผลตอบแทนส่วนเพิ่มสูงสุดที่เป็นไปได้คือ 20% ไม่ว่าราคาจะขึ้นหรือลงมากกว่านั้นเพียงใดก็ตาม (ตราบใดที่ยังไม่ถูก Knock-Out)" }
+                ]
+            },
+            {
+                id: 'SHARKFIN', label: 'Bullish Sharkfin (PPN)', group: 'Principal Protected Note (PPN)',
+                payoffType: 'sharkfin', direction: 'up', barrierDaily: true,
+                inputs: [
+                    { id: 'protectionLevel', label: 'Protection Level (%)', default: 100 },
+                    { id: 'upperLevel', label: 'Upper Barrier Level (%)', default: 130 },
+                    { id: 'rebateRate', label: 'Rebate Rate (%)', default: 6.8 }
+                ],
+                paths: ['driftUpNoSpike', 'spikeThenFade', 'fadeNoSpike'],
+                faqs: [
+                    { q: " ทำไมถึงเรียกว่า Sharkfin (ครีบฉลาม)?", a: "มาจากกราฟ Payoff Profile ที่มีลักษณะแหลมคล้ายครีบฉลาม คือได้กำไรเพิ่มขึ้นเรื่อยๆ ตามราคาหุ้นที่ขึ้น แต่หากพุ่งเกิน Barrier จะถูก Knock-Out ลงมาเหลือเพียงค่า Rebate" },
+                    { q: "Rebate Rate ได้รับเมื่อไร และได้แน่นอนไหม?", a: "ได้รับ ณ วันครบกำหนดสัญญา เฉพาะกรณีที่ราคาหุ้นเคยแตะหรือทะลุ Upper Barrier ระหว่างอายุสัญญาเท่านั้น" },
+                    { q: "ตราสารประเภท PPN (Principal Protected) มีค่าธรรมเนียมหรือภาษีหุ้นต่างประเทศอย่างไร?", a: "หากครบกำหนดและรับเป็นเงินสด จะไม่มี Stamp Duty ของตลาดหุ้น overseas แต่หากเป็นหุ้นตลาด HK, US, EU ที่เกิดการส่งมอบหุ้นจริง อาจมีค่า Stamp Duty/Exchange Tax ตามกฎหมายท้องถิ่น เช่น HK (0.10%), LSE (0.50%), Euronext Paris (0.30%)" }
+                ]
+            },
+            {
+                id: 'BEARSHARKFIN', label: 'Bearish Sharkfin (PPN)', group: 'Principal Protected Note (PPN)',
+                payoffType: 'sharkfin', direction: 'down', barrierDaily: true,
+                inputs: [
+                    { id: 'protectionLevel', label: 'Protection Level (%)', default: 100 },
+                    { id: 'lowerLevel', label: 'Lower Barrier Level (%)', default: 70 },
+                    { id: 'rebateRate', label: 'Rebate Rate (%)', default: 6.8 }
+                ],
+                paths: ['fadeNoSpike', 'bigDownRecoverSome', 'driftUpNoSpike'],
+                faqs: [
+                    { q: "Bearish Sharkfin ต่างจาก Bullish Sharkfin อย่างไร?", a: "กลไกเหมือนกันทุกประการแต่ 'สลับทิศทาง' — Bearish Sharkfin ทำกำไรเมื่อราคาหุ้นอ้างอิง 'ลดลง' โดยมี Lower Barrier แทน Upper Barrier หากราคาหุ้นดิ่งลงแตะ Lower Barrier ระหว่างทาง จะถูก Knock-Out เหลือเพียง Rebate เช่นเดียวกัน และหากราคาหุ้นกลับปรับตัว 'ขึ้น' แทน จะได้รับคืนเพียง Protection Level เท่านั้น" },
+                    { q: "เหมาะกับนักลงทุนที่มีมุมมองแบบไหน?", a: "เหมาะกับนักลงทุนที่มองว่าหุ้นอ้างอิงมีแนวโน้มปรับตัวลงในกรอบจำกัด (ไม่ลงแรงจนทะลุ Lower Barrier) และต้องการทำกำไรจากขาลงแบบมีการคุ้มครองเงินต้นตาม Protection Level" }
+                ]
+            },
+            {
+                id: 'ELN', label: 'Equity Linked Note (ELN)', group: 'Equity Linked Note',
+                payoffType: 'discountEntry', barrierDaily: false,
+                inputs: [
+                    { id: 'discountPrice', label: 'Discount Price (% ของ Notional ที่จ่ายจริง)', default: 98 },
+                    { id: 'strikeLevel', label: 'Strike Level (%)', default: 95 },
+                    { id: 'tenor', label: 'ระยะเวลาถือครอง (เดือน)', default: 1 }
+                ],
+                paths: ['elnAboveStrike', 'elnBelowStrike'],
+                faqs: [
+                    { q: "ELN ต่างจาก FCN อย่างไร?", a: "ELN ไม่มีดอกเบี้ยรายงวดและไม่มี Auto-Call มีเพียงการเปรียบเทียบราคาหุ้น ณ วัน Final Fixing เพียงจุดเดียวกับ Strike Level นักลงทุนซื้อตราสารในราคาส่วนลด (Discount Price) จากมูลค่าที่ตราไว้ ซึ่งส่วนต่างของราคาส่วนลดนี้เองคือผลตอบแทน (Yield) ที่ได้รับ ระยะเวลาสั้นกว่ามาก" },
+                    { q: "ใช้ ELN เป็นกลยุทธ์ 'เก็บหุ้นที่ราคาต่ำกว่าตลาด' ได้อย่างไร?", a: "หากตั้ง Strike Level ต่ำกว่าราคาตลาดปัจจุบัน และหุ้นปิดต่ำกว่า Strike ณ Final Fixing นักลงทุนจะได้รับหุ้นที่ราคา Strike ซึ่งต่ำกว่าราคาตลาด ณ วันเริ่มลงทุน เสมือนได้ตั้งคำสั่งซื้อหุ้นล่วงหน้าที่ราคาที่ต้องการ พร้อมได้รับผลตอบแทน (Yield) ระหว่างรอด้วย" },
+                    { q: "หากราคาหุ้นปิดสูงกว่า Strike Level พอดี (เท่ากัน) จะเกิดอะไรขึ้น?", a: "โดยทั่วไปเงื่อนไข 'มากกว่า (>)' และ 'น้อยกว่าหรือเท่ากับ (≤)' จะถูกกำหนดไว้ชัดเจนในข้อกำหนดสิทธิของตราสารแต่ละรุ่น ควรตรวจสอบ Term Sheet ของตราสารแต่ละรุ่นให้ชัดเจนก่อนลงทุนเสมอ" }
+                ]
+            }
+        ];
+
+        const commonFaqs = [
+            { q: "ความเสี่ยงด้านเครดิตของ 'ผู้ออกตราสาร' (Issuer Credit Risk) ต่างจากความเสี่ยงของหุ้นอ้างอิงอย่างไร?", a: "เป็นความเสี่ยงคนละก้อนที่แยกจากกันโดยเด็ดขาด: (1) ความเสี่ยงจากหุ้นอ้างอิง (Market Risk) คือราคาหุ้นเคลื่อนไหวไม่เป็นไปตามที่คาด และ (2) ความเสี่ยงด้านเครดิตของผู้ออกตราสาร (Credit Risk) คือธนาคาร/สถาบันการเงินผู้ออกหุ้นกู้ที่มีอนุพันธ์แฝงผิดนัดชำระหนี้หรือล้มละลาย ซึ่ง<strong>แม้หุ้นอ้างอิงจะปรับตัวดีเยี่ยมและเงื่อนไข Payoff เป็นบวก นักลงทุนก็ยังมีความเสี่ยงสูญเสียเงินลงทุนทั้งหมดหรือบางส่วนได้หากผู้ออกตราสารผิดนัดชำระ</strong> ควรพิจารณาอันดับความน่าเชื่อถือ (Credit Rating) ของผู้ออกตราสารควบคู่ไปกับมุมมองต่อหุ้นอ้างอิงเสมอ" },
+            { q: "ตราสารนี้มี Credit Rating หรือไม่? ถ้าไม่มีหรือต่ำกว่า Investment Grade มีนัยอย่างไร?", a: "หุ้นกู้ที่มีอนุพันธ์แฝงบางรุ่นอาจไม่มีการจัดอันดับความน่าเชื่อถือ (Unrated) หรือได้รับการจัดอันดับต่ำกว่า Investment Grade (Non-Investment Grade) ซึ่งมีความเสี่ยงด้านเครดิตและความเสี่ยงด้านสภาพคล่องสูงกว่าตราสารหนี้ทั่วไปอย่างมีนัยสำคัญ นักลงทุนอาจสูญเงินลงทุนทั้งหมดได้หากผู้ออกตราสารล้มละลายหรือปฏิเสธไม่จ่าย/ชำระตามสัญญา" },
+            { q: "Timeline การลงทุนเป็นอย่างไร ตั้งแต่วันที่ซื้อจนได้รับเงินคืน?", a: "5 วันสำคัญ: (1) Trade Date (T) วันที่ตกลงซื้อและกำหนดราคาเริ่มต้น (2) Issue Date (T+14) วันออกตราสารจริง (3) Observation Date วันสังเกตการณ์เพื่อ Auto-call (ปกติรายเดือน) และ/หรือ Knock-In/Barrier (ปกติรายวัน แล้วแต่ประเภทผลิตภัณฑ์) (4) Final Fixing Date (S) วันกำหนดราคาหลักทรัพย์วันสุดท้าย และ (5) Maturity/Redemption Date (S+3) วันที่ได้รับเงินต้น/หุ้นคืนจริง" },
+            { q: "หากต้องการขายคืนก่อนครบกำหนด (Early Unwind) ทำได้หรือไม่?", a: "โดยทั่วไปทำได้ แต่หุ้นกู้ที่มีอนุพันธ์แฝงเป็นตราสารที่มีสภาพคล่องต่ำและไม่มีตลาดรองที่ซื้อขายได้สะดวก ผู้ออกตราสาร (Issuer) จะเป็นผู้เสนอราคารับซื้อคืน (Bid Price) ตามมูลค่าตราสาร ณ ขณะนั้น ซึ่งอาจต่ำกว่าเงินต้นอย่างมีนัยสำคัญ" }
+        ];
+
+        // ====================================================================
+        // UI wiring (renders from PRODUCT_CATALOG - no per-product branching)
+        // ====================================================================
+        let chartInstances = [];
+
+        function populateProductDropdown() {
+            const select = document.getElementById('productType');
+            const groups = {};
+            PRODUCT_CATALOG.forEach(cfg => {
+                if (!groups[cfg.group]) groups[cfg.group] = [];
+                groups[cfg.group].push(cfg);
+            });
+            select.innerHTML = Object.keys(groups).map(groupName => `
+                <optgroup label="${groupName}">
+                    ${groups[groupName].map(cfg => `<option value="${cfg.id}">${cfg.label}</option>`).join('')}
+                </optgroup>
+            `).join('');
+        }
+
+        function getCatalogEntry(id) { return PRODUCT_CATALOG.find(c => c.id === id); }
+
+        function renderDynamicInputs() {
+            const type = document.getElementById('productType').value;
+            const cfg = getCatalogEntry(type);
+            const container = document.getElementById('dynamicInputs');
+            container.innerHTML = cfg.inputs.map(f => `
+                <div class="mb-3">
+                    <label class="block text-sm text-gray-600">${f.label}</label>
+                    <input type="number" id="${f.id}" value="${f.default}" class="w-full border rounded p-2">
+                </div>
+            `).join('');
+            renderFAQs(cfg);
+        }
+
+        function readInputs(cfg) {
+            const inputs = { principal: parseFloat(document.getElementById('principal').value) || 0 };
+            cfg.inputs.forEach(f => { inputs[f.id] = parseFloat(document.getElementById(f.id).value); });
+            return inputs;
+        }
+
+        function clearCharts() { chartInstances.forEach(c => c.destroy()); chartInstances = []; }
+
+        function calculateScenarios() {
+            clearCharts();
+            const cfg = getCatalogEntry(document.getElementById('productType').value);
+            const inputs = readInputs(cfg);
+            const container = document.getElementById('resultsContainer');
+            const scenarios = cfg.paths.map(pathKey => computeScenario(cfg, inputs, pathKey));
+
+            const barrierNote = cfg.barrierDaily
+                ? `<p class="text-xs text-amber-700 bg-amber-50 border border-amber-200 rounded p-2 mt-2">⏱️ หมายเหตุ: กราฟนี้จำลองด้วยความถี่รายเดือนเพื่อความง่ายในการนำเสนอ แต่ในทางปฏิบัติเงื่อนไข Knock-In/Barrier ของผลิตภัณฑ์นี้ตรวจสอบจากราคาปิดรายวัน (Daily Close) ซึ่งอาจแตะระดับที่กำหนดได้เร็ว/บ่อยกว่าที่กราฟแสดง</p>`
+                : '';
+
+            container.innerHTML = scenarios.map((s, index) => `
+                <div class="p-5 border rounded-lg bg-gray-50 border-l-4 border-l-blue-600 grid grid-cols-1 md:grid-cols-2 gap-4">
+                    <div>
+                        <h3 class="font-bold text-lg text-blue-900 mb-2">${s.title}</h3>
+                        <p class="text-sm text-gray-600 mb-2"><strong>สภาวะตลาด:</strong> ${s.desc}</p>
+                        <p class="text-sm text-green-700 font-semibold mb-4"><strong>ผลตอบแทนที่ได้รับ:</strong> ${s.payoff}</p>
+                    </div>
+                    <div class="bg-white p-2 border rounded">
+                        <div style="position:relative; width:100%; height:192px;">
+                            <canvas id="chart-${index}"></canvas>
+                        </div>
+                        ${barrierNote}
+                    </div>
+                </div>
+            `).join('');
+            scenarios.forEach((s, index) => createScenarioChart(`chart-${index}`, s.prices, s.levels));
+        }
+
+        function createScenarioChart(canvasId, priceData, levels) {
+            const ctx = document.getElementById(canvasId).getContext('2d');
+            const datasets = [{
+                label: 'ราคาหุ้นอ้างอิง (%)', data: priceData,
+                borderColor: 'rgb(37, 99, 235)', backgroundColor: 'rgba(37, 99, 235, 0.1)',
+                borderWidth: 2, fill: true, tension: 0.2
+            }];
+            const colors = {
+                'Call Level': 'rgb(16, 185, 129)', 'Call Level (Step Down)': 'rgb(16, 185, 129)',
+                'Strike Level': 'rgb(239, 68, 68)', 'Knock-In Level': 'rgb(217, 119, 6)',
+                'Bonus Level': 'rgb(147, 51, 234)', 'Upper Barrier': 'rgb(220, 38, 38)', 'Lower Barrier': 'rgb(217, 119, 6)',
+                'Protection Level': 'rgb(5, 150, 105)', 'Autocall Level': 'rgb(16, 185, 129)',
+                'Coupon Barrier': 'rgb(234, 88, 12)', 'Strike/Protection Level': 'rgb(239, 68, 68)',
+                'Knock-out Level': 'rgb(16, 185, 129)'
+            };
+            Object.keys(levels).forEach(levelName => {
+                const val = levels[levelName];
+                const seriesData = Array.isArray(val) ? val : Array(CHART_LABELS.length).fill(val);
+                datasets.push({
+                    label: levelName, data: seriesData,
+                    borderColor: colors[levelName] || 'rgb(156, 163, 175)',
+                    borderWidth: 1.5, borderDash: [5, 5], pointRadius: 0,
+                    stepped: Array.isArray(val) ? 'before' : false, fill: false
+                });
+            });
+            const newChart = new Chart(ctx, {
+                type: 'line',
+                data: { labels: CHART_LABELS, datasets },
+                options: {
+                    responsive: true, maintainAspectRatio: false,
+                    plugins: { legend: { position: 'bottom', labels: { boxWidth: 10, font: { size: 9 } } } },
+                    scales: { y: { suggestedMin: 40, suggestedMax: 140, ticks: { callback: v => v + '%' } } }
+                }
+            });
+            chartInstances.push(newChart);
+        }
+
+        function renderFAQs(cfg) {
+            const container = document.getElementById('faqContainer');
+            const list = (cfg.faqs || []).concat(commonFaqs);
+            container.innerHTML = list.map(item => `
+                <div class="border rounded-md p-4 cursor-pointer hover:bg-gray-50 transition" onclick="this.classList.toggle('faq-active')">
+                    <div class="flex justify-between items-center font-semibold text-gray-800">
+                        <span>Q: ${item.q}</span>
+                        <span class="text-blue-600 font-bold">+</span>
+                    </div>
+                    <div class="faq-answer mt-2 text-sm text-gray-600 border-t pt-2">A: ${item.a}</div>
+                </div>
+            `).join('');
+        }
+
+        populateProductDropdown();
+        renderDynamicInputs();
+    </script>
+</body>
+</html>
