@@ -1,0 +1,2379 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Institutional Portfolio Simulator (Waterfall & Priority Engine)</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js@4.5.1/dist/chart.umd.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/marked@15.0.7/marked.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Sarabun:wght@300;400;500;600;700&display=swap');
+        body { font-family: 'Sarabun', sans-serif; }
+        .tab-active { background-color: #f59e0b; color: #1e293b; font-weight: 700; border-color: #f59e0b; }
+        .tab-inactive { background-color: #1e293b; color: #94a3b8; border-color: #334155; }
+        .tab-inactive:hover:not(:disabled) { background-color: #334155; color: #f8fafc; }
+        .tab-inactive:disabled { opacity: 0.4; cursor: not-allowed; }
+        
+        .heat-green { background-color: rgba(16, 185, 129, 0.2); color: #34d399; }
+        .heat-yellow { background-color: rgba(245, 158, 11, 0.2); color: #fbbf24; }
+        .heat-red { background-color: rgba(239, 68, 68, 0.2); color: #f87171; }
+
+        .port-tab-active { background-color: #8b5cf6; color: #ffffff; border-color: #a78bfa; font-weight: bold; }
+        .port-tab-inactive { background-color: #1e293b; color: #94a3b8; border-color: #334155; }
+        .port-tab-inactive:hover { background-color: #334155; color: #f8fafc; }
+
+        .custom-scrollbar::-webkit-scrollbar { height: 6px; width: 6px; }
+        .custom-scrollbar::-webkit-scrollbar-track { background: #0f172a; }
+        .custom-scrollbar::-webkit-scrollbar-thumb { background: #334155; border-radius: 4px; }
+
+        .ai-content h3 { font-size: 1.125rem; font-weight: 700; color: #fbbf24; margin-top: 1rem; margin-bottom: 0.5rem; }
+        .ai-content p { margin-bottom: 0.75rem; color: #cbd5e1; font-size: 0.875rem; line-height: 1.6; }
+        .ai-content ul { list-style-type: disc; padding-left: 1.5rem; margin-bottom: 0.75rem; color: #cbd5e1; font-size: 0.875rem; }
+        .ai-content li { margin-bottom: 0.25rem; line-height: 1.5; }
+        .ai-content strong { color: #f8fafc; font-weight: 600; }
+        .ai-content em { color: #a78bfa; font-style: italic; }
+    </style>
+</head>
+<body class="bg-slate-900 text-slate-100 min-h-screen pb-12 relative">
+
+    <div class="container mx-auto px-4 py-8">
+        <!-- Header -->
+        <header class="mb-6 border-b border-slate-800 pb-4">
+            <div class="flex flex-col md:flex-row justify-between items-start md:items-center">
+                <div>
+                    <h1 class="text-3xl font-bold text-amber-500 flex items-center gap-3">
+                        <i class="fa-solid fa-server"></i> Institutional Portfolio Simulator
+                    </h1>
+                    <p class="text-slate-400 mt-2 text-sm">Global Waterfall Cashflow, Bucket Priority Liquidation & Auto-Rebalance Engine</p>
+                </div>
+                <div class="mt-4 md:mt-0 flex flex-col items-end gap-3">
+                    <div class="bg-slate-800 p-2 rounded-lg border border-slate-700 text-right w-max">
+                        <span class="text-[10px] text-slate-400 block font-semibold">MATH ENGINE</span>
+                        <span class="text-sm font-bold text-emerald-400">MPT, GBM & GARCH(1,1)</span>
+                    </div>
+                    <div class="flex gap-2">
+                        <button id="btn-export-excel" class="bg-slate-800 hover:bg-slate-700 text-emerald-400 px-3 py-2 rounded-lg text-sm font-bold shadow-lg transition-all flex items-center gap-2 border border-emerald-500/30">
+                            <i class="fa-solid fa-file-excel"></i> โหลด Excel
+                        </button>
+                        <!-- Hidden until the AI Advisor is ready to ship: apiKey is still empty (see script below),
+                             so every click would currently fail against the Gemini API. Remove `hidden` to re-enable
+                             once a real key (and ideally a backend proxy instead of a client-side key) is in place. -->
+                        <button id="btn-ai-advisor" class="hidden bg-gradient-to-r from-purple-600 to-indigo-600 hover:from-purple-500 hover:to-indigo-500 text-white px-4 py-2 rounded-lg text-sm font-bold shadow-lg shadow-purple-900/50 transition-all flex items-center gap-2 border border-purple-400/30">
+                            ✨ วิเคราะห์ด้วย AI
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </header>
+
+        <div class="grid grid-cols-1 xl:grid-cols-12 gap-6">
+            
+            <!-- Left Panel: Controls -->
+            <div class="xl:col-span-5 space-y-5">
+                
+                <!-- 1. Global Settings -->
+                <div class="bg-slate-800 p-5 rounded-2xl border border-slate-700 shadow-xl">
+                    <h2 class="text-base font-semibold text-amber-400 mb-3 flex items-center gap-2">
+                        <i class="fa-solid fa-globe"></i> พารามิเตอร์หลัก (Global Settings)
+                    </h2>
+                    <div class="grid grid-cols-2 gap-3 mb-3">
+                        <div>
+                            <label class="block text-xs text-slate-400 mb-1">เงินต้นรวมเริ่มต้น (บาท)</label>
+                            <input type="number" id="init-investment" value="10000000" class="w-full bg-slate-900 border border-slate-700 rounded px-3 py-1.5 text-amber-300 font-semibold focus:outline-none focus:border-amber-500">
+                        </div>
+                        <div>
+                            <label class="block text-xs text-slate-400 mb-1">เงินเฟ้อทั่วไป (%) / ปี</label>
+                            <input type="number" id="inflation-rate" value="2.5" step="0.1" class="w-full bg-slate-900 border border-slate-700 rounded px-3 py-1.5 text-slate-200 focus:outline-none focus:border-amber-500">
+                        </div>
+                    </div>
+                    <div class="border-t border-slate-700 pt-3">
+                        <label class="block text-xs font-semibold text-emerald-400 mb-1 flex items-center gap-2">
+                            <i class="fa-solid fa-scale-balanced"></i> ความถี่การปรับสมดุล (Auto-Rebalance)
+                        </label>
+                        <select id="global-rebalance" class="w-full bg-slate-900 border border-slate-700 rounded px-3 py-1.5 text-sm text-slate-200 focus:outline-none">
+                            <option value="0">ปล่อยไหล (No Rebalance)</option>
+                            <option value="1">ทุก 1 เดือน</option>
+                            <option value="3">ทุก 3 เดือน (ไตรมาส)</option>
+                            <option value="6">ทุก 6 เดือน</option>
+                            <option value="12" selected>ทุก 1 ปี (แนะนำ)</option>
+                            <option value="24">ทุก 2 ปี</option>
+                            <option value="36">ทุก 3 ปี</option>
+                        </select>
+                        <p class="text-[10px] text-slate-400 mt-1">*เมื่อถึงรอบ Rebalance ระบบจะกระจายเงินกลับเข้าพอร์ตย่อยตาม % Target Weight เป้าหมาย</p>
+                    </div>
+                </div>
+
+                <!-- 2. GLOBAL WATERFALL WITHDRAWAL POLICY & PRIORITY (New Institutional Architecture) -->
+                <div class="bg-slate-800 p-5 rounded-2xl border border-slate-700 shadow-xl border-l-4 border-l-amber-500">
+                    <div class="flex justify-between items-center mb-3">
+                        <h2 class="text-base font-bold text-amber-400 flex items-center gap-2">
+                            <i class="fa-solid fa-water font-bold"></i> นโยบายถอนเงินพอร์ตรวม (Global Waterfall)
+                        </h2>
+                        <span class="px-2 py-0.5 rounded text-[10px] font-bold bg-amber-500/20 text-amber-300">Waterfall Priority</span>
+                    </div>
+                    <p class="text-xs text-slate-400 mb-4 leading-relaxed">
+                        ระบบจะรวม **Yield ทั้งหมด** จากทุกพอร์ตย่อยมาจ่ายก่อน หากไม่พอจ่ายจึงจะดึงส่วนขาดจากเงินต้นตาม **ลำดับความสำคัญ (Bucket Priority)**
+                    </p>
+
+                    <!-- Withdrawal Mode Toggles -->
+                    <div class="grid grid-cols-3 gap-1 mb-4">
+                        <button id="global-wd-mode-yield" class="p-2 rounded border text-center transition duration-200 bg-amber-500/20 border-amber-500 text-amber-300 text-[10px] font-bold">ดึงเฉพาะ Total Yield</button>
+                        <button id="global-wd-mode-constant" class="p-2 rounded border text-center transition duration-200 bg-slate-900 border-slate-700 text-slate-400 text-[10px] font-bold">ดึงคงที่สู้เงินเฟ้อ</button>
+                        <button id="global-wd-mode-fixed" class="p-2 rounded border text-center transition duration-200 bg-slate-900 border-slate-700 text-slate-400 text-[10px] font-bold">ระบุยอด (บาท/เดือน)</button>
+                    </div>
+
+                    <!-- Fixed Withdrawal Settings -->
+                    <div id="global-wd-fixed-settings" class="hidden mb-4 bg-slate-900/80 p-3 rounded-xl border border-slate-700">
+                        <div class="grid grid-cols-2 gap-3">
+                            <div>
+                                <label class="block text-[10px] text-slate-400 mb-1">ยอดถอนต่อครั้ง (บาท)</label>
+                                <input type="number" id="global-wd-fixed-amt" value="50000" class="w-full bg-slate-800 border border-slate-600 rounded px-2 py-1 text-xs text-amber-300 font-bold focus:outline-none focus:border-amber-500">
+                            </div>
+                            <div>
+                                <label class="block text-[10px] text-slate-400 mb-1">ความถี่การถอน</label>
+                                <select id="global-wd-freq" class="w-full bg-slate-800 border border-slate-600 rounded px-1 py-1 text-xs text-slate-200 focus:outline-none">
+                                    <option value="1" selected>รายเดือน</option>
+                                    <option value="3">รายไตรมาส</option>
+                                    <option value="6">ทุก 6 เดือน</option>
+                                    <option value="12">รายปี</option>
+                                </select>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="grid grid-cols-2 gap-3 mb-4 bg-slate-900/50 p-2.5 rounded-xl border border-slate-700">
+                        <div>
+                            <label class="block text-[10px] font-semibold text-slate-400 mb-1">เริ่มถอนปีที่</label>
+                            <input type="number" id="global-wd-start-y" value="11" min="1" max="30" class="w-full bg-slate-800 border border-slate-600 rounded px-2 py-1 text-xs text-center text-amber-300 font-bold">
+                        </div>
+                        <div>
+                            <label class="block text-[10px] font-semibold text-slate-400 mb-1">เริ่มถอนเดือนที่</label>
+                            <input type="number" id="global-wd-start-m" value="1" min="1" max="12" class="w-full bg-slate-800 border border-slate-600 rounded px-2 py-1 text-xs text-center text-amber-300 font-bold">
+                        </div>
+                    </div>
+
+                    <!-- Priority Bucket Selling Order -->
+                    <div class="border-t border-slate-700 pt-3">
+                        <label class="block text-xs font-semibold text-purple-300 mb-2 flex items-center gap-1.5">
+                            <i class="fa-solid fa-list-ol"></i> ลำดับพอร์ตสำหรับขายหน่วยลงทุนเมื่อ Yield ไม่พอ (Priority Order)
+                        </label>
+                        <div id="priority-order-container" class="space-y-2">
+                            <!-- Rendered via JS -->
+                        </div>
+                        <p class="text-[9px] text-slate-400 mt-2">*แนะนำ: ตั้งพอร์ตปันผล/สภาพคล่องเป็น Priority 1 และพอร์ตเติบโตสูงเป็น Priority ลำดับสุดท้าย</p>
+                    </div>
+                </div>
+
+                <!-- 3. MULTI-PORTFOLIO MANAGER (Bucket Manager) -->
+                <div class="bg-slate-800 rounded-2xl border border-slate-700 shadow-xl border-t-4 border-t-purple-500 flex flex-col h-auto">
+                    <div class="p-5 pb-0">
+                        <div class="flex justify-between items-center mb-4">
+                            <h2 class="text-base font-bold text-purple-400 flex items-center gap-2">
+                                <i class="fa-solid fa-layer-group"></i> ตัวจัดการพอร์ตย่อย (Bucket Manager)
+                            </h2>
+                            <span id="global-weight-badge" class="px-2 py-1 rounded text-[10px] font-bold bg-green-500/20 text-green-400">น้ำหนักรวม: 100%</span>
+                        </div>
+
+                        <!-- Port Tabs -->
+                        <div class="flex gap-2 mb-4 overflow-x-auto custom-scrollbar pb-2" id="port-tabs-container">
+                            <!-- Rendered via JS -->
+                        </div>
+
+                        <div class="bg-slate-900/50 p-3 rounded-xl border border-slate-700 mb-4 flex justify-between items-center">
+                            <div class="w-1/2">
+                                <label class="block text-[10px] font-semibold text-slate-400 mb-1">ชื่อพอร์ตย่อย</label>
+                                <input type="text" id="port-name-input" class="w-full bg-slate-800 border border-slate-600 rounded px-2 py-1.5 text-xs text-slate-100 focus:outline-none focus:border-purple-500">
+                            </div>
+                            <div class="w-1/3">
+                                <label class="block text-[10px] font-semibold text-slate-400 mb-1">สัดส่วนเป้าหมาย (%)</label>
+                                <input type="number" id="port-weight-input" min="0" max="100" class="w-full bg-slate-800 border border-slate-600 rounded px-2 py-1.5 text-xs text-center text-purple-300 font-bold focus:outline-none focus:border-purple-500">
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="p-5 pt-0">
+                        <!-- Glide Path & Funds Section -->
+                        <div id="panel-glidepath">
+                            <!-- Glide Path Controls -->
+                            <div class="bg-slate-900 p-3 rounded-lg border border-slate-800 mb-3 space-y-2">
+                                <div class="text-[10px] text-slate-400 font-semibold mb-1 border-b border-slate-700 pb-1">การเปลี่ยนเฟสอัตโนมัติ</div>
+                                <div class="flex items-center justify-between">
+                                    <label class="text-xs text-slate-300 flex items-center gap-2">
+                                        <input type="checkbox" checked disabled class="accent-amber-500"> เฟส 1 (เริ่มต้น)
+                                    </label>
+                                    <span class="text-xs text-slate-500">เริ่มปีที่ 1</span>
+                                </div>
+                                <div class="flex items-center justify-between">
+                                    <label class="text-xs text-slate-300 flex items-center gap-2 cursor-pointer">
+                                        <input type="checkbox" id="enable-p2" class="accent-amber-500 cursor-pointer"> เฟส 2
+                                    </label>
+                                    <div class="flex items-center gap-2">
+                                        <span class="text-[10px] text-slate-400">สลับปีที่</span>
+                                        <input type="number" id="start-p2" min="2" class="w-12 bg-slate-800 border border-slate-600 rounded px-1 py-0.5 text-xs text-center text-emerald-400 font-bold disabled:opacity-30">
+                                    </div>
+                                </div>
+                                <div class="flex items-center justify-between">
+                                    <label class="text-xs text-slate-300 flex items-center gap-2 cursor-pointer">
+                                        <input type="checkbox" id="enable-p3" class="accent-amber-500 cursor-pointer disabled:opacity-30"> เฟส 3
+                                    </label>
+                                    <div class="flex items-center gap-2">
+                                        <span class="text-[10px] text-slate-400">สลับปีที่</span>
+                                        <input type="number" id="start-p3" min="3" class="w-12 bg-slate-800 border border-slate-600 rounded px-1 py-0.5 text-xs text-center text-emerald-400 font-bold disabled:opacity-30">
+                                    </div>
+                                </div>
+                                <div class="flex items-center justify-between">
+                                    <label class="text-xs text-slate-300 flex items-center gap-2 cursor-pointer">
+                                        <input type="checkbox" id="enable-p4" class="accent-amber-500 cursor-pointer disabled:opacity-30"> เฟส 4
+                                    </label>
+                                    <div class="flex items-center gap-2">
+                                        <span class="text-[10px] text-slate-400">สลับปีที่</span>
+                                        <input type="number" id="start-p4" min="4" class="w-12 bg-slate-800 border border-slate-600 rounded px-1 py-0.5 text-xs text-center text-emerald-400 font-bold disabled:opacity-30">
+                                    </div>
+                                </div>
+                            </div>
+
+                            <!-- Portfolio Specific DCA -->
+                            <div class="bg-slate-900 p-3 rounded-lg border border-slate-800 mb-3 space-y-2">
+                                <div class="text-[10px] text-emerald-400 font-bold border-b border-slate-700 pb-1 flex items-center gap-1.5">
+                                    <i class="fa-solid fa-download"></i> การลงทุนเพิ่ม (DCA) เฉพาะพอร์ตนี้
+                                </div>
+                                <div class="grid grid-cols-2 gap-2">
+                                    <div>
+                                        <label class="block text-[9px] text-slate-400 mb-0.5">ยอด/ครั้ง (บาท)</label>
+                                        <input type="number" id="port-topup-amt" class="w-full bg-slate-800 border border-slate-600 rounded px-2 py-1 text-xs text-emerald-300 font-bold">
+                                    </div>
+                                    <div>
+                                        <label class="block text-[9px] text-slate-400 mb-0.5">เพิ่ม (%/ปี)</label>
+                                        <input type="number" step="0.1" id="port-topup-growth" class="w-full bg-slate-800 border border-slate-600 rounded px-2 py-1 text-xs text-slate-200">
+                                    </div>
+                                </div>
+                                <div class="grid grid-cols-3 gap-1.5 pt-1">
+                                    <div>
+                                        <label class="block text-[9px] text-slate-400 mb-0.5">ความถี่</label>
+                                        <select id="port-topup-freq" class="w-full bg-slate-800 border border-slate-600 rounded px-1 py-1 text-[10px] text-slate-200">
+                                            <option value="1">รายเดือน</option><option value="3">รายไตรมาส</option><option value="12">รายปี</option>
+                                        </select>
+                                    </div>
+                                    <div>
+                                        <label class="block text-[9px] text-slate-400 mb-0.5">เริ่ม (ปี/ด.)</label>
+                                        <div class="flex gap-1">
+                                            <input type="number" id="port-topup-start-y" class="w-1/2 bg-slate-800 border border-slate-600 rounded px-1 py-0.5 text-[10px] text-center">
+                                            <input type="number" id="port-topup-start-m" class="w-1/2 bg-slate-800 border border-slate-600 rounded px-1 py-0.5 text-[10px] text-center">
+                                        </div>
+                                    </div>
+                                    <div>
+                                        <label class="block text-[9px] text-slate-400 mb-0.5">จบ (ปี/ด.)</label>
+                                        <div class="flex gap-1">
+                                            <input type="number" id="port-topup-end-y" class="w-1/2 bg-slate-800 border border-slate-600 rounded px-1 py-0.5 text-[10px] text-center">
+                                            <input type="number" id="port-topup-end-m" class="w-1/2 bg-slate-800 border border-slate-600 rounded px-1 py-0.5 text-[10px] text-center">
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <!-- Portfolio Rebalance Eligibility -->
+                            <div class="bg-slate-900 p-3 rounded-lg border border-slate-800 mb-3 space-y-2">
+                                <div class="text-[10px] text-purple-400 font-bold border-b border-slate-700 pb-1 flex items-center gap-1.5">
+                                    <i class="fa-solid fa-scale-balanced"></i> เริ่มเข้าสู่รอบ Rebalance ตั้งแต่
+                                </div>
+                                <div class="flex items-center gap-2">
+                                    <label class="text-[9px] text-slate-400 whitespace-nowrap">ปีที่ / เดือนที่</label>
+                                    <input type="number" id="port-rebalance-start-y" min="1" class="w-16 bg-slate-800 border border-slate-600 rounded px-2 py-1 text-xs text-center text-purple-300 font-bold">
+                                    <input type="number" id="port-rebalance-start-m" min="1" max="12" class="w-16 bg-slate-800 border border-slate-600 rounded px-2 py-1 text-xs text-center text-purple-300 font-bold">
+                                    <span class="text-[9px] text-slate-500 flex-1">*ตั้งไกลๆ (เช่นปีที่ 99) หากไม่ต้องการให้พอร์ตนี้ถูก Rebalance เลย</span>
+                                </div>
+                            </div>
+
+                            <!-- Tabs for 4 Phases -->
+                            <div class="flex gap-1 mb-2">
+                                <button id="tab-p1" data-phase="1" class="flex-1 py-1.5 text-[10px] sm:text-xs rounded-t-lg border-t border-l border-r tab-active transition">เฟส 1</button>
+                                <button id="tab-p2" data-phase="2" class="flex-1 py-1.5 text-[10px] sm:text-xs rounded-t-lg border-t border-l border-r tab-inactive transition">เฟส 2</button>
+                                <button id="tab-p3" data-phase="3" disabled class="flex-1 py-1.5 text-[10px] sm:text-xs rounded-t-lg border-t border-l border-r tab-inactive transition">เฟส 3</button>
+                                <button id="tab-p4" data-phase="4" disabled class="flex-1 py-1.5 text-[10px] sm:text-xs rounded-t-lg border-t border-l border-r tab-inactive transition">เฟส 4</button>
+                            </div>
+
+                            <!-- Dynamic Table -->
+                            <div class="overflow-x-auto bg-slate-900 rounded-b-lg border border-slate-700 p-2">
+                                <div class="flex justify-between items-center mb-2 px-1">
+                                    <span id="current-phase-label" class="text-xs font-bold text-amber-300">แก้ไขสัดส่วน: เฟส 1</span>
+                                    <span id="total-weight-badge" class="px-2 py-0.5 rounded text-[10px] font-bold bg-green-500/20 text-green-400">กองทุน 100%</span>
+                                </div>
+                                <table class="w-full text-left text-[11px] text-slate-300">
+                                    <thead>
+                                        <tr class="border-b border-slate-700 text-slate-400">
+                                            <th class="py-1 pr-1 w-1/3">ชื่อกองทุน</th>
+                                            <th class="py-1 w-12 text-center">สัดส่วน%</th>
+                                            <th class="py-1 w-12 text-center">Yield%</th>
+                                            <th class="py-1 w-12 text-center">Growth%</th>
+                                            <th class="py-1 w-12 text-center">S.D.%</th>
+                                            <th class="py-1 w-8 text-center"><i class="fa-solid fa-cog"></i></th>
+                                        </tr>
+                                    </thead>
+                                    <tbody id="fund-rows" class="divide-y divide-slate-800">
+                                    </tbody>
+                                </table>
+                                
+                                <div class="flex justify-between items-center mt-3 px-1">
+                                    <button id="btn-add-fund" class="text-[10px] text-emerald-400 hover:text-emerald-300 transition flex items-center gap-1 font-bold">
+                                        <i class="fa-solid fa-plus-circle"></i> เพิ่มกองทุน
+                                    </button>
+                                    <button id="btn-copy-prev" class="hidden text-[10px] text-blue-400 hover:text-blue-300 transition items-center gap-1 font-bold">
+                                        <i class="fa-solid fa-copy"></i> คัดลอกจากเฟสก่อน
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
+
+                    </div>
+                </div>
+
+            </div>
+
+            <!-- Right Panel: Graphs & Heatmaps (Stacked) -->
+            <div class="xl:col-span-7 space-y-6">
+                
+                <!-- VIEW 1: MONTE CARLO CHART -->
+                <div id="section-mc" class="space-y-5">
+                    <!-- Phase Stats Matrix -->
+                    <div class="bg-slate-800 p-5 rounded-2xl border border-slate-700 shadow-xl">
+                        <div class="flex justify-between items-center mb-3 border-b border-slate-700 pb-2">
+                            <h3 class="text-sm font-semibold text-amber-400 flex items-center gap-2" id="stats-panel-title">
+                                <i class="fa-solid fa-chart-pie"></i> ข้อมูลคาดการณ์ทุกพอร์ต
+                            </h3>
+                            <div class="flex gap-4">
+                                <div class="text-right">
+                                    <span class="text-[10px] text-slate-400 block">โอกาสพอร์ตรวมอยู่รอด</span>
+                                    <span id="metric-survival-rate" class="text-xs font-bold text-cyan-400">-- %</span>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <div class="overflow-x-auto">
+                            <table class="w-full text-left text-xs text-slate-200">
+                                <thead>
+                                    <tr class="text-slate-400 border-b border-slate-700/50">
+                                        <th class="pb-1 font-medium">พอร์ต</th>
+                                        <th class="pb-1 font-medium">เฟส</th>
+                                        <th class="pb-1 font-medium text-center">เริ่ม (ปีที่)</th>
+                                        <th class="pb-1 font-medium text-center">Yield เฉลี่ย</th>
+                                        <th class="pb-1 font-medium text-center">เติบโต</th>
+                                        <th class="pb-1 font-medium text-center">ผลตอบแทนรวม</th>
+                                        <th class="pb-1 font-medium text-center">S.D. พอร์ตจริง</th>
+                                    </tr>
+                                </thead>
+                                <tbody id="phase-metrics-body" class="divide-y divide-slate-800">
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+
+                    <!-- Main Chart -->
+                    <div class="bg-slate-800 p-5 rounded-2xl border border-slate-700 shadow-xl relative">
+                        <!-- Run Button Layer -->
+                        <div class="absolute top-[-15px] right-6 z-10">
+                            <button id="btn-run-mc" class="bg-gradient-to-r from-amber-600 to-orange-500 hover:from-amber-500 hover:to-orange-400 text-white px-5 py-2.5 rounded-xl text-sm font-bold shadow-lg shadow-orange-900/50 transition-all flex items-center gap-2 border border-orange-400/30">
+                                <i class="fa-solid fa-play"></i> ประมวลผลกราฟ (Run Simulation)
+                            </button>
+                        </div>
+                        
+                        <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center mb-4 gap-3 mt-2">
+                            <div>
+                                <h2 class="text-base font-semibold text-slate-100 flex items-center gap-2">
+                                    <i class="fa-solid fa-chart-line text-amber-500"></i> วิถีความมั่งคั่ง 30 ปี (หักเงินเฟ้อ)
+                                </h2>
+                                
+                                <!-- Chart Controls -->
+                                <div class="flex flex-col gap-2 mt-2">
+                                    <div class="flex flex-wrap items-center gap-2">
+                                        <select id="chart-port-selector" class="bg-slate-900 border border-slate-600 rounded px-2 py-1 text-[11px] text-purple-300 font-bold focus:outline-none">
+                                            <!-- Rendered via JS -->
+                                        </select>
+                                        <span class="text-[10px] text-slate-400 ml-2">แสดงผลปีที่:</span>
+                                        <input type="number" id="chart-start-y" value="1" min="1" max="30" class="w-12 bg-slate-900 border border-slate-600 rounded px-1 py-0.5 text-xs text-center text-slate-200">
+                                        <span class="text-[10px] text-slate-400">ถึง</span>
+                                        <input type="number" id="chart-end-y" value="30" min="1" max="30" class="w-12 bg-slate-900 border border-slate-600 rounded px-1 py-0.5 text-xs text-center text-slate-200">
+                                    </div>
+                                    
+                                    <!-- Chart Type Toggles -->
+                                    <div class="flex items-center gap-2">
+                                        <div class="flex items-center gap-1 bg-slate-900 p-1 rounded-lg border border-slate-700 w-max">
+                                            <button id="view-type-line" class="px-2 py-1 text-[10px] rounded bg-purple-500/20 text-purple-300 font-bold transition">📉 กราฟเส้น (1,000 Paths)</button>
+                                            <button id="view-type-bar" class="px-2 py-1 text-[10px] rounded text-slate-400 hover:text-slate-200 transition">📊 กราฟแท่ง (แยกสัดส่วน)</button>
+                                        </div>
+                                        <div id="bar-tooltip-toggle" class="hidden items-center gap-1 bg-slate-900 p-1 rounded-lg border border-slate-700 w-max">
+                                            <span class="text-[10px] text-slate-400 pl-1 mr-1">เมื่อ Hover แสดง:</span>
+                                            <button id="tt-type-amt" class="px-2 py-1 text-[10px] rounded bg-emerald-500/20 text-emerald-300 font-bold transition">฿ จำนวนเงิน</button>
+                                            <button id="tt-type-pct" class="px-2 py-1 text-[10px] rounded text-slate-400 hover:text-slate-200 transition">% สัดส่วน</button>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                            
+                            <div class="flex flex-col items-end gap-2 mt-4 sm:mt-0">
+                                <div class="flex items-center gap-1 bg-slate-900 p-1 rounded-lg border border-slate-700">
+                                    <button id="sim-mc-trad" class="px-2 py-1 text-[10px] rounded bg-amber-500/20 text-amber-300 font-bold transition">แบบปกติ</button>
+                                    <button id="sim-mc-gbm" class="px-2 py-1 text-[10px] rounded text-slate-400 hover:text-slate-200 transition">GBM</button>
+                                    <button id="sim-mc-volcluster" class="px-2 py-1 text-[10px] rounded text-slate-400 hover:text-slate-200 transition">Vol. Cluster</button>
+                                </div>
+                                <div id="status-badge" class="text-[10px] bg-slate-900 py-1 px-2 rounded text-slate-400 font-medium">
+                                    รอการกด Run Simulation...
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <div class="h-72 w-full mt-2">
+                            <canvas id="portfolioChart"></canvas>
+                        </div>
+                        <p id="chart-note-text" class="text-[10px] text-slate-400 mt-3 text-center italic">
+                            * เส้น <span class="text-purple-400 font-bold">Random Path</span> คือการจำลองสุ่ม 1 เส้นทางจาก 1,000 รูปแบบ ที่มีการ Rebalance และ Waterfall ถอนเงินตามลำดับ
+                        </p>
+                    </div>
+                    
+                    <!-- Cash Flow Outcomes -->
+                    <div class="bg-slate-800 p-5 rounded-2xl border border-slate-700 shadow-xl">
+                        <h2 class="text-base font-semibold text-slate-100 mb-3 flex items-center gap-2">
+                            <i class="fa-solid fa-money-bill-trend-up text-emerald-500"></i> กระแสเงินสดเฉลี่ยที่จะได้รับสุทธิ (รวมทุกพอร์ต)
+                        </h2>
+                        
+                        <div class="grid grid-cols-2 md:grid-cols-4 gap-3 mb-3">
+                            <div class="bg-slate-900/60 p-2.5 rounded-lg text-center border border-slate-800">
+                                <span class="text-[10px] text-slate-400 block">ปีที่ 1</span>
+                                <span id="cf-year-1" class="text-sm font-bold text-amber-300">--</span>
+                            </div>
+                            <div class="bg-slate-900/60 p-2.5 rounded-lg text-center border border-slate-800">
+                                <span class="text-[10px] text-slate-400 block">ปีที่ 10</span>
+                                <span id="cf-year-10" class="text-sm font-bold text-amber-300">--</span>
+                            </div>
+                            <div class="bg-slate-900/60 p-2.5 rounded-lg text-center border border-slate-800">
+                                <span class="text-[10px] text-slate-400 block">ปีที่ 20</span>
+                                <span id="cf-year-20" class="text-sm font-bold text-amber-300">--</span>
+                            </div>
+                            <div class="bg-slate-900/60 p-2.5 rounded-lg text-center border border-slate-800">
+                                <span class="text-[10px] text-slate-400 block">ปีที่ 30</span>
+                                <span id="cf-year-30" class="text-sm font-bold text-amber-300">--</span>
+                            </div>
+                        </div>
+                        
+                        <div class="bg-slate-900 p-3 rounded-xl border border-slate-800">
+                            <div class="flex justify-between items-center text-xs text-slate-300 mb-1">
+                                <span>ถอนสะสมรวม: <span id="total-cf-withdrawn" class="font-bold text-amber-400 text-sm ml-2">-- บาท</span></span>
+                                <span>ทุนที่ใส่ไปจริง (รวม DCA): <span id="metric-total-capital" class="font-bold text-slate-300 text-sm ml-2">-- บาท</span></span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- VIEW 2: HEATMAP (Global Stress Test) -->
+                <div id="section-heatmap" class="bg-slate-800 p-5 rounded-2xl border border-slate-700 shadow-xl border-l-4 border-l-amber-500">
+                    <div class="mb-4 flex flex-col xl:flex-row xl:items-start justify-between gap-4">
+                        <div>
+                            <h2 class="text-lg font-bold text-amber-400 flex items-center gap-2">
+                                <i class="fa-solid fa-fire"></i> Withdrawal Sustainability Heatmap
+                            </h2>
+                            <p class="text-xs text-slate-400 mt-2 leading-relaxed">
+                                ทดสอบ Stress Test: หากบังคับถอนยอดนี้ผ่านกลไก Global Waterfall ทันทีตั้งแต่ปีแรก ภายใต้แผน DCA และ Rebalance ปัจจุบัน โอกาสรอดคือเท่าใด (พร้อมเทียบกับกรณีเงินก้อนเดียวกันฝากอัตราคงที่แทนการลงทุน)
+                            </p>
+                            <div class="mt-3 flex items-center gap-2">
+                                <label class="text-xs text-slate-300 whitespace-nowrap">อัตราถอนเป้าหมาย (% หรือ บาท/เดือน):</label>
+                                <input type="text" id="heatmap-rates" value="3%, 4%, 50000, 100000" class="bg-slate-900 border border-slate-700 rounded px-2 py-1.5 text-xs text-amber-300 w-full xl:w-64 focus:outline-none focus:border-amber-500 font-bold">
+                            </div>
+                            <div class="mt-2 flex items-center gap-2">
+                                <label class="text-xs text-slate-300 whitespace-nowrap">เทียบกับเงินฝากอัตราคงที่ (Fixed Deposit % ต่อปี):</label>
+                                <input type="number" step="0.1" id="heatmap-benchmark-rate" value="1.5" class="bg-slate-900 border border-slate-700 rounded px-2 py-1.5 text-xs text-cyan-300 w-24 focus:outline-none focus:border-cyan-500 font-bold">
+                            </div>
+                            <div class="mt-3">
+                                <label class="text-[10px] text-slate-400 block mb-1">จังหวะเริ่มถอนที่ใช้ทดสอบ</label>
+                                <div class="flex items-center gap-1 bg-slate-900 p-1 rounded-lg border border-slate-700 w-max">
+                                    <button id="hm-wd-immediate" class="px-2 py-1 text-[10px] rounded bg-amber-500/20 text-amber-300 font-bold transition">⚡ Stress ทันที (เดือนที่ 1)</button>
+                                    <button id="hm-wd-planned" class="px-2 py-1 text-[10px] rounded text-slate-400 hover:text-slate-200 transition">📅 ตามแผนจริง (Global Waterfall)</button>
+                                </div>
+                                <p id="hm-wd-mode-note" class="text-[9px] text-slate-500 mt-1.5 leading-relaxed">
+                                    โหมดนี้บังคับถอนทันทีตั้งแต่เดือนที่ 1 โดยไม่สนใจ "เริ่มถอนปีที่/เดือนที่" ที่ตั้งไว้ในฝั่ง Global Waterfall — เหมาะสำหรับทดสอบสถานการณ์ฉุกเฉิน (เช่น ตกงาน) ไม่ใช่แผนที่วางไว้จริง
+                                </p>
+                            </div>
+                        </div>
+                        
+                        <div class="flex flex-col gap-2 xl:items-end">
+                            <div class="flex items-center gap-1 bg-slate-900 p-1 rounded-lg border border-slate-700 w-max">
+                                <button id="sim-hm-trad" class="px-2 py-1 text-[10px] rounded bg-amber-500/20 text-amber-300 font-bold transition">แบบปกติ</button>
+                                <button id="sim-hm-gbm" class="px-2 py-1 text-[10px] rounded text-slate-400 hover:text-slate-200 transition">GBM</button>
+                                <button id="sim-hm-volcluster" class="px-2 py-1 text-[10px] rounded text-slate-400 hover:text-slate-200 transition">Vol. Cluster</button>
+                            </div>
+                            <button id="btn-run-heatmap" class="bg-amber-600 hover:bg-amber-500 text-white px-4 py-2 rounded-lg text-xs font-bold transition w-max">
+                                <i class="fa-solid fa-play"></i> Run Analysis
+                            </button>
+                        </div>
+                    </div>
+
+                    <div class="overflow-x-auto mt-6">
+                        <table class="w-full text-center text-sm border-collapse border border-slate-700">
+                            <thead>
+                                <tr class="bg-slate-900">
+                                    <th class="border border-slate-700 p-3 text-slate-300 font-semibold w-1/4">อัตรา/ยอดถอน (ต่อปี/เดือน)</th>
+                                    <th class="border border-slate-700 p-3 text-slate-300 font-semibold">20 ปี</th>
+                                    <th class="border border-slate-700 p-3 text-slate-300 font-semibold">30 ปี</th>
+                                    <th class="border border-slate-700 p-3 text-slate-300 font-semibold">40 ปี</th>
+                                </tr>
+                            </thead>
+                            <tbody id="heatmap-body">
+                                <tr><td colspan="4" class="p-8 text-slate-500 text-xs text-center">คลิกปุ่ม "Run Analysis" หรือแก้ไขตัวเลขเพื่อประมวลผลใหม่</td></tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+
+            </div>
+
+        </div>
+    </div>
+
+    <!-- AI Advisor Modal -->
+    <div id="ai-modal" class="fixed inset-0 z-50 hidden">
+        <div class="absolute inset-0 bg-slate-950/80 backdrop-blur-sm" id="ai-modal-bg"></div>
+        <div class="absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 w-11/12 max-w-3xl max-h-[85vh] bg-slate-900 border border-purple-500/30 rounded-2xl shadow-2xl shadow-purple-900/20 flex flex-col">
+            <div class="flex items-center justify-between p-4 border-b border-slate-800">
+                <h3 class="text-lg font-bold text-transparent bg-clip-text bg-gradient-to-r from-purple-400 to-indigo-400 flex items-center gap-2">
+                    <i class="fa-solid fa-robot"></i> ผู้ช่วย AI วิเคราะห์แผนเกษียณ (Global Waterfall)
+                </h3>
+                <button id="btn-close-ai" class="text-slate-400 hover:text-white transition px-2 py-1">
+                    <i class="fa-solid fa-times text-xl"></i>
+                </button>
+            </div>
+            
+            <div class="p-6 overflow-y-auto custom-scrollbar flex-1 relative">
+                <div id="ai-loading" class="flex flex-col items-center justify-center py-12 hidden">
+                    <i class="fa-solid fa-circle-notch fa-spin text-4xl text-purple-500 mb-4"></i>
+                    <p class="text-purple-300 font-semibold animate-pulse">กำลังส่งข้อมูลพอร์ตและ Waterfall Policy ให้ Gemini ประมวลผล...</p>
+                </div>
+                <div id="ai-error" class="bg-red-900/20 border border-red-500/30 rounded-xl p-4 text-center hidden">
+                    <i class="fa-solid fa-triangle-exclamation text-red-400 text-3xl mb-2"></i>
+                    <p class="text-red-300 text-sm" id="ai-error-text">เกิดข้อผิดพลาดในการเชื่อมต่อ API</p>
+                </div>
+                <div id="ai-response-content" class="ai-content hidden"></div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Data Templates
+        const templatePhase1 = [
+            { id: 1, name: "MAUTOCALL-UH", weight: 10, yield: 5.5, capGain: 1.0, sd: 8.0 },
+            { id: 2, name: "ASP-AAA-R", weight: 10, yield: 1.8, capGain: 0.2, sd: 1.5 },
+            { id: 3, name: "ES-GAINCOME-RP", weight: 20, yield: 3.5, capGain: 1.5, sd: 5.5 },
+            { id: 4, name: "KF-INCOME", weight: 10, yield: 3.2, capGain: 1.2, sd: 5.0 },
+            { id: 5, name: "KF-SINCOME-FX-R", weight: 10, yield: 2.5, capGain: 0.5, sd: 3.0 },
+            { id: 6, name: "MGALL-UH", weight: 40, yield: 0.8, capGain: 6.5, sd: 14.0 }
+        ];
+        const templatePhase2 = [
+            { id: 1, name: "MAUTOCALL-UH", weight: 10, yield: 5.5, capGain: 1.0, sd: 8.0 },
+            { id: 2, name: "ASP-AAA-R", weight: 40, yield: 1.8, capGain: 0.2, sd: 1.5 },
+            { id: 3, name: "ES-GAINCOME-RP", weight: 20, yield: 3.5, capGain: 1.5, sd: 5.5 },
+            { id: 4, name: "KF-INCOME", weight: 20, yield: 3.2, capGain: 1.2, sd: 5.0 },
+            { id: 5, name: "KF-SINCOME-FX-R", weight: 10, yield: 2.5, capGain: 0.5, sd: 3.0 }
+        ];
+
+        // Portfolio State
+        let portfolios = [
+            {
+                id: 1,
+                name: "พอร์ต 1 (ปันผล/สภาพคล่อง)",
+                allocWeight: 40,
+                topup: { amount: 20000, growth: 3.0, freq: 1, startY: 1, startM: 1, endY: 10, endM: 12 },
+                rebalance: { startY: 1, startM: 1 },
+                phaseSettings: { 1: { enabled: true, startYear: 1 }, 2: { enabled: true, startYear: 11 }, 3: { enabled: false, startYear: 20 }, 4: { enabled: false, startYear: 25 } },
+                fundsData: { 1: JSON.parse(JSON.stringify(templatePhase1)), 2: JSON.parse(JSON.stringify(templatePhase2)), 3: JSON.parse(JSON.stringify(templatePhase2)), 4: JSON.parse(JSON.stringify(templatePhase2)) }
+            },
+            {
+                id: 2,
+                name: "พอร์ต 2 (เติบโตปานกลาง)",
+                allocWeight: 60,
+                topup: { amount: 30000, growth: 3.0, freq: 1, startY: 1, startM: 1, endY: 10, endM: 12 },
+                rebalance: { startY: 1, startM: 1 },
+                phaseSettings: { 1: { enabled: true, startYear: 1 }, 2: { enabled: true, startYear: 11 }, 3: { enabled: false, startYear: 20 }, 4: { enabled: false, startYear: 25 } },
+                fundsData: { 1: JSON.parse(JSON.stringify(templatePhase1)), 2: JSON.parse(JSON.stringify(templatePhase2)), 3: JSON.parse(JSON.stringify(templatePhase2)), 4: JSON.parse(JSON.stringify(templatePhase2)) }
+            }
+        ];
+
+        // NEW: Global Waterfall Withdrawal Configuration & Priority Order
+        let globalWithdrawal = {
+            mode: "yield_only", // "yield_only", "constant", "fixed_baht"
+            fixedAmt: 50000,
+            freq: 1,
+            startY: 11,
+            startM: 1,
+            priorityOrder: [1, 2] // Default liquidation priority: Port 1 then Port 2
+        };
+
+        let activePortId = 1;
+        let currentEditingPhase = 1; 
+        
+        let portfolioChartInstance = null;
+        let chartSimMethod = 'traditional';
+        let heatmapSimMethod = 'traditional';
+        let heatmapWithdrawalMode = 'immediate'; // 'immediate' or 'planned'
+        
+        let currentChartView = 'line'; // 'line' or 'bar'
+        let currentTooltipType = 'amt'; // 'amt' or 'pct'
+        
+        let hasRunOnce = false;
+
+        // Stores
+        let globalExportData = { resultsByYear: {}, randomPaths: {}, cashflows: {}, allActivePhaseMaps: {} };
+        let globalDriftData = { total: [], ports: {} };
+
+        const barColors = ['#3b82f6', '#10b981', '#f59e0b', '#ef4444', '#8b5cf6', '#ec4899', '#06b6d4', '#f97316', '#6366f1', '#14b8a6'];
+
+        // --- MATH: Covariance & Risk Engine ---
+        function classifyAsset(sd) {
+            if (sd >= 8.0) return 'Equity';
+            if (sd <= 4.0) return 'Bond';
+            return 'Mixed';
+        }
+        function getCorrelation(typeA, typeB) {
+            if (typeA === 'Equity' && typeB === 'Equity') return 0.80;
+            if (typeA === 'Bond' && typeB === 'Bond') return 0.60;
+            if (typeA === 'Mixed' && typeB === 'Mixed') return 0.70;
+            if ((typeA === 'Equity' && typeB === 'Bond') || (typeA === 'Bond' && typeB === 'Equity')) return -0.10;
+            if ((typeA === 'Equity' && typeB === 'Mixed') || (typeA === 'Mixed' && typeB === 'Equity')) return 0.70;
+            if ((typeA === 'Bond' && typeB === 'Mixed') || (typeA === 'Mixed' && typeB === 'Bond')) return 0.40;
+            return 0.30;
+        }
+
+        function calculatePhaseStats(funds) {
+            const totalW = funds.reduce((s, f) => s + f.weight, 0);
+            if(totalW <= 0) return { yield: 0, growth: 0, sd: 0, totalR: 0, valid: false };
+
+            let y = 0, g = 0;
+            const normW = [];
+            
+            funds.forEach(f => {
+                const w = f.weight / totalW;
+                normW.push(w);
+                y += w * (f.yield / 100);
+                g += w * (f.capGain / 100);
+            });
+
+            let varSum = 0;
+            for(let i=0; i<funds.length; i++) {
+                for(let j=0; j<funds.length; j++) {
+                    const typeA = classifyAsset(funds[i].sd);
+                    const typeB = classifyAsset(funds[j].sd);
+                    const corr = (i === j) ? 1.0 : getCorrelation(typeA, typeB);
+                    const sd_i = funds[i].sd / 100;
+                    const sd_j = funds[j].sd / 100;
+                    varSum += normW[i] * normW[j] * sd_i * sd_j * corr;
+                }
+            }
+            const trueSd = Math.sqrt(varSum);
+            return { yield: y, growth: g, sd: trueSd, totalR: y + g, valid: true };
+        }
+
+        function randomNormal(mean, stdDev) {
+            let u = 0, v = 0;
+            while(u === 0) u = Math.random();
+            while(v === 0) v = Math.random();
+            return (Math.sqrt(-2.0 * Math.log(u)) * Math.cos(2.0 * Math.PI * v)) * stdDev + mean;
+        }
+
+        // Escapes user-entered text (portfolio/fund names) before it is concatenated into
+        // innerHTML strings or HTML attribute values, so a name containing <, >, &, " or '
+        // renders as literal text instead of being parsed as markup/breaking out of an
+        // attribute. Used everywhere pt.name / fund.name is interpolated into HTML.
+        function escapeHtml(str) {
+            return String(str)
+                .replace(/&/g, '&amp;')
+                .replace(/</g, '&lt;')
+                .replace(/>/g, '&gt;')
+                .replace(/"/g, '&quot;')
+                .replace(/'/g, '&#39;');
+        }
+
+        // =========================================================================
+        // CROSS-PORTFOLIO CORRELATION (shared by all 3 simulation engines)
+        // Previously: Engine 1 & Heatmap shared one random shock across every portfolio
+        // (implicit correlation = 1.0), while the Drift Visualizer drew a fully
+        // independent shock per portfolio (implicit correlation = 0.0). Neither matched
+        // the correlation model already used to combine funds within a single portfolio
+        // (classifyAsset + getCorrelation). This section reuses that same model at the
+        // portfolio level and generates properly-correlated monthly shocks everywhere.
+        // =========================================================================
+
+        function choleskyDecomposition(matrix) {
+            const n = matrix.length;
+            const L = Array.from({ length: n }, () => new Array(n).fill(0));
+            for (let i = 0; i < n; i++) {
+                for (let j = 0; j <= i; j++) {
+                    let sum = 0;
+                    for (let k = 0; k < j; k++) sum += L[i][k] * L[j][k];
+                    if (i === j) {
+                        // Clamp to 0 as a safety net: a matrix built from discrete
+                        // Equity/Bond/Mixed correlation lookups isn't guaranteed to be
+                        // perfectly positive semi-definite for >2 portfolios. Clamping
+                        // degrades gracefully (slightly understates correlation) instead
+                        // of producing NaN.
+                        L[i][j] = Math.sqrt(Math.max(matrix[i][i] - sum, 0));
+                    } else {
+                        L[i][j] = (L[j][j] !== 0) ? (matrix[i][j] - sum) / L[j][j] : 0;
+                    }
+                }
+            }
+            return L;
+        }
+
+        function buildPortfolioCorrelationMatrix(portfolios, allStats, allActivePhaseMaps, m) {
+            const types = portfolios.map(pt => {
+                const phase = allActivePhaseMaps[pt.id][m];
+                const s = allStats[pt.id] && allStats[pt.id][phase];
+                return classifyAsset((s && s.valid ? s.sd : 0) * 100);
+            });
+            const n = portfolios.length;
+            const M = Array.from({ length: n }, () => new Array(n).fill(0));
+            for (let i = 0; i < n; i++) {
+                for (let j = 0; j < n; j++) {
+                    M[i][j] = (i === j) ? 1.0 : getCorrelation(types[i], types[j]);
+                }
+            }
+            return M;
+        }
+
+        // Returns an array of correlated standard-normal shocks, aligned index-for-index
+        // with the `portfolios` array. `choleskyCache` should be a plain object created
+        // once per simulation run (outside the path loop) and passed in on every call so
+        // the (path-independent) correlation structure is computed once per month, not
+        // once per path per month.
+        function getCorrelatedShocks(portfolios, allStats, allActivePhaseMaps, m, choleskyCache) {
+            let L = choleskyCache[m];
+            if (!L) {
+                const M = buildPortfolioCorrelationMatrix(portfolios, allStats, allActivePhaseMaps, m);
+                L = choleskyDecomposition(M);
+                choleskyCache[m] = L;
+            }
+            const n = portfolios.length;
+            const independentZ = new Array(n);
+            for (let i = 0; i < n; i++) independentZ[i] = randomNormal(0, 1);
+            const correlatedZ = new Array(n).fill(0);
+            for (let i = 0; i < n; i++) {
+                let sum = 0;
+                for (let k = 0; k <= i; k++) sum += L[i][k] * independentZ[k];
+                correlatedZ[i] = sum;
+            }
+            return correlatedZ;
+        }
+
+        // Blend several {weight, yield, growth, sd} items (yield/growth/sd as decimals,
+        // e.g. 0.05 for 5%) into one combined statistic, accounting for correlation
+        // between them via the same classifyAsset/getCorrelation model. Used to build the
+        // "weighted overview" row across portfolios in the Phase Stats Matrix.
+        function blendWeightedStats(items) {
+            const totalW = items.reduce((s, it) => s + it.weight, 0);
+            if (totalW <= 0) return { yield: 0, growth: 0, sd: 0, totalR: 0, valid: false };
+            const normW = items.map(it => it.weight / totalW);
+            let y = 0, g = 0;
+            items.forEach((it, i) => { y += normW[i] * it.yield; g += normW[i] * it.growth; });
+
+            let varSum = 0;
+            for (let i = 0; i < items.length; i++) {
+                for (let j = 0; j < items.length; j++) {
+                    const typeA = classifyAsset(items[i].sd * 100);
+                    const typeB = classifyAsset(items[j].sd * 100);
+                    const corr = (i === j) ? 1.0 : getCorrelation(typeA, typeB);
+                    varSum += normW[i] * normW[j] * items[i].sd * items[j].sd * corr;
+                }
+            }
+            return { yield: y, growth: g, sd: Math.sqrt(varSum), totalR: y + g, valid: true };
+        }
+
+        // Whether a portfolio has reached its own configured rebalance start date yet.
+        function isRebalanceEligible(pt, m) {
+            const rb = pt.rebalance || { startY: 1, startM: 1 };
+            const startM = (rb.startY - 1) * 12 + rb.startM;
+            return m >= startM;
+        }
+
+        // Deterministic "what if this money just sat in a fixed-rate deposit instead"
+        // benchmark for the Withdrawal Sustainability Heatmap. No volatility, so a single
+        // pass is enough (no Monte Carlo needed) — returns the month it runs out, or null
+        // if it survives the whole horizon. Receives the same DCA top-ups as the real
+        // portfolios, so the comparison isolates "value of investing" from "value of the
+        // extra cash injected". `startWdM` lets withdrawal begin later than month 1 (for the
+        // "ตามแผนจริง" mode); when isPercent, the % base is captured off the FD balance at
+        // that start month (not today's principal), mirroring how "constant" mode captures
+        // its base in the main engine. `inflationOffset` controls the inflation exponent
+        // (0 preserves the original "immediate" convention of using raw month `m`; passing
+        // startWdM switches to "months since withdrawal started", matching the main engine).
+        function computeFixedDepositDepletionMonth(initPrincipal, benchmarkRateAnnual, isPercent, rawValue, infMonthly, maxMonths, startWdM, inflationOffset, portfolios) {
+            let fdVal = initPrincipal;
+            const fdMonthlyRate = Math.pow(1 + benchmarkRateAnnual / 100, 1/12) - 1;
+            let wdBaseAnnualTotal = isPercent ? null : (rawValue * 12);
+
+            for (let m = 1; m <= maxMonths; m++) {
+                fdVal *= (1 + fdMonthlyRate);
+
+                portfolios.forEach(pt => {
+                    const startTopupM = (pt.topup.startY - 1) * 12 + pt.topup.startM;
+                    const endTopupM = (pt.topup.endY - 1) * 12 + pt.topup.endM;
+                    if (pt.topup.amount > 0 && m >= startTopupM && m <= endTopupM && (m - startTopupM) % pt.topup.freq === 0) {
+                        let amt = pt.topup.amount;
+                        const yrs = Math.floor((m - 1) / 12);
+                        if (yrs > 0) amt *= Math.pow(1 + pt.topup.growth / 100, yrs);
+                        fdVal += amt;
+                    }
+                });
+
+                if (m < startWdM) continue;
+                if (wdBaseAnnualTotal === null) wdBaseAnnualTotal = fdVal * (rawValue / 100);
+
+                const mWithdrawal = (wdBaseAnnualTotal * Math.pow(1 + infMonthly, m - inflationOffset)) / 12;
+                fdVal -= mWithdrawal;
+                if (fdVal <= 0) return m;
+            }
+            return null; // survived the whole horizon
+        }
+
+        // --- STREAMING_CHUNK:Binding UI events and priority controls... ---
+        document.addEventListener("DOMContentLoaded", () => {
+            setupUIEventListeners();
+            renderPortTabs();
+            renderPriorityOrderUI();
+            renderChartPortOptions();
+            syncActivePortUI();
+            updatePhaseStatsTable();
+        });
+
+        function updatePhaseStatsTable() {
+            const allStats = {};
+            portfolios.forEach(pt => {
+                allStats[pt.id] = {};
+                [1, 2, 3, 4].forEach(i => { allStats[pt.id][i] = calculatePhaseStats(pt.fundsData[i]); });
+            });
+            const tbodyStats = document.getElementById("phase-metrics-body");
+            tbodyStats.innerHTML = "";
+
+            const totalW = portfolios.reduce((s, p) => s + (parseFloat(p.allocWeight) || 0), 0);
+
+            [1, 2, 3, 4].forEach(i => {
+                // Only portfolios that both enabled this phase AND have a valid fund mix in it.
+                const rowsForPhase = portfolios
+                    .map((pt, idx) => ({ pt, idx, s: allStats[pt.id][i] }))
+                    .filter(({ pt, s }) => pt.phaseSettings[i].enabled && s.valid);
+
+                if (rowsForPhase.length === 0) return;
+
+                rowsForPhase.forEach(({ pt, idx, s }) => {
+                    const color = barColors[idx % barColors.length];
+                    tbodyStats.innerHTML += `
+                        <tr>
+                            <td class="py-1.5">
+                                <span class="inline-flex items-center gap-1.5 text-[10px] font-semibold" style="color:${color}">
+                                    <span class="w-2 h-2 rounded-full inline-block" style="background:${color}"></span>${escapeHtml(pt.name)}
+                                </span>
+                            </td>
+                            <td class="py-1.5"><span class="bg-amber-900/40 border border-amber-700/50 text-amber-300 px-2 py-0.5 rounded text-[10px] font-bold">เฟส ${i}</span></td>
+                            <td class="py-1.5 text-center text-slate-300">ปีที่ ${pt.phaseSettings[i].startYear}</td>
+                            <td class="py-1.5 text-center font-semibold text-amber-400">${(s.yield*100).toFixed(2)}%</td>
+                            <td class="py-1.5 text-center font-semibold text-emerald-400">${(s.growth*100).toFixed(2)}%</td>
+                            <td class="py-1.5 text-center font-bold text-slate-200">${(s.totalR*100).toFixed(2)}%</td>
+                            <td class="py-1.5 text-center text-orange-300">${(s.sd*100).toFixed(2)}%</td>
+                        </tr>
+                    `;
+                });
+
+                // Weighted overview row: blends every participating portfolio's phase-i stats
+                // by its allocation weight, accounting for correlation between portfolios
+                // (same classifyAsset/getCorrelation model used everywhere else) so the S.D.
+                // shown here isn't just a naive (and misleadingly high) weighted average.
+                const blendItems = rowsForPhase.map(({ pt, s }) => ({
+                    weight: (parseFloat(pt.allocWeight) || 0) / (totalW || 1),
+                    yield: s.yield, growth: s.growth, sd: s.sd
+                }));
+                const overview = blendWeightedStats(blendItems);
+                if (overview.valid) {
+                    tbodyStats.innerHTML += `
+                        <tr class="bg-slate-900/60 border-t border-slate-700">
+                            <td class="py-1.5" colspan="2"><span class="text-[10px] font-bold text-purple-300"><i class="fa-solid fa-scale-balanced"></i> ภาพรวม (ถ่วงน้ำหนัก)</span></td>
+                            <td class="py-1.5 text-center text-slate-500">--</td>
+                            <td class="py-1.5 text-center font-semibold text-amber-400">${(overview.yield*100).toFixed(2)}%</td>
+                            <td class="py-1.5 text-center font-semibold text-emerald-400">${(overview.growth*100).toFixed(2)}%</td>
+                            <td class="py-1.5 text-center font-bold text-slate-200">${(overview.totalR*100).toFixed(2)}%</td>
+                            <td class="py-1.5 text-center text-orange-300">${(overview.sd*100).toFixed(2)}%</td>
+                        </tr>
+                    `;
+                }
+            });
+        }
+
+        function markDirty() {
+            updatePhaseStatsTable();
+            document.getElementById('status-badge').innerHTML = '⚠️ ค่าเปลี่ยนแปลง กรุณากด Run ใหม่';
+            document.getElementById('status-badge').className = 'text-[10px] bg-red-900/40 py-1 px-2 rounded text-red-400 font-bold border border-red-500/30';
+        }
+
+        function renderPriorityOrderUI() {
+            const container = document.getElementById("priority-order-container");
+            container.innerHTML = "";
+
+            // Ensure priority order contains all portfolios
+            const existingIds = portfolios.map(p => p.id);
+            globalWithdrawal.priorityOrder = globalWithdrawal.priorityOrder.filter(id => existingIds.includes(id));
+            existingIds.forEach(id => {
+                if (!globalWithdrawal.priorityOrder.includes(id)) globalWithdrawal.priorityOrder.push(id);
+            });
+
+            globalWithdrawal.priorityOrder.forEach((portId, index) => {
+                const pt = portfolios.find(p => p.id === portId);
+                if (!pt) return;
+
+                const item = document.createElement("div");
+                item.className = "flex items-center justify-between bg-slate-900 p-2 rounded-lg border border-slate-700";
+                item.innerHTML = `
+                    <div class="flex items-center gap-2">
+                        <span class="w-5 h-5 rounded-full bg-purple-500/20 text-purple-300 text-[10px] font-bold flex items-center justify-center border border-purple-500/30">${index + 1}</span>
+                        <span class="text-xs font-semibold text-slate-200">${escapeHtml(pt.name)}</span>
+                        <span class="text-[10px] text-purple-400">(${pt.allocWeight}%)</span>
+                    </div>
+                    <div class="flex gap-1">
+                        ${index > 0 ? `<button class="text-slate-400 hover:text-amber-400 px-1 text-xs" onclick="movePriority(${index}, -1)"><i class="fa-solid fa-arrow-up"></i></button>` : ''}
+                        ${index < globalWithdrawal.priorityOrder.length - 1 ? `<button class="text-slate-400 hover:text-amber-400 px-1 text-xs" onclick="movePriority(${index}, 1)"><i class="fa-solid fa-arrow-down"></i></button>` : ''}
+                    </div>
+                `;
+                container.appendChild(item);
+            });
+        }
+
+        function movePriority(index, direction) {
+            const newIndex = index + direction;
+            if (newIndex < 0 || newIndex >= globalWithdrawal.priorityOrder.length) return;
+            const temp = globalWithdrawal.priorityOrder[index];
+            globalWithdrawal.priorityOrder[index] = globalWithdrawal.priorityOrder[newIndex];
+            globalWithdrawal.priorityOrder[newIndex] = temp;
+            renderPriorityOrderUI();
+            markDirty();
+        }
+
+        function setupUIEventListeners() {
+            ["init-investment", "inflation-rate", "global-rebalance"].forEach(id => {
+                document.getElementById(id).addEventListener("input", markDirty);
+            });
+
+            // MAIN RUN BUTTON (Triggers both engines)
+            document.getElementById('btn-run-mc').addEventListener('click', () => {
+                const btn = document.getElementById('btn-run-mc');
+                const originalHtml = btn.innerHTML;
+                btn.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i> กำลังคำนวณ Waterfall & 1,100 Paths...';
+                
+                setTimeout(() => {
+                    runSimulation(); // Engine 1: 1000 Paths with Global Waterfall & Rebalance
+                    runDriftVisualizer(); // Engine 2: 100 Paths Pure Drift
+                    hasRunOnce = true;
+                    renderPortfolioChart();
+                    btn.innerHTML = originalHtml;
+                    
+                    document.getElementById('status-badge').innerHTML = '✅ ข้อมูลอัปเดตล่าสุด';
+                    document.getElementById('status-badge').className = 'text-[10px] bg-emerald-900/40 py-1 px-2 rounded text-emerald-400 font-bold border border-emerald-500/30';
+                }, 50);
+            });
+
+            // Global Waterfall Withdrawal Listeners
+            const btnWdYield = document.getElementById("global-wd-mode-yield");
+            const btnWdConst = document.getElementById("global-wd-mode-constant");
+            const btnWdFixed = document.getElementById("global-wd-mode-fixed");
+            const fixedSettings = document.getElementById("global-wd-fixed-settings");
+
+            function updateGlobalWdMode(mode) {
+                globalWithdrawal.mode = mode;
+                btnWdYield.className = mode === "yield_only" ? "p-2 rounded border text-center transition duration-200 bg-amber-500/20 border-amber-500 text-amber-300 text-[10px] font-bold" : "p-2 rounded border text-center transition duration-200 bg-slate-900 border-slate-700 text-slate-400 text-[10px] font-bold";
+                btnWdConst.className = mode === "constant" ? "p-2 rounded border text-center transition duration-200 bg-cyan-500/20 border-cyan-500 text-cyan-300 text-[10px] font-bold" : "p-2 rounded border text-center transition duration-200 bg-slate-900 border-slate-700 text-slate-400 text-[10px] font-bold";
+                btnWdFixed.className = mode === "fixed_baht" ? "p-2 rounded border text-center transition duration-200 bg-purple-500/20 border-purple-500 text-purple-300 text-[10px] font-bold" : "p-2 rounded border text-center transition duration-200 bg-slate-900 border-slate-700 text-slate-400 text-[10px] font-bold";
+                
+                fixedSettings.style.display = mode === "fixed_baht" ? "block" : "none";
+                markDirty();
+            }
+
+            btnWdYield.addEventListener("click", () => updateGlobalWdMode("yield_only"));
+            btnWdConst.addEventListener("click", () => updateGlobalWdMode("constant"));
+            btnWdFixed.addEventListener("click", () => updateGlobalWdMode("fixed_baht"));
+
+            document.getElementById("global-wd-fixed-amt").addEventListener("input", (e) => { globalWithdrawal.fixedAmt = parseFloat(e.target.value)||0; markDirty(); });
+            document.getElementById("global-wd-freq").addEventListener("change", (e) => { globalWithdrawal.freq = parseInt(e.target.value)||1; markDirty(); });
+            document.getElementById("global-wd-start-y").addEventListener("input", (e) => { globalWithdrawal.startY = parseInt(e.target.value)||1; markDirty(); });
+            document.getElementById("global-wd-start-m").addEventListener("input", (e) => { globalWithdrawal.startM = parseInt(e.target.value)||1; markDirty(); });
+
+            // Chart Methods UI Switcher
+            function updateSimButtons(type, method) {
+                ['trad', 'gbm', 'volcluster'].forEach(id => {
+                    const btn = document.getElementById(`sim-${type}-${id}`);
+                    btn.className = (id === method) ? "px-2 py-1 text-[10px] rounded bg-amber-500/20 text-amber-300 font-bold transition" : "px-2 py-1 text-[10px] rounded text-slate-400 hover:text-slate-200 transition";
+                });
+            }
+
+            document.getElementById('sim-mc-trad').addEventListener('click', () => { chartSimMethod = 'traditional'; updateSimButtons('mc', 'trad'); markDirty(); });
+            document.getElementById('sim-mc-gbm').addEventListener('click', () => { chartSimMethod = 'gbm'; updateSimButtons('mc', 'gbm'); markDirty(); });
+            document.getElementById('sim-mc-volcluster').addEventListener('click', () => { chartSimMethod = 'volcluster'; updateSimButtons('mc', 'volcluster'); markDirty(); });
+            
+            document.getElementById('sim-hm-trad').addEventListener('click', () => { heatmapSimMethod = 'traditional'; updateSimButtons('hm', 'trad'); runHeatmap(); });
+            document.getElementById('sim-hm-gbm').addEventListener('click', () => { heatmapSimMethod = 'gbm'; updateSimButtons('hm', 'gbm'); runHeatmap(); });
+            document.getElementById('sim-hm-volcluster').addEventListener('click', () => { heatmapSimMethod = 'volcluster'; updateSimButtons('hm', 'volcluster'); runHeatmap(); });
+
+            // Heatmap withdrawal-timing mode toggle
+            const hmWdNotes = {
+                immediate: 'โหมดนี้บังคับถอนทันทีตั้งแต่เดือนที่ 1 โดยไม่สนใจ "เริ่มถอนปีที่/เดือนที่" ที่ตั้งไว้ในฝั่ง Global Waterfall — เหมาะสำหรับทดสอบสถานการณ์ฉุกเฉิน (เช่น ตกงาน) ไม่ใช่แผนที่วางไว้จริง',
+                planned: 'โหมดนี้เริ่มถอนตาม "เริ่มถอนปีที่/เดือนที่" ที่ตั้งไว้ในฝั่ง Global Waterfall จริง (ผ่านช่วง DCA/สะสมมาก่อน) — สำหรับอัตรา % จะคำนวณจากมูลค่าพอร์ต ณ วันเริ่มถอนจริง ไม่ใช่เงินต้นวันนี้ ทำให้ % รอดในตารางนี้ใกล้เคียงกับกราฟ Global Waterfall หลักมากขึ้น'
+            };
+            function setHeatmapWdMode(mode) {
+                heatmapWithdrawalMode = mode;
+                document.getElementById('hm-wd-immediate').className = (mode === 'immediate') ? "px-2 py-1 text-[10px] rounded bg-amber-500/20 text-amber-300 font-bold transition" : "px-2 py-1 text-[10px] rounded text-slate-400 hover:text-slate-200 transition";
+                document.getElementById('hm-wd-planned').className = (mode === 'planned') ? "px-2 py-1 text-[10px] rounded bg-amber-500/20 text-amber-300 font-bold transition" : "px-2 py-1 text-[10px] rounded text-slate-400 hover:text-slate-200 transition";
+                document.getElementById('hm-wd-mode-note').innerText = hmWdNotes[mode];
+                runHeatmap();
+            }
+            document.getElementById('hm-wd-immediate').addEventListener('click', () => setHeatmapWdMode('immediate'));
+            document.getElementById('hm-wd-planned').addEventListener('click', () => setHeatmapWdMode('planned'));
+
+            // Chart View Type Toggles
+            document.getElementById('view-type-line').addEventListener('click', (e) => {
+                currentChartView = 'line';
+                e.currentTarget.className = "px-2 py-1 text-[10px] rounded bg-purple-500/20 text-purple-300 font-bold transition";
+                document.getElementById('view-type-bar').className = "px-2 py-1 text-[10px] rounded text-slate-400 hover:text-slate-200 transition";
+                document.getElementById('bar-tooltip-toggle').classList.add('hidden');
+                document.getElementById('chart-note-text').innerHTML = `* เส้น <span class="text-purple-400 font-bold">Random Path</span> คือการจำลองสุ่ม 1 เส้นทางจาก 1,000 รูปแบบ ที่มีการ Rebalance และ Waterfall ถอนเงินตามลำดับ`;
+                if(hasRunOnce) renderPortfolioChart();
+            });
+            document.getElementById('view-type-bar').addEventListener('click', (e) => {
+                currentChartView = 'bar';
+                e.currentTarget.className = "px-2 py-1 text-[10px] rounded bg-purple-500/20 text-purple-300 font-bold transition";
+                document.getElementById('view-type-line').className = "px-2 py-1 text-[10px] rounded text-slate-400 hover:text-slate-200 transition";
+                document.getElementById('bar-tooltip-toggle').classList.remove('hidden');
+                document.getElementById('bar-tooltip-toggle').classList.add('flex');
+                document.getElementById('chart-note-text').innerHTML = `* <span class="text-amber-400 font-bold">สถานะ: Pure Asset Drift (100 Paths)</span> - แบบจำลองนี้แสดงการเบี้ยวของสัดส่วนของแต่ละสินทรัพย์ตามจริง โดย <b>อ้างอิงตามการตั้งค่า Auto-Rebalance</b> ด้านบน (หากตั้งเป็น "ปล่อยไหล" จะไม่มีการ Rebalance เลย)`;
+                if(hasRunOnce) renderPortfolioChart();
+            });
+
+            document.getElementById('tt-type-amt').addEventListener('click', (e) => {
+                currentTooltipType = 'amt';
+                e.currentTarget.className = "px-2 py-1 text-[10px] rounded bg-emerald-500/20 text-emerald-300 font-bold transition";
+                document.getElementById('tt-type-pct').className = "px-2 py-1 text-[10px] rounded text-slate-400 hover:text-slate-200 transition";
+                if(hasRunOnce) renderPortfolioChart();
+            });
+            document.getElementById('tt-type-pct').addEventListener('click', (e) => {
+                currentTooltipType = 'pct';
+                e.currentTarget.className = "px-2 py-1 text-[10px] rounded bg-emerald-500/20 text-emerald-300 font-bold transition";
+                document.getElementById('tt-type-amt').className = "px-2 py-1 text-[10px] rounded text-slate-400 hover:text-slate-200 transition";
+                if(hasRunOnce) renderPortfolioChart();
+            });
+
+            // Port Details
+            document.getElementById("port-name-input").addEventListener("input", (e) => {
+                const pt = portfolios.find(p => p.id === activePortId);
+                if (pt) pt.name = e.target.value;
+                renderPortTabs(); renderPriorityOrderUI(); renderChartPortOptions(); markDirty();
+            });
+            document.getElementById("port-weight-input").addEventListener("input", (e) => {
+                const pt = portfolios.find(p => p.id === activePortId);
+                if (pt) pt.allocWeight = parseFloat(e.target.value) || 0;
+                updateGlobalWeightBadge(); renderPortTabs(); renderPriorityOrderUI(); markDirty();
+            });
+
+            // DCA Listeners
+            ["port-topup-amt", "port-topup-growth", "port-topup-freq", "port-topup-start-y", "port-topup-start-m", "port-topup-end-y", "port-topup-end-m"].forEach(id => {
+                document.getElementById(id).addEventListener("input", (e) => {
+                    const pt = portfolios.find(p => p.id === activePortId);
+                    if (!pt) return;
+                    let val = parseFloat(e.target.value) || 0;
+                    if(id.includes("amt")) pt.topup.amount = val;
+                    if(id.includes("growth")) pt.topup.growth = val;
+                    if(id.includes("freq")) pt.topup.freq = parseInt(val);
+                    if(id.includes("start-y")) pt.topup.startY = parseInt(val);
+                    if(id.includes("start-m")) pt.topup.startM = parseInt(val);
+                    if(id.includes("end-y")) pt.topup.endY = parseInt(val);
+                    if(id.includes("end-m")) pt.topup.endM = parseInt(val);
+                    markDirty();
+                });
+            });
+
+            // Rebalance Eligibility Listeners
+            ["port-rebalance-start-y", "port-rebalance-start-m"].forEach(id => {
+                document.getElementById(id).addEventListener("input", (e) => {
+                    const pt = portfolios.find(p => p.id === activePortId);
+                    if (!pt) return;
+                    if (!pt.rebalance) pt.rebalance = { startY: 1, startM: 1 };
+                    let val = parseInt(e.target.value) || 1;
+                    if (id.includes("start-y")) pt.rebalance.startY = val;
+                    if (id.includes("start-m")) pt.rebalance.startM = val;
+                    markDirty();
+                });
+            });
+
+            // Phase Activators
+            document.getElementById("enable-p2").addEventListener("change", (e) => { updateActivePortPhase("enable", 2, e.target.checked); markDirty(); });
+            document.getElementById("enable-p3").addEventListener("change", (e) => { updateActivePortPhase("enable", 3, e.target.checked); markDirty(); });
+            document.getElementById("enable-p4").addEventListener("change", (e) => { updateActivePortPhase("enable", 4, e.target.checked); markDirty(); });
+
+            document.getElementById("start-p2").addEventListener("change", (e) => { updateActivePortPhase("start", 2, parseInt(e.target.value)); markDirty(); });
+            document.getElementById("start-p3").addEventListener("change", (e) => { updateActivePortPhase("start", 3, parseInt(e.target.value)); markDirty(); });
+            document.getElementById("start-p4").addEventListener("change", (e) => { updateActivePortPhase("start", 4, parseInt(e.target.value)); markDirty(); });
+
+            [1, 2, 3, 4].forEach(id => {
+                document.getElementById(`tab-p${id}`).addEventListener("click", () => switchTab(id));
+            });
+            
+            document.getElementById("btn-copy-prev").addEventListener("click", () => {
+                if (currentEditingPhase > 1) {
+                    const port = portfolios.find(p => p.id === activePortId);
+                    port.fundsData[currentEditingPhase] = JSON.parse(JSON.stringify(port.fundsData[currentEditingPhase - 1]));
+                    renderFundRows(); markDirty();
+                }
+            });
+
+            document.getElementById("fund-rows").addEventListener("input", (e) => {
+                if (e.target.tagName === "INPUT") {
+                    const id = parseInt(e.target.dataset.id);
+                    const field = e.target.dataset.field;
+                    const val = field === "name" ? e.target.value : (parseFloat(e.target.value) || 0);
+                    const port = portfolios.find(p => p.id === activePortId);
+                    const fund = port.fundsData[currentEditingPhase].find(f => f.id === id);
+                    if (fund) { fund[field] = val; updateTotalFundWeightBadge(); markDirty(); }
+                }
+            });
+
+            document.getElementById("fund-rows").addEventListener("click", (e) => {
+                const deleteBtn = e.target.closest(".btn-delete");
+                if (deleteBtn) {
+                    const id = parseInt(deleteBtn.dataset.id);
+                    const port = portfolios.find(p => p.id === activePortId);
+                    port.fundsData[currentEditingPhase] = port.fundsData[currentEditingPhase].filter(f => f.id !== id);
+                    renderFundRows(); markDirty();
+                }
+            });
+
+            document.getElementById("btn-add-fund").addEventListener("click", () => {
+                const port = portfolios.find(p => p.id === activePortId);
+                port.fundsData[currentEditingPhase].push({ id: Date.now(), name: `New Fund`, weight: 10, yield: 3.0, capGain: 1.0, sd: 5.0 });
+                renderFundRows(); markDirty();
+            });
+
+            // Chart Range Inputs
+            document.getElementById("chart-start-y").addEventListener("input", () => { if(hasRunOnce) renderPortfolioChart(); });
+            document.getElementById("chart-end-y").addEventListener("input", () => { if(hasRunOnce) renderPortfolioChart(); });
+            document.getElementById("chart-port-selector").addEventListener("change", () => { if(hasRunOnce) renderPortfolioChart(); });
+
+            document.getElementById('btn-run-heatmap').addEventListener('click', runHeatmap);
+            document.getElementById('heatmap-rates').addEventListener('change', runHeatmap);
+
+            // Export & AI
+            document.getElementById('btn-export-excel').addEventListener('click', exportToExcel);
+            document.getElementById('btn-ai-advisor').addEventListener('click', openAIModal);
+            document.getElementById('btn-close-ai').addEventListener('click', closeAIModal);
+            document.getElementById('ai-modal-bg').addEventListener('click', closeAIModal);
+        }
+
+        // --- PORTFOLIO MANAGER LOGIC ---
+        function renderPortTabs() {
+            const container = document.getElementById("port-tabs-container");
+            container.innerHTML = "";
+            portfolios.forEach(pt => {
+                const btn = document.createElement("button");
+                btn.className = `px-3 py-1.5 text-xs rounded-lg border transition whitespace-nowrap flex items-center gap-2 ${pt.id === activePortId ? 'port-tab-active' : 'port-tab-inactive'}`;
+                btn.innerHTML = `<span>${escapeHtml(pt.name)} (${pt.allocWeight}%)</span> ${portfolios.length > 1 ? `<i class="fa-solid fa-times hover:text-red-400" onclick="event.stopPropagation(); deletePortfolio(${pt.id});"></i>` : ''}`;
+                btn.onclick = () => switchActivePort(pt.id);
+                container.appendChild(btn);
+            });
+
+            if (portfolios.length < 3) {
+                const addBtn = document.createElement("button");
+                addBtn.className = "px-3 py-1.5 text-xs rounded-lg border border-dashed border-slate-500 text-slate-400 hover:text-slate-200 hover:border-slate-400 transition whitespace-nowrap";
+                addBtn.innerHTML = '<i class="fa-solid fa-plus"></i> เพิ่มพอร์ต';
+                addBtn.onclick = addPortfolio;
+                container.appendChild(addBtn);
+            }
+            updateGlobalWeightBadge();
+        }
+
+        function renderChartPortOptions() {
+            const sel = document.getElementById("chart-port-selector");
+            const currentVal = sel.value;
+            sel.innerHTML = `<option value="total">รวมทุกพอร์ต (Total Portfolio)</option>`;
+            portfolios.forEach(pt => {
+                sel.innerHTML += `<option value="${pt.id}">${escapeHtml(pt.name)}</option>`;
+            });
+            if([...sel.options].some(o => o.value === currentVal)) sel.value = currentVal;
+        }
+
+        function syncActivePortUI() {
+            const pt = portfolios.find(p => p.id === activePortId);
+            if (!pt) return;
+            
+            document.getElementById("port-name-input").value = pt.name;
+            document.getElementById("port-weight-input").value = pt.allocWeight;
+            // Note: stats-panel-title is now static — the Phase Stats Matrix shows all
+            // portfolios together (see updatePhaseStatsTable), not just the active tab.
+            
+            document.getElementById("port-topup-amt").value = pt.topup.amount;
+            document.getElementById("port-topup-growth").value = pt.topup.growth;
+            document.getElementById("port-topup-freq").value = pt.topup.freq;
+            document.getElementById("port-topup-start-y").value = pt.topup.startY;
+            document.getElementById("port-topup-start-m").value = pt.topup.startM;
+            document.getElementById("port-topup-end-y").value = pt.topup.endY;
+            document.getElementById("port-topup-end-m").value = pt.topup.endM;
+
+            if (!pt.rebalance) pt.rebalance = { startY: 1, startM: 1 };
+            document.getElementById("port-rebalance-start-y").value = pt.rebalance.startY;
+            document.getElementById("port-rebalance-start-m").value = pt.rebalance.startM;
+
+            currentEditingPhase = 1;
+            syncPhaseControls();
+            renderFundRows();
+        }
+
+        function switchActivePort(id) {
+            activePortId = id;
+            renderPortTabs();
+            syncActivePortUI();
+        }
+
+        function addPortfolio() {
+            if (portfolios.length >= 3) return;
+            const newId = Math.max(...portfolios.map(p => p.id)) + 1;
+            const sourcePort = portfolios[0];
+            portfolios.push({
+                id: newId,
+                name: `พอร์ต ${portfolios.length + 1}`,
+                allocWeight: 0,
+                topup: JSON.parse(JSON.stringify(sourcePort.topup)),
+                rebalance: { startY: 1, startM: 1 },
+                phaseSettings: JSON.parse(JSON.stringify(sourcePort.phaseSettings)),
+                fundsData: JSON.parse(JSON.stringify(sourcePort.fundsData))
+            });
+            renderChartPortOptions();
+            renderPriorityOrderUI();
+            switchActivePort(newId);
+            markDirty();
+        }
+
+        function deletePortfolio(id) {
+            if (portfolios.length <= 1) return;
+            portfolios = portfolios.filter(p => p.id !== id);
+            globalWithdrawal.priorityOrder = globalWithdrawal.priorityOrder.filter(pid => pid !== id);
+            renderChartPortOptions();
+            renderPriorityOrderUI();
+            switchActivePort(portfolios[0].id);
+            markDirty();
+        }
+
+        function updateGlobalWeightBadge() {
+            const totalW = portfolios.reduce((s, p) => s + (parseFloat(p.allocWeight)||0), 0);
+            const badge = document.getElementById("global-weight-badge");
+            badge.innerText = `น้ำหนักรวม: ${totalW}%`;
+            badge.className = totalW === 100 ? "px-2 py-1 rounded text-[10px] font-bold bg-green-500/20 text-green-400" : "px-2 py-1 rounded text-[10px] font-bold bg-red-500/20 text-red-400";
+        }
+
+        function updateActivePortPhase(action, phaseId, value) {
+            const pt = portfolios.find(p => p.id === activePortId);
+            if (!pt) return;
+
+            if (action === "enable") {
+                pt.phaseSettings[phaseId].enabled = value;
+            } else if (action === "start") {
+                let val = Math.max(phaseId, parseInt(value)); 
+                pt.phaseSettings[phaseId].startYear = val;
+                
+                if (phaseId === 2 && pt.phaseSettings[3].enabled && pt.phaseSettings[3].startYear <= val) pt.phaseSettings[3].startYear = val + 1;
+                if (phaseId === 3 && pt.phaseSettings[4].enabled && pt.phaseSettings[4].startYear <= val) pt.phaseSettings[4].startYear = val + 1;
+            }
+            syncPhaseControls();
+        }
+
+        function syncPhaseControls() {
+            const pt = portfolios.find(p => p.id === activePortId);
+            if (!pt) return;
+            
+            if (!pt.phaseSettings[2].enabled) { pt.phaseSettings[3].enabled = false; pt.phaseSettings[4].enabled = false; }
+            if (!pt.phaseSettings[3].enabled) { pt.phaseSettings[4].enabled = false; }
+
+            document.getElementById("enable-p3").disabled = !pt.phaseSettings[2].enabled;
+            document.getElementById("enable-p4").disabled = !pt.phaseSettings[3].enabled;
+
+            [2, 3, 4].forEach(i => {
+                const checkbox = document.getElementById(`enable-p${i}`);
+                const startYearInput = document.getElementById(`start-p${i}`);
+                const tabBtn = document.getElementById(`tab-p${i}`);
+                
+                checkbox.checked = pt.phaseSettings[i].enabled;
+                startYearInput.disabled = !pt.phaseSettings[i].enabled;
+                startYearInput.value = pt.phaseSettings[i].startYear;
+                tabBtn.disabled = !pt.phaseSettings[i].enabled;
+            });
+
+            if (!pt.phaseSettings[currentEditingPhase].enabled) {
+                switchTab(1);
+            }
+        }
+
+        function switchTab(phaseId) {
+            currentEditingPhase = phaseId;
+            [1, 2, 3, 4].forEach(id => {
+                const tab = document.getElementById(`tab-p${id}`);
+                tab.className = (id === currentEditingPhase) ? 
+                    "flex-1 py-1.5 text-[10px] sm:text-xs rounded-t-lg border-t border-l border-r tab-active transition" : 
+                    "flex-1 py-1.5 text-[10px] sm:text-xs rounded-t-lg border-t border-l border-r tab-inactive transition";
+            });
+            document.getElementById("current-phase-label").innerText = `แก้ไขสัดส่วน: เฟส ${currentEditingPhase}`;
+            document.getElementById("btn-copy-prev").style.display = currentEditingPhase > 1 ? 'flex' : 'none';
+            renderFundRows();
+        }
+
+        function renderFundRows() {
+            const tbody = document.getElementById("fund-rows");
+            tbody.innerHTML = "";
+            const pt = portfolios.find(p => p.id === activePortId);
+            if (!pt) return;
+            
+            pt.fundsData[currentEditingPhase].forEach((fund) => {
+                const tr = document.createElement("tr");
+                tr.className = "border-b border-slate-800/50 hover:bg-slate-800 transition";
+                tr.innerHTML = `
+                    <td class="py-1 pr-1"><input type="text" data-id="${fund.id}" data-field="name" value="${escapeHtml(fund.name)}" class="w-full bg-slate-800 border border-slate-600 rounded px-1.5 py-0.5 text-slate-200 focus:outline-none focus:border-amber-500 font-medium text-[10px]"></td>
+                    <td class="py-1 text-center"><input type="number" data-id="${fund.id}" data-field="weight" value="${fund.weight}" class="w-10 bg-slate-800 border border-slate-600 text-center rounded text-amber-400 font-semibold focus:outline-none focus:border-amber-500 py-0.5 text-[10px]"></td>
+                    <td class="py-1 text-center"><input type="number" step="0.1" data-id="${fund.id}" data-field="yield" value="${fund.yield}" class="w-10 bg-slate-800 border border-slate-600 text-center rounded text-slate-300 focus:outline-none focus:border-amber-500 py-0.5 text-[10px]"></td>
+                    <td class="py-1 text-center"><input type="number" step="0.1" data-id="${fund.id}" data-field="capGain" value="${fund.capGain}" class="w-10 bg-slate-800 border border-slate-600 text-center rounded text-slate-300 focus:outline-none focus:border-amber-500 py-0.5 text-[10px]"></td>
+                    <td class="py-1 text-center"><input type="number" step="0.1" data-id="${fund.id}" data-field="sd" value="${fund.sd}" class="w-10 bg-slate-800 border border-slate-600 text-center rounded text-slate-300 focus:outline-none focus:border-amber-500 py-0.5 text-[10px]"></td>
+                    <td class="py-1 text-center"><button class="btn-delete text-red-400 hover:text-red-500 transition px-1" data-id="${fund.id}"><i class="fa-solid fa-times"></i></button></td>
+                `;
+                tbody.appendChild(tr);
+            });
+            updateTotalFundWeightBadge();
+        }
+
+        function updateTotalFundWeightBadge() {
+            const pt = portfolios.find(p => p.id === activePortId);
+            if (!pt) return;
+            const totalWeight = pt.fundsData[currentEditingPhase].reduce((sum, f) => sum + f.weight, 0);
+            const badge = document.getElementById("total-weight-badge");
+            badge.innerText = `กองทุน ${totalWeight}%`;
+            badge.className = totalWeight === 100 ? "px-2 py-0.5 rounded text-[10px] font-bold bg-green-500/20 text-green-400" : "px-2 py-0.5 rounded text-[10px] font-bold bg-red-500/20 text-red-400";
+        }
+
+        // =========================================================================
+        // ENGINE 1: MAIN MONTE CARLO ENGINE (WITH GLOBAL WATERFALL & PRIORITY)
+        // =========================================================================
+        function runSimulation() {
+            const initPrincipal = parseFloat(document.getElementById("init-investment").value) || 0;
+            const inflationAnnual = (parseFloat(document.getElementById("inflation-rate").value) || 0) / 100;
+            const infMonthly = Math.pow(1 + inflationAnnual, 1/12) - 1;
+            const globalRebalanceFreq = parseInt(document.getElementById("global-rebalance").value) || 0;
+
+            const totalPortWeight = portfolios.reduce((s,p) => s + (parseFloat(p.allocWeight)||0), 0);
+            
+            const allStats = {};
+            const allActivePhaseMaps = {};
+            
+            portfolios.forEach(pt => {
+                allStats[pt.id] = {};
+                [1, 2, 3, 4].forEach(i => { allStats[pt.id][i] = calculatePhaseStats(pt.fundsData[i]); });
+                
+                const numMonths = 30 * 12;
+                allActivePhaseMaps[pt.id] = new Array(numMonths + 1);
+                for (let m = 1; m <= numMonths; m++) {
+                    const y = Math.ceil(m / 12);
+                    let currentP = 1;
+                    if (pt.phaseSettings[4].enabled && y >= pt.phaseSettings[4].startYear) currentP = 4;
+                    else if (pt.phaseSettings[3].enabled && y >= pt.phaseSettings[3].startYear) currentP = 3;
+                    else if (pt.phaseSettings[2].enabled && y >= pt.phaseSettings[2].startYear) currentP = 2;
+                    allActivePhaseMaps[pt.id][m] = currentP;
+                }
+            });
+
+            globalExportData.allActivePhaseMaps = allActivePhaseMaps;
+            updatePhaseStatsTable();
+
+            const numPaths = 1000;
+            const numMonths = 30 * 12;
+            
+            const resultsByYear = { 'total': Array.from({length: 31}, () => []) };
+            const randomPaths = { 'total': [] };
+            portfolios.forEach(pt => {
+                resultsByYear[pt.id] = Array.from({length: 31}, () => []);
+                randomPaths[pt.id] = [];
+            });
+            const yearlyCashflows = Array.from({length: 30}, () => []);
+            let successfulPaths = 0;
+            const randomIndexToCapture = Math.floor(Math.random() * numPaths); 
+
+            let expectedTotalCapitalInjected = initPrincipal;
+            
+            const choleskyCache = {}; // memoized per-month cross-portfolio correlation structure
+
+            for (let p = 0; p < numPaths; p++) {
+                let currentVals = {};
+                let pathTotalCapital = initPrincipal;
+                let currentVar = {};
+                let constantWdBaseAnnual = 0;
+                let hasSetConstantBase = false;
+                
+                let startTotalVal = 0;
+                portfolios.forEach(pt => {
+                    const w = totalPortWeight > 0 ? (pt.allocWeight / totalPortWeight) : 0;
+                    currentVals[pt.id] = initPrincipal * w;
+                    resultsByYear[pt.id][0].push(currentVals[pt.id]);
+                    if (p === randomIndexToCapture) randomPaths[pt.id].push(currentVals[pt.id]);
+                    
+                    startTotalVal += currentVals[pt.id];
+                    currentVar[pt.id] = Math.pow(allStats[pt.id][allActivePhaseMaps[pt.id][1]].sd / Math.sqrt(12), 2);
+                });
+                resultsByYear['total'][0].push(startTotalVal);
+                if (p === randomIndexToCapture) randomPaths['total'].push(startTotalVal);
+                
+                let sumCfYear = 0;
+
+                // --- MONTHLY ENGINE LOOP ---
+                for (let m = 1; m <= numMonths; m++) {
+                    // Correlated cross-portfolio shocks (replaces the old single shared `z`,
+                    // which implicitly assumed all portfolios move perfectly in lockstep).
+                    const monthShocks = getCorrelatedShocks(portfolios, allStats, allActivePhaseMaps, m, choleskyCache);
+
+                    // 1. Market Return Growth
+                    let monthYieldPool = {};
+                    let totalMonthYieldGenerated = 0;
+
+                    portfolios.forEach((pt, ptIdx) => {
+                        if (currentVals[pt.id] <= 0) {
+                            monthYieldPool[pt.id] = 0;
+                            return;
+                        }
+
+                        const activeP = allStats[pt.id][allActivePhaseMaps[pt.id][m]];
+                        if (!activeP.valid) return;
+
+                        let z = monthShocks[ptIdx];
+                        let mReturn;
+                        const expMonthlyReturn = Math.pow(1 + activeP.totalR, 1/12) - 1;
+                        const targetMonthlySD = activeP.sd / Math.sqrt(12);
+
+                        if (chartSimMethod === 'traditional') {
+                            mReturn = expMonthlyReturn + z * targetMonthlySD;
+                        } else if (chartSimMethod === 'gbm') {
+                            const drift = (activeP.totalR - Math.pow(activeP.sd, 2) / 2) / 12;
+                            const diffusion = targetMonthlySD * z;
+                            mReturn = Math.exp(drift + diffusion) - 1;
+                        } else if (chartSimMethod === 'volcluster') {
+                            let currentSd = Math.sqrt(currentVar[pt.id]);
+                            let shock = z * currentSd;
+                            mReturn = expMonthlyReturn + shock;
+                            const alpha = 0.15, beta = 0.75;
+                            const omega = Math.pow(targetMonthlySD, 2) * (1 - alpha - beta);
+                            currentVar[pt.id] = omega + (alpha * Math.pow(shock, 2)) + (beta * currentVar[pt.id]);
+                        }
+                        
+                        currentVals[pt.id] *= (1 + mReturn);
+
+                        // Calculate Yield Generated from this port
+                        let portYieldMonth = currentVals[pt.id] * (activeP.yield / 12);
+                        monthYieldPool[pt.id] = portYieldMonth;
+                        totalMonthYieldGenerated += portYieldMonth;
+                    });
+
+                    // 2. Portfolio Specific DCA Top-ups
+                    portfolios.forEach(pt => {
+                        let startTopupM = (pt.topup.startY - 1) * 12 + pt.topup.startM;
+                        let endTopupM = (pt.topup.endY - 1) * 12 + pt.topup.endM;
+                        if (pt.topup.amount > 0 && m >= startTopupM && m <= endTopupM && (m - startTopupM) % pt.topup.freq === 0) {
+                            let currentTopupAmt = pt.topup.amount;
+                            let yearsPassed = Math.floor((m - 1) / 12);
+                            if (yearsPassed > 0) currentTopupAmt *= Math.pow(1 + pt.topup.growth/100, yearsPassed);
+                            currentVals[pt.id] += currentTopupAmt;
+                            if (p === 0) pathTotalCapital += currentTopupAmt; 
+                        }
+                    });
+
+                    // 3. GLOBAL WATERFALL WITHDRAWAL ENGINE
+                    let startWdM = (globalWithdrawal.startY - 1) * 12 + globalWithdrawal.startM;
+                    if (m >= startWdM) {
+                        let monthsSinceWdStart = m - startWdM;
+                        let targetWithdrawal = 0;
+                        let totalCurrentPortVal = portfolios.reduce((s, pt) => s + currentVals[pt.id], 0);
+
+                        if (globalWithdrawal.mode === "yield_only") {
+                            targetWithdrawal = totalMonthYieldGenerated;
+                        } else if (globalWithdrawal.mode === "constant") {
+                            if (!hasSetConstantBase) {
+                                // Weighted average yield capacity
+                                let totalWeightedYield = portfolios.reduce((s, pt) => s + (currentVals[pt.id] * allStats[pt.id][allActivePhaseMaps[pt.id][m]].yield), 0);
+                                constantWdBaseAnnual = totalWeightedYield;
+                                hasSetConstantBase = true;
+                            }
+                            targetWithdrawal = (constantWdBaseAnnual * Math.pow(1 + infMonthly, monthsSinceWdStart)) / 12;
+                        } else if (globalWithdrawal.mode === "fixed_baht") {
+                            if (monthsSinceWdStart % globalWithdrawal.freq === 0) {
+                                targetWithdrawal = globalWithdrawal.fixedAmt * Math.pow(1 + infMonthly, monthsSinceWdStart);
+                            }
+                        }
+
+                        // --- WATERFALL EXECUTION ---
+                        if (targetWithdrawal > 0 && totalCurrentPortVal > 0) {
+                            let actualWithdrawn = 0;
+
+                            // Step A: Pay using Total Month Yield Pool
+                            if (totalMonthYieldGenerated >= targetWithdrawal) {
+                                // Yield is sufficient! Deduct proportionally from yield capacity
+                                portfolios.forEach(pt => {
+                                    let ratio = totalMonthYieldGenerated > 0 ? (monthYieldPool[pt.id] / totalMonthYieldGenerated) : 0;
+                                    currentVals[pt.id] -= (targetWithdrawal * ratio);
+                                });
+                                actualWithdrawn = targetWithdrawal;
+                            } else {
+                                // Yield is not enough -> Take all Yield first, then liquidate Capital in Priority Order
+                                portfolios.forEach(pt => {
+                                    currentVals[pt.id] -= monthYieldPool[pt.id];
+                                });
+                                actualWithdrawn += totalMonthYieldGenerated;
+                                
+                                let deficit = targetWithdrawal - totalMonthYieldGenerated;
+
+                                // Step B: Liquidate Capital based on Priority Order
+                                for (let priorityPortId of globalWithdrawal.priorityOrder) {
+                                    if (deficit <= 0) break;
+                                    if (currentVals[priorityPortId] > 0) {
+                                        let sellAmount = Math.min(currentVals[priorityPortId], deficit);
+                                        currentVals[priorityPortId] -= sellAmount;
+                                        deficit -= sellAmount;
+                                        actualWithdrawn += sellAmount;
+                                    }
+                                }
+                            }
+
+                            sumCfYear += (actualWithdrawn / Math.pow(1 + infMonthly, m));
+                        }
+                    }
+
+                    // 4. AUTO-REBALANCE ENGINE (Executed at month end to re-infuse zeroed buckets)
+                    // Only portfolios that have reached their own rebalance-eligibility date participate.
+                    if (globalRebalanceFreq > 0 && m % globalRebalanceFreq === 0) {
+                        const eligiblePorts = portfolios.filter(pt => isRebalanceEligible(pt, m));
+                        const eligibleWeight = eligiblePorts.reduce((s, p) => s + (parseFloat(p.allocWeight) || 0), 0);
+                        const eligibleTotal = eligiblePorts.reduce((s, p) => s + currentVals[p.id], 0);
+                        if (eligibleTotal > 0 && eligibleWeight > 0) {
+                            eligiblePorts.forEach(pt => {
+                                let targetWeight = (parseFloat(pt.allocWeight) || 0) / eligibleWeight;
+                                currentVals[pt.id] = eligibleTotal * targetWeight;
+                            });
+                        }
+                    }
+
+                    // 5. Data Snapshots (Year End)
+                    if (m % 12 === 0) {
+                        const y = m / 12;
+                        const discount = Math.pow(1 + infMonthly, m);
+                        
+                        let monthTotalVal = portfolios.reduce((s, p) => s + currentVals[p.id], 0);
+                        resultsByYear['total'][y].push(monthTotalVal / discount);
+                        if (p === randomIndexToCapture) randomPaths['total'].push(monthTotalVal / discount);
+
+                        portfolios.forEach(pt => {
+                            let val = Math.max(0, currentVals[pt.id] / discount);
+                            resultsByYear[pt.id][y].push(val);
+                            if (p === randomIndexToCapture) randomPaths[pt.id].push(val);
+                        });
+
+                        yearlyCashflows[y - 1].push(sumCfYear);
+                        sumCfYear = 0;
+                    }
+                }
+                
+                if (p === 0) expectedTotalCapitalInjected = pathTotalCapital;
+                let endTotal = portfolios.reduce((s, p) => s + currentVals[p.id], 0);
+                if (endTotal > 0) successfulPaths++;
+            }
+
+            document.getElementById("metric-total-capital").innerText = `${expectedTotalCapitalInjected.toLocaleString('th-TH', {maximumFractionDigits:0})} บาท`;
+
+            const survivalRate = (successfulPaths / numPaths) * 100;
+            const srElement = document.getElementById("metric-survival-rate");
+            srElement.innerText = `${survivalRate.toFixed(1)}%`;
+            srElement.className = survivalRate > 90 ? "text-xs font-bold text-emerald-400" : (survivalRate > 60 ? "text-xs font-bold text-yellow-400" : "text-xs font-bold text-red-400");
+            
+            const processedResults = { 'total': [] };
+            portfolios.forEach(pt => processedResults[pt.id] = []);
+            
+            for (let y = 0; y <= 30; y++) {
+                ['total', ...portfolios.map(p=>p.id)].forEach(k => {
+                    const yearVals = resultsByYear[k][y].sort((a,b)=>a-b);
+                    processedResults[k].push({
+                        worst: yearVals[Math.floor(numPaths * 0.1)], 
+                        median: yearVals[Math.floor(numPaths * 0.5)], 
+                        best: yearVals[Math.floor(numPaths * 0.9)]
+                    });
+                });
+            }
+
+            const cfByYear = [];
+            for (let y = 1; y <= 30; y++) {
+                cfByYear.push(yearlyCashflows[y-1].sort((a,b)=>a-b)[Math.floor(numPaths * 0.5)]);
+            }
+
+            document.getElementById("cf-year-1").innerText = Math.round(cfByYear[0] || 0).toLocaleString('th-TH');
+            document.getElementById("cf-year-10").innerText = Math.round(cfByYear[9] || 0).toLocaleString('th-TH');
+            document.getElementById("cf-year-20").innerText = Math.round(cfByYear[19] || 0).toLocaleString('th-TH');
+            document.getElementById("cf-year-30").innerText = Math.round(cfByYear[29] || 0).toLocaleString('th-TH');
+            document.getElementById("total-cf-withdrawn").innerText = cfByYear.reduce((s,v)=>s+v, 0).toLocaleString('th-TH', {maximumFractionDigits:0}) + ' บาท';
+
+            globalExportData.resultsByYear = processedResults;
+            globalExportData.randomPaths = randomPaths;
+            globalExportData.cashflows = cfByYear;
+        }
+
+        // =========================================================================
+        // ENGINE 2: PURE DRIFT VISUALIZER (100 Paths, NO Rebalance)
+        // =========================================================================
+        function runDriftVisualizer() {
+            const initPrincipal = parseFloat(document.getElementById("init-investment").value) || 0;
+            const inflationAnnual = (parseFloat(document.getElementById("inflation-rate").value) || 0) / 100;
+            const infMonthly = Math.pow(1 + inflationAnnual, 1/12) - 1;
+            const totalPortWeight = portfolios.reduce((s,p) => s + (parseFloat(p.allocWeight)||0), 0);
+            const allActivePhaseMaps = globalExportData.allActivePhaseMaps;
+            // FIX: this view previously ignored the Auto-Rebalance dropdown entirely (hardcoded to
+            // never rebalance). That caused Port 1 (the top-priority liquidation bucket) to drain
+            // permanently once its capital ran out, even when the user had rebalancing turned on.
+            // Now it respects the same setting as the main Global Waterfall engine.
+            const globalRebalanceFreq = parseInt(document.getElementById("global-rebalance").value) || 0;
+
+            // Needed to classify each portfolio's asset type (Equity/Bond/Mixed) for the
+            // cross-portfolio correlation matrix used by getCorrelatedShocks().
+            const allStats = {};
+            portfolios.forEach(pt => {
+                allStats[pt.id] = {};
+                [1, 2, 3, 4].forEach(i => { allStats[pt.id][i] = calculatePhaseStats(pt.fundsData[i]); });
+            });
+
+            const numPaths = 100;
+            const numMonths = 30 * 12;
+
+            let driftCol_total = Array.from({length: 31}, () => ({}));
+            let driftCol_ports = {};
+            
+            portfolios.forEach(pt => {
+                for(let y=0; y<=30; y++) driftCol_total[y][pt.id] = [];
+                driftCol_ports[pt.id] = Array.from({length: 31}, () => ({}));
+            });
+
+            const choleskyCache = {}; // memoized per-month cross-portfolio correlation structure
+
+            for(let p = 0; p < numPaths; p++) {
+                let currentPortVals = {};
+                let currentFundVals = {};
+                let constantWdBaseAnnual = 0;
+                let hasSetConstantBase = false;
+
+                portfolios.forEach(pt => {
+                    const portW = totalPortWeight > 0 ? (pt.allocWeight / totalPortWeight) : 0;
+                    const portInitVal = initPrincipal * portW;
+                    
+                    currentPortVals[pt.id] = portInitVal;
+                    driftCol_total[0][pt.id].push(portInitVal);
+
+                    currentFundVals[pt.id] = {};
+                    const initialPhase = allActivePhaseMaps[pt.id][1] || 1;
+                    const phaseFunds = pt.fundsData[initialPhase];
+                    const phaseTotalW = phaseFunds.reduce((s,f)=>s+f.weight, 0);
+
+                    phaseFunds.forEach(f => {
+                        let fundInitial = portInitVal * (phaseTotalW > 0 ? f.weight / phaseTotalW : 0);
+                        currentFundVals[pt.id][f.id] = fundInitial;
+                        
+                        if(!driftCol_ports[pt.id][0][f.id]) driftCol_ports[pt.id][0][f.id] = [];
+                        driftCol_ports[pt.id][0][f.id].push(fundInitial);
+                    });
+                });
+
+                for (let m = 1; m <= numMonths; m++) {
+                    let totalMonthYieldGenerated = 0;
+                    let monthYieldPool = {};
+
+                    // Phase Transitions
+                    portfolios.forEach(pt => {
+                        if (m > 1 && allActivePhaseMaps[pt.id][m] !== allActivePhaseMaps[pt.id][m-1]) {
+                            const newPhase = allActivePhaseMaps[pt.id][m];
+                            const newPhaseFunds = pt.fundsData[newPhase];
+                            const totalPhaseW = newPhaseFunds.reduce((s,f)=>s+f.weight,0);
+                            
+                            let currentPortTotal = Object.values(currentFundVals[pt.id]).reduce((a,b)=>a+b, 0);
+                            currentFundVals[pt.id] = {};
+                            
+                            newPhaseFunds.forEach(f => {
+                                currentFundVals[pt.id][f.id] = currentPortTotal * (totalPhaseW > 0 ? f.weight/totalPhaseW : 0);
+                            });
+                        }
+                    });
+
+                    // Market Returns
+                    // Correlated cross-portfolio shocks (replaces the old fully-independent zPort,
+                    // which implicitly assumed portfolios were completely unrelated to each other).
+                    const monthShocks = getCorrelatedShocks(portfolios, allStats, allActivePhaseMaps, m, choleskyCache);
+                    portfolios.forEach((pt, ptIdx) => {
+                        let ptYieldMonth = 0;
+                        if (currentPortVals[pt.id] > 0) {
+                            let zPort = monthShocks[ptIdx];
+                            let ptStats = calculatePhaseStats(pt.fundsData[allActivePhaseMaps[pt.id][m]]);
+                            let expMR = Math.pow(1 + ptStats.totalR, 1/12) - 1;
+                            // FIX: ptStats.sd from calculatePhaseStats() is already a decimal
+                            // fraction (e.g. 0.12 for 12%), unlike raw fund.sd fields which are
+                            // whole percents. This used to divide by 100 a second time, making
+                            // portfolio-level volatility ~100x too small here (while the
+                            // per-fund breakdown below was scaled correctly) — the two views
+                            // could silently drift apart over a long simulation.
+                            let mSD = ptStats.sd / Math.sqrt(12);
+                            currentPortVals[pt.id] *= (1 + expMR + (zPort * mSD));
+                            ptYieldMonth = currentPortVals[pt.id] * (ptStats.yield / 12);
+                            totalMonthYieldGenerated += ptYieldMonth;
+                        }
+                        monthYieldPool[pt.id] = ptYieldMonth;
+
+                        const activePhase = allActivePhaseMaps[pt.id][m];
+                        const phaseFunds = pt.fundsData[activePhase];
+
+                        phaseFunds.forEach(f => {
+                            if (currentFundVals[pt.id][f.id] && currentFundVals[pt.id][f.id] > 0) {
+                                let zFund = randomNormal(0, 1);
+                                let totalR = (f.yield + f.capGain)/100;
+                                let expMR = Math.pow(1 + totalR, 1/12) - 1;
+                                let mSD = (f.sd/100) / Math.sqrt(12);
+                                currentFundVals[pt.id][f.id] *= (1 + expMR + (zFund * mSD));
+                            }
+                        });
+                    });
+
+                    // DCA
+                    portfolios.forEach(pt => {
+                        let startTopupM = (pt.topup.startY - 1) * 12 + pt.topup.startM;
+                        let endTopupM = (pt.topup.endY - 1) * 12 + pt.topup.endM;
+                        if (pt.topup.amount > 0 && m >= startTopupM && m <= endTopupM && (m - startTopupM) % pt.topup.freq === 0) {
+                            let currentTopupAmt = pt.topup.amount;
+                            let yearsPassed = Math.floor((m - 1) / 12);
+                            if (yearsPassed > 0) currentTopupAmt *= Math.pow(1 + pt.topup.growth/100, yearsPassed);
+                            currentPortVals[pt.id] += currentTopupAmt;
+
+                            let currentPortTotal = Object.values(currentFundVals[pt.id]).reduce((a,b)=>a+b, 0);
+                            if (currentPortTotal > 0) {
+                                for (let fid in currentFundVals[pt.id]) {
+                                    currentFundVals[pt.id][fid] += currentTopupAmt * (currentFundVals[pt.id][fid] / currentPortTotal);
+                                }
+                            }
+                        }
+                    });
+
+                    // Global Waterfall Withdrawal (No Rebalance)
+                    let startWdM = (globalWithdrawal.startY - 1) * 12 + globalWithdrawal.startM;
+                    if (m >= startWdM) {
+                        let monthsSinceWdStart = m - startWdM;
+                        let targetWithdrawal = 0;
+                        let totalCurrentPortVal = portfolios.reduce((s, pt) => s + currentPortVals[pt.id], 0);
+
+                        if (globalWithdrawal.mode === "yield_only") {
+                            targetWithdrawal = totalMonthYieldGenerated;
+                        } else if (globalWithdrawal.mode === "constant") {
+                            if (!hasSetConstantBase) {
+                                constantWdBaseAnnual = portfolios.reduce((s, pt) => s + (currentPortVals[pt.id] * calculatePhaseStats(pt.fundsData[allActivePhaseMaps[pt.id][m]]).yield), 0);
+                                hasSetConstantBase = true;
+                            }
+                            targetWithdrawal = (constantWdBaseAnnual * Math.pow(1 + infMonthly, monthsSinceWdStart)) / 12;
+                        } else if (globalWithdrawal.mode === "fixed_baht") {
+                            if (monthsSinceWdStart % globalWithdrawal.freq === 0) {
+                                targetWithdrawal = globalWithdrawal.fixedAmt * Math.pow(1 + infMonthly, monthsSinceWdStart);
+                            }
+                        }
+
+                        if (targetWithdrawal > 0 && totalCurrentPortVal > 0) {
+                            if (totalMonthYieldGenerated >= targetWithdrawal) {
+                                portfolios.forEach(pt => {
+                                    let ratio = totalMonthYieldGenerated > 0 ? (monthYieldPool[pt.id] / totalMonthYieldGenerated) : 0;
+                                    let deductAmt = targetWithdrawal * ratio;
+                                    currentPortVals[pt.id] -= deductAmt;
+                                    
+                                    let fundTotal = Object.values(currentFundVals[pt.id]).reduce((a,b)=>a+b, 0);
+                                    if (fundTotal > 0) {
+                                        for (let fid in currentFundVals[pt.id]) {
+                                            currentFundVals[pt.id][fid] -= deductAmt * (currentFundVals[pt.id][fid] / fundTotal);
+                                            if (currentFundVals[pt.id][fid] < 0) currentFundVals[pt.id][fid] = 0;
+                                        }
+                                    }
+                                });
+                            } else {
+                                // ถอน Yield ออกมาทั้งหมดก่อน
+                                portfolios.forEach(pt => {
+                                    let deductAmt = monthYieldPool[pt.id];
+                                    currentPortVals[pt.id] -= deductAmt;
+                                    
+                                    let fundTotal = Object.values(currentFundVals[pt.id]).reduce((a,b)=>a+b, 0);
+                                    if (fundTotal > 0) {
+                                        for (let fid in currentFundVals[pt.id]) {
+                                            currentFundVals[pt.id][fid] -= deductAmt * (currentFundVals[pt.id][fid] / fundTotal);
+                                            if (currentFundVals[pt.id][fid] < 0) currentFundVals[pt.id][fid] = 0;
+                                        }
+                                    }
+                                });
+
+                                // คำนวณส่วนขาด (Deficit) แล้วไล่ถอนเงินต้นตาม Priority
+                                let deficit = targetWithdrawal - totalMonthYieldGenerated;
+
+                                for (let priorityPortId of globalWithdrawal.priorityOrder) {
+                                    if (deficit <= 0) break;
+                                    if (currentPortVals[priorityPortId] > 0) {
+                                        let sellAmount = Math.min(currentPortVals[priorityPortId], deficit);
+                                        currentPortVals[priorityPortId] -= sellAmount;
+                                        deficit -= sellAmount;
+
+                                        let fundTotal = Object.values(currentFundVals[priorityPortId]).reduce((a,b)=>a+b, 0);
+                                        if (fundTotal > 0) {
+                                            for (let fid in currentFundVals[priorityPortId]) {
+                                                currentFundVals[priorityPortId][fid] -= sellAmount * (currentFundVals[priorityPortId][fid] / fundTotal);
+                                                if (currentFundVals[priorityPortId][fid] < 0) currentFundVals[priorityPortId][fid] = 0;
+                                            }
+                                        }
+                                    }
+                                }
+                            }
+                        }
+                    }
+
+                    // AUTO-REBALANCE (respects the global setting, matches main Waterfall engine)
+                    // Only portfolios that have reached their own rebalance-eligibility date participate.
+                    if (globalRebalanceFreq > 0 && m % globalRebalanceFreq === 0) {
+                        const eligiblePorts = portfolios.filter(pt => isRebalanceEligible(pt, m));
+                        const eligibleWeight = eligiblePorts.reduce((s, p) => s + (parseFloat(p.allocWeight) || 0), 0);
+                        const eligibleTotal = eligiblePorts.reduce((s, p) => s + currentPortVals[p.id], 0);
+                        if (eligibleTotal > 0 && eligibleWeight > 0) {
+                            eligiblePorts.forEach(pt => {
+                                let targetWeight = (parseFloat(pt.allocWeight) || 0) / eligibleWeight;
+                                currentPortVals[pt.id] = eligibleTotal * targetWeight;
+
+                                // Redistribute the rebalanced portfolio value across its underlying
+                                // funds using the current phase's target fund weights, so the
+                                // per-fund breakdown (currentFundVals) stays consistent with
+                                // currentPortVals after the top-up.
+                                const activePhase = allActivePhaseMaps[pt.id][m];
+                                const phaseFunds = pt.fundsData[activePhase];
+                                const phaseTotalW = phaseFunds.reduce((s,f) => s + f.weight, 0);
+                                currentFundVals[pt.id] = {};
+                                phaseFunds.forEach(f => {
+                                    currentFundVals[pt.id][f.id] = currentPortVals[pt.id] * (phaseTotalW > 0 ? f.weight / phaseTotalW : 0);
+                                });
+                            });
+                        }
+                    }
+
+                    // Year End Snapshot
+                    if (m % 12 === 0) {
+                        const y = m / 12;
+                        const discount = Math.pow(1 + infMonthly, m);
+
+                        portfolios.forEach(pt => {
+                            driftCol_total[y][pt.id].push(Math.max(0, currentPortVals[pt.id] / discount));
+                            
+                            for (let fid in currentFundVals[pt.id]) {
+                                if(!driftCol_ports[pt.id][y][fid]) driftCol_ports[pt.id][y][fid] = [];
+                                driftCol_ports[pt.id][y][fid].push(Math.max(0, currentFundVals[pt.id][fid] / discount));
+                            }
+                        });
+                    }
+                }
+            }
+
+            globalDriftData.total = Array.from({length: 31}, () => ({}));
+            globalDriftData.ports = {};
+
+            portfolios.forEach(pt => {
+                globalDriftData.ports[pt.id] = Array.from({length: 31}, () => ({}));
+                for (let y = 0; y <= 30; y++) {
+                    let sortedPortVals = driftCol_total[y][pt.id].sort((a,b)=>a-b);
+                    globalDriftData.total[y][pt.id] = sortedPortVals[Math.floor(numPaths * 0.5)] || 0;
+
+                    for (let fid in driftCol_ports[pt.id][y]) {
+                        let sortedFundVals = driftCol_ports[pt.id][y][fid].sort((a,b)=>a-b);
+                        globalDriftData.ports[pt.id][y][fid] = sortedFundVals[Math.floor(numPaths * 0.5)] || 0;
+                    }
+                }
+            });
+        }
+
+        function renderPortfolioChart() {
+            if (!hasRunOnce) return;
+
+            let chartStartY = parseInt(document.getElementById("chart-start-y").value) || 1;
+            let chartEndY = parseInt(document.getElementById("chart-end-y").value) || 30;
+            if (chartStartY < 1) chartStartY = 1;
+            if (chartEndY > 30) chartEndY = 30;
+            if (chartStartY > chartEndY) chartStartY = chartEndY;
+
+            const selectedViewId = document.getElementById("chart-port-selector").value;
+
+            const allLabels = Array.from({length: 31}, (_, i) => `Y${i}`);
+            const startIdx = chartStartY === 1 ? 0 : chartStartY; 
+            const endIdx = chartEndY;
+
+            const displayLabels = allLabels.slice(startIdx, endIdx + 1);
+
+            if (portfolioChartInstance) portfolioChartInstance.destroy();
+            const ctx = document.getElementById('portfolioChart').getContext('2d');
+
+            if (currentChartView === 'line') {
+                const displayBest = globalExportData.resultsByYear[selectedViewId].map(d=>d.best).slice(startIdx, endIdx + 1);
+                const displayMedian = globalExportData.resultsByYear[selectedViewId].map(d=>d.median).slice(startIdx, endIdx + 1);
+                const displayWorst = globalExportData.resultsByYear[selectedViewId].map(d=>d.worst).slice(startIdx, endIdx + 1);
+                const displayRandom = globalExportData.randomPaths[selectedViewId].slice(startIdx, endIdx + 1);
+
+                portfolioChartInstance = new Chart(ctx, {
+                    type: 'line',
+                    data: {
+                        labels: displayLabels,
+                        datasets: [
+                            { label: 'Optimistic (90th)', data: displayBest, borderColor: '#34d399', backgroundColor: 'rgba(52, 211, 153, 0.05)', fill: true, borderWidth: 1.5, pointRadius: 0, tension: 0.3 },
+                            { label: 'Base (50th)', data: displayMedian, borderColor: '#a855f7', backgroundColor: 'rgba(168, 85, 247, 0.1)', fill: true, borderWidth: 2.5, pointRadius: 2, tension: 0.3 },
+                            { label: 'Conservative (10th)', data: displayWorst, borderColor: '#f87171', backgroundColor: 'rgba(248, 113, 113, 0.05)', fill: true, borderWidth: 1.5, pointRadius: 0, tension: 0.3 },
+                            { label: 'Random Path (1 ตัวอย่าง)', data: displayRandom, borderColor: '#ec4899', backgroundColor: 'transparent', fill: false, borderWidth: 2, borderDash: [5, 5], pointRadius: 0, tension: 0.2, order: -1 }
+                        ]
+                    },
+                    options: { 
+                        responsive: true, maintainAspectRatio: false, 
+                        plugins: { 
+                            legend: { position: 'bottom', labels:{color:'#cbd5e1', font: { family: 'Sarabun', size: 10 } } }, 
+                            tooltip: { 
+                                callbacks: { 
+                                    label: function(context) { 
+                                        let label = context.dataset.label || ''; 
+                                        if(label) label += ': '; 
+                                        if(context.parsed.y !== null) { label += new Intl.NumberFormat('th-TH', {style:'currency', currency:'THB', maximumFractionDigits:0}).format(context.parsed.y); } 
+                                        return label; 
+                                    } 
+                                } 
+                            } 
+                        }, 
+                        scales: { 
+                            y: { ticks:{color:'#94a3b8', font: { family: 'Sarabun', size: 10 }, callback:(v)=>(v/1000000)+'M'}, grid:{color:'#334155'} }, 
+                            x: { ticks:{color:'#94a3b8', font: { family: 'Sarabun', size: 10 }}, grid:{display:false} } 
+                        } 
+                    }
+                });
+            } else {
+                let datasets = [];
+                
+                if (selectedViewId === 'total') {
+                    portfolios.forEach((pt, idx) => {
+                        const portDriftData = [];
+                        for(let y = startIdx; y <= endIdx; y++) {
+                            portDriftData.push(globalDriftData.total[y][pt.id] || 0);
+                        }
+                        datasets.push({
+                            label: pt.name,
+                            data: portDriftData,
+                            backgroundColor: barColors[idx % barColors.length],
+                            borderWidth: 0
+                        });
+                    });
+                } else {
+                    const pt = portfolios.find(p => p.id == selectedViewId);
+                    const uniqueFunds = new Map();
+                    [1, 2, 3, 4].forEach(ph => {
+                        if (pt && pt.phaseSettings[ph].enabled) {
+                            pt.fundsData[ph].forEach(f => {
+                                if (!uniqueFunds.has(f.id)) uniqueFunds.set(f.id, f.name);
+                            });
+                        }
+                    });
+
+                    let colorIdx = 0;
+                    uniqueFunds.forEach((fName, fId) => {
+                        const fundDriftData = [];
+                        for (let y = startIdx; y <= endIdx; y++) {
+                            fundDriftData.push(globalDriftData.ports[pt.id][y][fId] || 0);
+                        }
+
+                        datasets.push({
+                            label: fName,
+                            data: fundDriftData,
+                            backgroundColor: barColors[colorIdx % barColors.length],
+                            borderWidth: 0
+                        });
+                        colorIdx++;
+                    });
+                }
+
+                portfolioChartInstance = new Chart(ctx, {
+                    type: 'bar',
+                    data: { labels: displayLabels, datasets: datasets },
+                    options: { 
+                        responsive: true, maintainAspectRatio: false, 
+                        interaction: { mode: 'index', intersect: false },
+                        plugins: { 
+                            legend: { position: 'bottom', labels:{color:'#cbd5e1', font: { family: 'Sarabun', size: 10 }, boxWidth: 12 } }, 
+                            tooltip: { 
+                                callbacks: { 
+                                    label: function(context) { 
+                                        let val = context.parsed.y;
+                                        if (currentTooltipType === 'amt') {
+                                            return context.dataset.label + ': ' + new Intl.NumberFormat('th-TH', {style:'currency', currency:'THB', maximumFractionDigits:0}).format(val);
+                                        } else {
+                                            let total = 0;
+                                            context.chart.data.datasets.forEach(ds => { total += ds.data[context.dataIndex]; });
+                                            let pct = total > 0 ? (val / total) * 100 : 0;
+                                            return context.dataset.label + ': ' + pct.toFixed(2) + '%';
+                                        }
+                                    } 
+                                } 
+                            } 
+                        }, 
+                        scales: { 
+                            y: { stacked: true, ticks:{color:'#94a3b8', font: { family: 'Sarabun', size: 10 }, callback:(v)=>(v/1000000)+'M'}, grid:{color:'#334155'} }, 
+                            x: { stacked: true, ticks:{color:'#94a3b8', font: { family: 'Sarabun', size: 10 }}, grid:{display:false} } 
+                        } 
+                    }
+                });
+            }
+        }
+
+        // --- EXPORT TO EXCEL ---
+        function exportToExcel() {
+            if (typeof XLSX === 'undefined') {
+                alert("เกิดข้อผิดพลาดในการโหลดไลบรารี Excel");
+                return;
+            }
+
+            const inputAOA = [
+                ["หมวดหมู่", "พารามิเตอร์", "ค่าที่ตั้งไว้"],
+                ["การลงทุน", "เงินต้นรวมเริ่มต้น (บาท)", document.getElementById('init-investment').value],
+                ["การลงทุน", "เงินเฟ้อทั่วไป (%)", document.getElementById('inflation-rate').value],
+                ["การถอนเงิน", "โหมดถอนเงินพอร์ตรวม (Global Waterfall)", globalWithdrawal.mode],
+                ["การถอนเงิน", "ยอดถอนต่อครั้ง (บาท)", globalWithdrawal.fixedAmt],
+                ["การปรับสมดุล", "รอบ Auto-Rebalance", document.getElementById('global-rebalance').options[document.getElementById('global-rebalance').selectedIndex].text]
+            ];
+
+            const wsInputs = XLSX.utils.aoa_to_sheet(inputAOA);
+
+            let headers = ["ปีที่ (Year)", "กระแสเงินสดรวมสุทธิ (Total CF)", "มูลค่าพอร์ตรวม 10th", "มูลค่าพอร์ตรวม 50th", "มูลค่าพอร์ตรวม 90th"];
+            portfolios.forEach(pt => { headers.push(`${pt.name} (50th)`); });
+            const simAOA = [headers];
+            
+            for(let i=0; i<=30; i++) {
+                const row = [i];
+                const cashflow = i > 0 ? (globalExportData.cashflows[i-1] || 0) : 0;
+                row.push(cashflow);
+                
+                row.push(globalExportData.resultsByYear['total'][i]?.worst || 0);
+                row.push(globalExportData.resultsByYear['total'][i]?.median || 0);
+                row.push(globalExportData.resultsByYear['total'][i]?.best || 0);
+
+                portfolios.forEach(pt => {
+                    row.push(globalExportData.resultsByYear[pt.id][i]?.median || 0);
+                });
+                simAOA.push(row);
+            }
+            const wsSim = XLSX.utils.aoa_to_sheet(simAOA);
+
+            const wb = XLSX.utils.book_new();
+            XLSX.utils.book_append_sheet(wb, wsInputs, "สมมติฐาน (Inputs)");
+            XLSX.utils.book_append_sheet(wb, wsSim, "ผลจำลอง 30 ปี (Simulation)");
+            XLSX.writeFile(wb, "Multi_Portfolio_Waterfall_Simulation.xlsx");
+        }
+
+        // --- HEATMAP ENGINE ---
+        function runHeatmap() {
+            const btn = document.getElementById('btn-run-heatmap');
+            btn.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i> Processing Waterfall...';
+            
+            setTimeout(() => {
+                const initPrincipal = parseFloat(document.getElementById("init-investment").value) || 10000000;
+                const inflationAnnual = (parseFloat(document.getElementById("inflation-rate").value) || 2.5) / 100;
+                const infMonthly = Math.pow(1 + inflationAnnual, 1/12) - 1;
+                const globalRebalanceFreq = parseInt(document.getElementById("global-rebalance").value) || 0;
+                const totalPortWeight = portfolios.reduce((s,p) => s + (parseFloat(p.allocWeight)||0), 0);
+                
+                const allStats = {};
+                const allActivePhaseMaps = {};
+                
+                portfolios.forEach(pt => {
+                    allStats[pt.id] = {};
+                    [1, 2, 3, 4].forEach(i => { allStats[pt.id][i] = calculatePhaseStats(pt.fundsData[i]); });
+                    
+                    const numMonths = 40 * 12;
+                    allActivePhaseMaps[pt.id] = new Array(numMonths + 1);
+                    for (let m = 1; m <= numMonths; m++) {
+                        const y = Math.ceil(m / 12);
+                        let currentP = 1;
+                        if (pt.phaseSettings[4].enabled && y >= pt.phaseSettings[4].startYear) currentP = 4;
+                        else if (pt.phaseSettings[3].enabled && y >= pt.phaseSettings[3].startYear) currentP = 3;
+                        else if (pt.phaseSettings[2].enabled && y >= pt.phaseSettings[2].startYear) currentP = 2;
+                        allActivePhaseMaps[pt.id][m] = currentP;
+                    }
+                });
+
+                const choleskyCache = {}; // memoized per-month cross-portfolio correlation structure
+                const benchmarkRateAnnual = parseFloat(document.getElementById("heatmap-benchmark-rate").value) || 0;
+
+                const ratesStr = document.getElementById('heatmap-rates').value;
+                let testCases = ratesStr.split(',').map(s => s.trim()).filter(s => s !== "");
+                if (testCases.length === 0) testCases = ["3%", "4%", "50000"];
+
+                const horizons = [20, 30, 40];
+                const paths = 500; 
+                let html = "";
+
+                testCases.forEach(caseStr => {
+                    let isPercent = caseStr.includes('%');
+                    let rawValue = parseFloat(caseStr.replace('%', ''));
+                    if (isNaN(rawValue)) return;
+
+                    let label = isPercent ? `${rawValue}%` : `${rawValue.toLocaleString()} ฿/ด.`;
+                    html += `<tr><td class="border border-slate-700 p-3 text-amber-300 font-bold">${label}</td>`;
+
+                    // "immediate" mode ignores the Global Waterfall start date entirely
+                    // (month 1 = day one of the stress test). "planned" mode instead starts
+                    // withdrawing on the same start date configured in Global Waterfall, so
+                    // the portfolio gets to go through its accumulation/DCA phase first.
+                    const startWdM = (heatmapWithdrawalMode === 'planned')
+                        ? Math.max(1, (globalWithdrawal.startY - 1) * 12 + globalWithdrawal.startM)
+                        : 1;
+                    // 0 preserves the original "immediate" inflation convention (raw month m);
+                    // planned mode instead counts inflation from months-since-withdrawal-started.
+                    const inflationOffset = (heatmapWithdrawalMode === 'planned') ? startWdM : 0;
+
+                    // For "immediate" + percent, the base is fixed off today's principal
+                    // (unchanged from the original behavior). For "planned" + percent, the
+                    // base is resolved dynamically once withdrawal actually starts (handled
+                    // per-path below), since the balance at that point depends on DCA/growth.
+                    const fixedWdBaseAnnualTotal = isPercent ? (startWdM === 1 ? (initPrincipal * (rawValue/100)) : null) : (rawValue * 12);
+
+                    // Fixed Deposit benchmark is deterministic (no volatility), so it's computed
+                    // once per test case up to the longest horizon, then reused for every horizon.
+                    const fdDepletionMonth = computeFixedDepositDepletionMonth(initPrincipal, benchmarkRateAnnual, isPercent, rawValue, infMonthly, 40 * 12, startWdM, inflationOffset, portfolios);
+
+                    horizons.forEach(years => {
+                        let success = 0;
+                        const numMonths = years * 12;
+                        
+                        for(let p=0; p<paths; p++) {
+                            let currentVals = {};
+                            let currentVar = {};
+                            let wdBaseAnnualTotal = fixedWdBaseAnnualTotal; // null until captured, for planned+percent
+                            
+                            portfolios.forEach(pt => {
+                                const w = totalPortWeight > 0 ? (pt.allocWeight / totalPortWeight) : 0;
+                                currentVals[pt.id] = initPrincipal * w;
+                                currentVar[pt.id] = Math.pow(allStats[pt.id][allActivePhaseMaps[pt.id][1]].sd / Math.sqrt(12), 2);
+                            });
+                            
+                            for(let m=1; m<=numMonths; m++) {
+                                // Correlated cross-portfolio shocks (replaces the old single shared `z`).
+                                const monthShocks = getCorrelatedShocks(portfolios, allStats, allActivePhaseMaps, m, choleskyCache);
+                                let totalMonthYieldGenerated = 0;
+                                let monthYieldPool = {};
+                                
+                                portfolios.forEach((pt, ptIdx) => {
+                                    if(currentVals[pt.id] <= 0) {
+                                        monthYieldPool[pt.id] = 0;
+                                        return;
+                                    }
+                                    const activeP = allStats[pt.id][allActivePhaseMaps[pt.id][m]];
+                                    if(!activeP.valid) {
+                                        monthYieldPool[pt.id] = 0;
+                                        return;
+                                    }
+                                    
+                                    let z = monthShocks[ptIdx];
+                                    let mReturn;
+                                    const expMonthlyReturn = Math.pow(1 + activeP.totalR, 1/12) - 1;
+                                    const targetMonthlySD = activeP.sd / Math.sqrt(12);
+
+                                    if (heatmapSimMethod === 'traditional') {
+                                        mReturn = expMonthlyReturn + z * targetMonthlySD;
+                                    } else if (heatmapSimMethod === 'gbm') {
+                                        const drift = (activeP.totalR - Math.pow(activeP.sd, 2) / 2) / 12;
+                                        const diffusion = targetMonthlySD * z;
+                                        mReturn = Math.exp(drift + diffusion) - 1;
+                                    } else if (heatmapSimMethod === 'volcluster') {
+                                        let currentSd = Math.sqrt(currentVar[pt.id]);
+                                        let shock = z * currentSd;
+                                        mReturn = expMonthlyReturn + shock;
+                                        const alpha = 0.15, beta = 0.75;
+                                        const omega = Math.pow(targetMonthlySD, 2) * (1 - alpha - beta);
+                                        currentVar[pt.id] = omega + (alpha * Math.pow(shock, 2)) + (beta * currentVar[pt.id]);
+                                    }
+                                    
+                                    currentVals[pt.id] *= (1 + mReturn);
+                                    let portYieldMonth = currentVals[pt.id] * (activeP.yield / 12);
+                                    monthYieldPool[pt.id] = portYieldMonth;
+                                    totalMonthYieldGenerated += portYieldMonth;
+                                });
+
+                                // DCA Top-ups (now actually simulated here, matching the main
+                                // Waterfall engine, so this stress test truly reflects "under
+                                // current DCA plan" as the description text states).
+                                portfolios.forEach(pt => {
+                                    const startTopupM = (pt.topup.startY - 1) * 12 + pt.topup.startM;
+                                    const endTopupM = (pt.topup.endY - 1) * 12 + pt.topup.endM;
+                                    if (pt.topup.amount > 0 && m >= startTopupM && m <= endTopupM && (m - startTopupM) % pt.topup.freq === 0) {
+                                        let currentTopupAmt = pt.topup.amount;
+                                        const yearsPassed = Math.floor((m - 1) / 12);
+                                        if (yearsPassed > 0) currentTopupAmt *= Math.pow(1 + pt.topup.growth / 100, yearsPassed);
+                                        currentVals[pt.id] += currentTopupAmt;
+                                    }
+                                });
+
+                                // Waterfall Stress Test Liquidation
+                                let totalCurrentPortVal = portfolios.reduce((s, pt) => s + currentVals[pt.id], 0);
+                                let mWithdrawal = 0;
+                                if (m >= startWdM) {
+                                    if (wdBaseAnnualTotal === null) wdBaseAnnualTotal = totalCurrentPortVal * (rawValue / 100);
+                                    mWithdrawal = (wdBaseAnnualTotal * Math.pow(1 + infMonthly, m - inflationOffset)) / 12;
+                                }
+
+                                if (mWithdrawal > 0 && totalCurrentPortVal > 0) {
+                                    if (totalMonthYieldGenerated >= mWithdrawal) {
+                                        portfolios.forEach(pt => {
+                                            let ratio = totalMonthYieldGenerated > 0 ? (monthYieldPool[pt.id] / totalMonthYieldGenerated) : 0;
+                                            currentVals[pt.id] -= (mWithdrawal * ratio);
+                                        });
+                                    } else {
+                                        portfolios.forEach(pt => {
+                                            currentVals[pt.id] -= monthYieldPool[pt.id];
+                                        });
+                                        
+                                        let deficit = mWithdrawal - totalMonthYieldGenerated;
+                                        
+                                        for (let priorityPortId of globalWithdrawal.priorityOrder) {
+                                            if (deficit <= 0) break;
+                                            if (currentVals[priorityPortId] > 0) {
+                                                let sellAmount = Math.min(currentVals[priorityPortId], deficit);
+                                                currentVals[priorityPortId] -= sellAmount;
+                                                deficit -= sellAmount;
+                                            }
+                                        }
+                                    }
+                                }
+
+                                // Rebalance inside Heatmap
+                                // Only portfolios that have reached their own rebalance-eligibility date participate.
+                                if (globalRebalanceFreq > 0 && m % globalRebalanceFreq === 0) {
+                                    const eligiblePorts = portfolios.filter(pt => isRebalanceEligible(pt, m));
+                                    const eligibleWeight = eligiblePorts.reduce((s, p) => s + (parseFloat(p.allocWeight) || 0), 0);
+                                    const eligibleTotal = eligiblePorts.reduce((s, p) => s + currentVals[p.id], 0);
+                                    if (eligibleTotal > 0 && eligibleWeight > 0) {
+                                        eligiblePorts.forEach(pt => {
+                                            let targetWeight = (parseFloat(pt.allocWeight) || 0) / eligibleWeight;
+                                            currentVals[pt.id] = eligibleTotal * targetWeight;
+                                        });
+                                    }
+                                }
+                                
+                                let totalVal = portfolios.reduce((s, p) => s + currentVals[p.id], 0);
+                                if (totalVal <= 0) break;
+                            }
+                            
+                            let endTotal = portfolios.reduce((s, p) => s + currentVals[p.id], 0);
+                            if (endTotal > 0) success++;
+                        }
+                        
+                        const survRate = (success / paths) * 100;
+                        let cls = 'heat-red';
+                        if (survRate >= 90) cls = 'heat-green';
+                        else if (survRate >= 70) cls = 'heat-yellow';
+
+                        const fdSurvivedThisHorizon = (fdDepletionMonth === null) || (fdDepletionMonth > numMonths);
+                        const fdLabel = fdSurvivedThisHorizon
+                            ? 'FD: รอดตลอด'
+                            : `FD: หมดปีที่ ${(fdDepletionMonth / 12).toFixed(1)}`;
+
+                        html += `<td class="border border-slate-700 p-3 ${cls}">
+                            <div class="font-semibold">${survRate.toFixed(1)}%</div>
+                            <div class="text-[9px] mt-0.5 ${fdSurvivedThisHorizon ? 'text-cyan-400/70' : 'text-slate-500'}">${fdLabel}</div>
+                        </td>`;
+                    });
+                    html += "</tr>";
+                });
+                
+                document.getElementById('heatmap-body').innerHTML = html;
+                btn.innerHTML = '<i class="fa-solid fa-play"></i> Run Analysis';
+            }, 50);
+        }
+
+        // --- AI INTEGRATION ---
+        const apiKey = ""; 
+
+        function openAIModal() {
+            document.getElementById('ai-modal').classList.remove('hidden');
+            document.getElementById('ai-loading').classList.remove('hidden');
+            document.getElementById('ai-error').classList.add('hidden');
+            document.getElementById('ai-response-content').classList.add('hidden');
+            document.getElementById('ai-response-content').innerHTML = '';
+            generateAIAnalysis();
+        }
+
+        function closeAIModal() {
+            document.getElementById('ai-modal').classList.add('hidden');
+        }
+
+        function getPortfolioContext() {
+            const initPrincipal = document.getElementById("init-investment").value;
+            const survivalRate = document.getElementById("metric-survival-rate").innerText;
+            const rebalanceSetting = document.getElementById('global-rebalance').options[document.getElementById('global-rebalance').selectedIndex].text;
+            
+            let portContexts = "";
+            portfolios.forEach(pt => {
+                portContexts += `\n** ${pt.name} (น้ำหนัก ${pt.allocWeight}%) **\n`;
+                portContexts += `- DCA: ${pt.topup.amount} บาท/ครั้ง\n`;
+            });
+
+            return `
+ข้อมูลแผนการลงทุน (Global Waterfall & Bucket Priority):
+- เงินต้นรวม: ${initPrincipal} บาท
+- การปรับสมดุลพอร์ต (Rebalance): ${rebalanceSetting}
+- นโยบายถอนเงิน (Global Waterfall): ${globalWithdrawal.mode} (ถอน ${globalWithdrawal.fixedAmt} บาท/เดือน)
+- ลำดับพอร์ตสำหรับขายหน่วยลงทุน (Priority Order): ${globalWithdrawal.priorityOrder.map(id => portfolios.find(p=>p.id===id)?.name).join(' -> ')}
+- โอกาสรอด 30 ปีรวมทุกพอร์ต: ${survivalRate}
+- รายละเอียดแต่ละพอร์ต:
+${portContexts}
+
+คำสั่ง: คุณคือ Institutional Financial Advisor
+วิเคราะห์ประโยชน์ของสถาปัตยกรรม Global Waterfall & Priority Bucket Liquidation นี้ในแง่การบริหาร Sequence of Returns Risk และการคุ้มครองสินทรัพย์เติบโตสูง (Markdown format, ภาษาไทย)
+            `;
+        }
+
+        async function fetchGeminiWithRetry(promptText) {
+            const url = `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash-preview-09-2025:generateContent?key=${apiKey}`;
+            const payload = { contents: [{ parts: [{ text: promptText }] }] };
+            const retries = 5;
+            const delays = [1000, 2000, 4000, 8000, 16000];
+
+            for (let i = 0; i < retries; i++) {
+                try {
+                    const response = await fetch(url, { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify(payload) });
+                    if (!response.ok) throw new Error(`API Error: ${response.status}`);
+                    const data = await response.json();
+                    return data.candidates?.[0]?.content?.parts?.[0]?.text;
+                } catch (error) {
+                    if (i === retries - 1) throw error;
+                    await new Promise(res => setTimeout(res, delays[i]));
+                }
+            }
+            throw new Error("ไม่สามารถเชื่อมต่อ AI ได้");
+        }
+
+        async function generateAIAnalysis() {
+            try {
+                const prompt = getPortfolioContext();
+                const aiResponseText = await fetchGeminiWithRetry(prompt);
+                document.getElementById('ai-loading').classList.add('hidden');
+                
+                if (aiResponseText) {
+                    const contentDiv = document.getElementById('ai-response-content');
+                    contentDiv.innerHTML = marked.parse(aiResponseText);
+                    contentDiv.classList.remove('hidden');
+                } else { throw new Error("No response"); }
+            } catch (err) {
+                document.getElementById('ai-loading').classList.add('hidden');
+                document.getElementById('ai-error').classList.remove('hidden');
+                document.getElementById('ai-error-text').innerText = err.message;
+            }
+        }
+    </script>
+</body>
+</html>
