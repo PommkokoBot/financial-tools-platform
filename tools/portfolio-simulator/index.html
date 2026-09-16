@@ -325,6 +325,45 @@
                                     </button>
                                 </div>
                             </div>
+
+                            <!-- OPTIMIZER: Efficient Frontier presets for the currently-selected
+                                 portfolio+phase's fund mix above. Never edits the table above --
+                                 results only ever appear in #section-optimizer on the right. -->
+                            <div class="bg-slate-900 p-3 rounded-lg border border-slate-800 mt-3 space-y-2">
+                                <div class="text-[10px] text-cyan-400 font-bold border-b border-slate-700 pb-1 flex items-center gap-1.5">
+                                    <i class="fa-solid fa-wand-magic-sparkles"></i> Optimize สัดส่วนกองทุน (เฟสที่กำลังแก้ไขอยู่นี้)
+                                </div>
+                                <div class="grid grid-cols-1 sm:grid-cols-3 gap-1.5">
+                                    <button id="btn-optimize-sharpe" data-mode="sharpe" class="optimizer-btn bg-slate-800 hover:bg-amber-900/40 border border-slate-700 hover:border-amber-500/50 text-amber-300 rounded-lg py-2 text-[10px] font-bold transition">
+                                        <i class="fa-solid fa-bullseye"></i> Sharpe Ratio สูงสุด
+                                    </button>
+                                    <button id="btn-optimize-conservative" data-mode="conservative" class="optimizer-btn bg-slate-800 hover:bg-cyan-900/40 border border-slate-700 hover:border-cyan-500/50 text-cyan-300 rounded-lg py-2 text-[10px] font-bold transition">
+                                        <i class="fa-solid fa-shield-halved"></i> Conservative ที่สุด
+                                    </button>
+                                    <button id="btn-optimize-aggressive" data-mode="aggressive" class="optimizer-btn bg-slate-800 hover:bg-rose-900/40 border border-slate-700 hover:border-rose-500/50 text-rose-300 rounded-lg py-2 text-[10px] font-bold transition">
+                                        <i class="fa-solid fa-fire-flame-curved"></i> Aggressive ที่สุด
+                                    </button>
+                                </div>
+                                <!-- Optional constraints. Leaving a box empty keeps that preset's
+                                     original (unconstrained) definition exactly as before. -->
+                                <div class="grid grid-cols-2 gap-2 pt-1 border-t border-slate-800 mt-1">
+                                    <div>
+                                        <label class="block text-[9px] text-cyan-300 mb-0.5">Conservative: ผลตอบแทนขั้นต่ำ (%)</label>
+                                        <input type="number" step="0.1" min="0" id="opt-conservative-min-return" placeholder="ไม่ระบุ" class="w-full bg-slate-800 border border-slate-600 rounded px-2 py-1 text-[10px] text-cyan-300 font-bold placeholder:text-slate-600 placeholder:font-normal focus:outline-none focus:border-cyan-500">
+                                    </div>
+                                    <div>
+                                        <label class="block text-[9px] text-rose-300 mb-0.5">Aggressive: เพดาน S.D. (%)</label>
+                                        <input type="number" step="0.1" min="0" id="opt-aggressive-max-risk" placeholder="ไม่ระบุ" class="w-full bg-slate-800 border border-slate-600 rounded px-2 py-1 text-[10px] text-rose-300 font-bold placeholder:text-slate-600 placeholder:font-normal focus:outline-none focus:border-rose-500">
+                                    </div>
+                                </div>
+                                <p id="opt-constraint-warning" class="hidden text-[9px] text-amber-400 font-semibold leading-relaxed"></p>
+                                <p class="text-[9px] text-slate-400 leading-relaxed pt-1">
+                                    <b class="text-amber-300">Sharpe สูงสุด</b>: จุดที่ผลตอบแทนต่อหน่วยความเสี่ยงดีที่สุดจากกลุ่มตัวอย่างที่สุ่มได้ (risk-free = อัตรา FD benchmark ในส่วน Heatmap ด้านล่าง) — ไม่ผูกกับเงื่อนไขเสริมด้านบน<br>
+                                    <b class="text-cyan-300">Conservative ที่สุด</b>: จุดความเสี่ยง (S.D.) ต่ำที่สุดเท่าที่เป็นไปได้ (Global Minimum-Variance) — ถ้าระบุ "ผลตอบแทนขั้นต่ำ" จะเปลี่ยนเป็น "จุดเสี่ยงต่ำสุดที่ยังให้ผลตอบแทนไม่ต่ำกว่าเกณฑ์นั้น"<br>
+                                    <b class="text-rose-300">Aggressive ที่สุด</b>: จุดที่ผลตอบแทนอยู่ระดับ 80th percentile ของกลุ่มตัวอย่าง โดยเลือกความเสี่ยงต่ำสุด ณ ระดับผลตอบแทนนั้น — ถ้าระบุ "เพดาน S.D." จะเปลี่ยนเป็น "จุดผลตอบแทนสูงสุดที่ความเสี่ยงไม่เกินเพดานนั้น"<br>
+                                    <span class="text-slate-500">*ผลลัพธ์แสดงเป็นกราฟ/ตารางด้านขวา (Efficient Frontier) เท่านั้น ไม่แก้ไขตารางสัดส่วนด้านบน</span>
+                                </p>
+                            </div>
                         </div>
 
                     </div>
@@ -334,7 +373,7 @@
 
             <!-- Right Panel: Graphs & Heatmaps (Stacked) -->
             <div class="xl:col-span-7 space-y-6">
-                
+
                 <!-- VIEW 1: MONTE CARLO CHART -->
                 <div id="section-mc" class="space-y-5">
                     <!-- Phase Stats Matrix -->
@@ -462,6 +501,74 @@
                                 <span>ถอนสะสมรวม: <span id="total-cf-withdrawn" class="font-bold text-amber-400 text-sm ml-2">-- บาท</span></span>
                                 <span>ทุนที่ใส่ไปจริง (รวม DCA): <span id="metric-total-capital" class="font-bold text-slate-300 text-sm ml-2">-- บาท</span></span>
                             </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- VIEW 1.5: PORTFOLIO OPTIMIZER (Efficient Frontier) -->
+                <!-- Hidden until one of the 3 "Optimize" buttons on the left is clicked. -->
+                <div id="section-optimizer" class="hidden bg-slate-800 p-5 rounded-2xl border border-slate-700 shadow-xl border-l-4 border-l-cyan-500">
+                    <div class="flex justify-between items-start mb-3 border-b border-slate-700 pb-2">
+                        <div>
+                            <h2 class="text-base font-bold text-cyan-400 flex items-center gap-2">
+                                <i class="fa-solid fa-chart-scatter"></i> Portfolio Optimizer — Efficient Frontier
+                            </h2>
+                            <p id="optimizer-subtitle" class="text-[10px] text-slate-400 mt-1">--</p>
+                        </div>
+                    </div>
+                    <p class="text-[10px] text-slate-500 mb-3 leading-relaxed">
+                        เส้น/จุดบนกราฟนี้มาจากการ<b>สุ่มสัดส่วนกองทุนหลายพันชุด</b>แล้วคำนวณผลตอบแทน/ความเสี่ยงด้วยโมเดลเดียวกับตารางสถิติหลัก (ไม่ใช่การแก้สมการหาค่าที่ดีที่สุดจริงทางคณิตศาสตร์) — เส้นขอบ Frontier จึงเป็น<b>เส้นประมาณการ</b> ไม่ใช่เส้นทฤษฎีที่แม่นยำ 100%
+                    </p>
+
+                    <div class="h-72 w-full">
+                        <canvas id="optimizerFrontierChart"></canvas>
+                    </div>
+
+                    <div class="mt-4">
+                        <div class="text-xs font-semibold text-slate-300 mb-2 flex items-center gap-2">
+                            <i class="fa-solid fa-table"></i> เทียบสัดส่วนกองทุน (ปัจจุบัน vs Optimize) — อ่านอย่างเดียว
+                        </div>
+                        <div class="overflow-x-auto">
+                            <table class="w-full text-left text-[11px] text-slate-300">
+                                <thead>
+                                    <tr class="border-b border-slate-700 text-slate-400">
+                                        <th class="py-1 pr-1">ชื่อกองทุน</th>
+                                        <th class="py-1 text-center">น้ำหนักปัจจุบัน</th>
+                                        <th class="py-1 text-center">น้ำหนัก Optimize</th>
+                                        <th class="py-1 text-center">ส่วนต่าง</th>
+                                    </tr>
+                                </thead>
+                                <tbody id="optimizer-table-body" class="divide-y divide-slate-800"></tbody>
+                            </table>
+                        </div>
+                    </div>
+
+                    <div class="mt-4 pt-3 border-t border-slate-700">
+                        <label class="flex items-center gap-2 text-xs text-slate-300 cursor-pointer w-max">
+                            <input type="checkbox" id="optimizer-mc-toggle" class="accent-cyan-500 cursor-pointer">
+                            แสดงกราฟเทียบ Monte Carlo: พอร์ตที่กรอกไว้ vs สัดส่วนที่ Optimize
+                        </label>
+                        <div id="optimizer-mc-wrap" class="hidden mt-3">
+                            <!-- Which preset feeds the comparison. Independent of which button was
+                                 last clicked on the left, so switching the comparison target never
+                                 requires re-running the whole frontier sampling. -->
+                            <div class="flex flex-wrap items-center gap-x-4 gap-y-1 mb-2 bg-slate-900/60 px-3 py-2 rounded-lg border border-slate-700">
+                                <span class="text-[10px] text-slate-400 font-semibold">เทียบกับ:</span>
+                                <label class="flex items-center gap-1.5 text-[10px] text-amber-300 cursor-pointer">
+                                    <input type="radio" name="optimizer-compare-mode" value="sharpe" class="accent-amber-500 cursor-pointer"> Sharpe สูงสุด
+                                </label>
+                                <label class="flex items-center gap-1.5 text-[10px] text-cyan-300 cursor-pointer">
+                                    <input type="radio" name="optimizer-compare-mode" value="conservative" class="accent-cyan-500 cursor-pointer"> Conservative
+                                </label>
+                                <label class="flex items-center gap-1.5 text-[10px] text-rose-300 cursor-pointer">
+                                    <input type="radio" name="optimizer-compare-mode" value="aggressive" class="accent-rose-500 cursor-pointer"> Aggressive
+                                </label>
+                            </div>
+                            <p id="optimizer-mc-note" class="text-[10px] text-amber-400 mb-2"></p>
+                            <div class="h-72 w-full">
+                                <canvas id="optimizerCompareChart"></canvas>
+                            </div>
+                            <p class="text-[9px] text-slate-500 mt-2">*แถบโปร่งใสคือกรอบผลลัพธ์ระหว่าง 10th–90th percentile เส้นทึบตรงกลางคือมัธยฐาน (50th) — <span class="text-purple-400 font-semibold">ม่วง = พอร์ตที่กรอกไว้</span>, <span class="text-cyan-400 font-semibold">ฟ้า = สัดส่วนที่ Optimize</span> ส่วนอื่นของแผน (DCA, Rebalance, Waterfall) เหมือนกันทั้งสองฝั่ง มีผลเฉพาะช่วงที่เฟสนี้ active อยู่จริงเท่านั้น</p>
                         </div>
                     </div>
                 </div>
@@ -623,6 +730,20 @@
         // Stores
         let globalExportData = { resultsByYear: {}, randomPaths: {}, cashflows: {}, allActivePhaseMaps: {} };
         let globalDriftData = { total: [], ports: {} };
+
+        // Optimizer state
+        let optimizerCloud = null;       // last generateFrontierCloud() result
+        let optimizerPresets = null;     // last pickOptimizerPresets() result
+        let optimizerSelectedMode = null; // 'sharpe' | 'conservative' | 'aggressive'
+        let optimizerFrontierChartInstance = null;
+        let optimizerCompareChartInstance = null;
+        // Cached comparison simulations so switching the "เทียบกับ" selector back and forth
+        // doesn't re-run a 1,000-path simulation every time. Keyed by mode + the preset
+        // point's own coordinates, so a cached run is reused only while that preset still
+        // resolves to the same allocation: moving the Aggressive cap therefore invalidates
+        // the Aggressive entry by itself and leaves a cached Sharpe run usable.
+        let optimizerCompareCache = {};
+        let optimizerConstraintDebounce = null;
 
         const barColors = ['#3b82f6', '#10b981', '#f59e0b', '#ef4444', '#8b5cf6', '#ec4899', '#06b6d4', '#f97316', '#6366f1', '#14b8a6'];
 
@@ -793,6 +914,169 @@
             return m >= startM;
         }
 
+        // =========================================================================
+        // PORTFOLIO OPTIMIZER: Efficient Frontier (random-sampling / Monte Carlo cloud)
+        // Approximates an efficient frontier for the funds within ONE portfolio+phase by
+        // randomly sampling many weight combinations (Dirichlet/simplex sampling: sum=100%,
+        // no negative weights), scoring each with the SAME calculatePhaseStats() used
+        // everywhere else in the app, then keeping the non-dominated (Pareto) boundary.
+        // This is deliberately NOT a true quadratic-program solver -- it reuses the
+        // codebase's existing sampling-based style instead of adding a new numerical
+        // method. The UI captions this explicitly so the "frontier" line is never
+        // mistaken for an exact mathematical optimum.
+        // =========================================================================
+
+        // Dirichlet(1,1,...,1) sampling via normalized Exponential(1) draws -> uniform
+        // distribution over the simplex {w: sum(w)=1, w_i>=0}.
+        function sampleSimplexWeights(n) {
+            const raw = new Array(n);
+            let sum = 0;
+            for (let i = 0; i < n; i++) {
+                const u = Math.max(Math.random(), 1e-12); // guard against log(0)
+                raw[i] = -Math.log(u);
+                sum += raw[i];
+            }
+            return raw.map(r => r / sum);
+        }
+
+        // Generates the random-sampling cloud for one portfolio+phase's fund set.
+        // Returns { samples, frontier, currentPoint, degenerate } where:
+        //   - samples: every sampled {weights, return, risk, yield, growth} point
+        //   - frontier: the non-dominated (Pareto) subset of samples, sorted by risk
+        //     ascending with return strictly increasing
+        //   - currentPoint: the stats for the fund weights as ACTUALLY entered right now
+        //     (never mutated -- this function only ever reads pt.fundsData, never writes it)
+        //   - degenerate: true when there's only 1 fund, so there's nothing to optimize
+        function generateFrontierCloud(portfolioId, phaseId, numSamples) {
+            numSamples = numSamples || 4000;
+            const pt = portfolios.find(p => p.id === portfolioId);
+            if (!pt) return null;
+            const funds = pt.fundsData[phaseId];
+            if (!funds || funds.length === 0) return null;
+
+            const currentStats = calculatePhaseStats(funds);
+            const currentPoint = {
+                weights: {}, return: currentStats.totalR, risk: currentStats.sd,
+                yield: currentStats.yield, growth: currentStats.growth
+            };
+            funds.forEach(f => { currentPoint.weights[f.id] = f.weight; });
+
+            if (funds.length < 2) {
+                return { samples: [currentPoint], frontier: [currentPoint], currentPoint, degenerate: true };
+            }
+
+            const samples = [];
+            for (let s = 0; s < numSamples; s++) {
+                const w = sampleSimplexWeights(funds.length);
+                const candidateFunds = funds.map((f, i) => ({ ...f, weight: w[i] }));
+                const stats = calculatePhaseStats(candidateFunds);
+                if (!stats.valid) continue;
+                const weightsById = {};
+                funds.forEach((f, i) => { weightsById[f.id] = w[i] * 100; }); // stored as %, matches fund.weight convention
+                samples.push({ weights: weightsById, return: stats.totalR, risk: stats.sd, yield: stats.yield, growth: stats.growth });
+            }
+
+            // Pareto frontier: sort by risk ascending, keep only strictly-improving-return points.
+            const sorted = [...samples].sort((a, b) => a.risk - b.risk);
+            const frontier = [];
+            let maxReturnSoFar = -Infinity;
+            for (const s of sorted) {
+                if (s.return > maxReturnSoFar) {
+                    frontier.push(s);
+                    maxReturnSoFar = s.return;
+                }
+            }
+
+            return { samples, frontier, currentPoint, degenerate: false };
+        }
+
+        // Picks the 3 preset points (Conservative / Sharpe / Aggressive) from a cloud
+        // produced by generateFrontierCloud(). riskFreeAnnual is a decimal (e.g. 0.015).
+        //
+        // `constraints` (optional, both decimals e.g. 0.04 for 4%) narrows what each of the
+        // two "extreme" presets means, without re-sampling -- it only FILTERS the cloud that
+        // was already generated, then applies that preset's own criterion to what's left:
+        //   - conservativeMinReturn: Conservative becomes "lowest risk among combinations
+        //     that still return at least this much" instead of the plain global minimum-
+        //     variance point (which can be so defensive it's useless in practice).
+        //   - aggressiveMaxRisk: Aggressive becomes "highest return among combinations whose
+        //     S.D. stays within this ceiling" instead of an arbitrary 80th-percentile cut.
+        // Both filtered picks are still frontier points by construction: nothing in the
+        // filtered set has lower risk than the min-risk pick, and nothing has higher return
+        // than the max-return pick, so neither can be dominated within that set.
+        // Leaving a constraint undefined/null restores that preset's original behavior
+        // exactly. Max Sharpe is deliberately never constrained (it already has an
+        // unambiguous meaning of its own).
+        //
+        // Returns { conservative, sharpe, aggressive, warnings } where a preset is null when
+        // its constraint excluded every sampled point, and `warnings` carries a Thai message
+        // per affected preset so the UI can say so explicitly instead of silently falling
+        // back to a different point (which would misrepresent what the button did).
+        function pickOptimizerPresets(cloud, riskFreeAnnual, constraints) {
+            constraints = constraints || {};
+            const minReturn = (typeof constraints.conservativeMinReturn === 'number' && isFinite(constraints.conservativeMinReturn)) ? constraints.conservativeMinReturn : null;
+            const maxRisk = (typeof constraints.aggressiveMaxRisk === 'number' && isFinite(constraints.aggressiveMaxRisk)) ? constraints.aggressiveMaxRisk : null;
+            const warnings = {};
+
+            if (!cloud || cloud.degenerate) {
+                const p = cloud ? cloud.currentPoint : null;
+                return { conservative: p, sharpe: p, aggressive: p, warnings };
+            }
+            const { samples, frontier } = cloud;
+
+            // --- Conservative ---
+            let conservative;
+            if (minReturn === null) {
+                // Global Minimum-Variance = lowest-risk point in the whole cloud.
+                // frontier[0] is always this point: `frontier` is built by scanning risk
+                // ascending and the first point encountered is always kept.
+                conservative = frontier[0];
+            } else {
+                const eligible = samples.filter(s => s.return >= minReturn);
+                if (eligible.length === 0) {
+                    conservative = null;
+                    warnings.conservative = `ไม่มีสัดส่วนใดในกลุ่มตัวอย่างที่ให้ผลตอบแทน ≥ ${(minReturn * 100).toFixed(2)}% (สูงสุดที่ทำได้ ${(Math.max(...samples.map(s => s.return)) * 100).toFixed(2)}%) — กรุณาลดเกณฑ์ผลตอบแทนขั้นต่ำ`;
+                } else {
+                    conservative = eligible.reduce((best, s) => (s.risk < best.risk ? s : best), eligible[0]);
+                }
+            }
+
+            // --- Max Sharpe (never constrained) ---
+            // Best (return - riskFree) / risk across ALL sampled points, not just the
+            // frontier subset -- simplest and correct without relying on the frontier's
+            // monotonic-return property holding exactly at this sample density.
+            let sharpe = samples[0];
+            let bestSharpe = -Infinity;
+            samples.forEach(s => {
+                if (s.risk <= 0) return;
+                const sr = (s.return - riskFreeAnnual) / s.risk;
+                if (sr > bestSharpe) { bestSharpe = sr; sharpe = s; }
+            });
+
+            // --- Aggressive ---
+            let aggressive;
+            if (maxRisk === null) {
+                // 80th-percentile-of-return point, resolved onto the frontier (the
+                // lowest-risk sampled combination that still achieves at least that return)
+                // rather than a raw high-risk outlier that happens to hit that return.
+                const returns = samples.map(s => s.return).sort((a, b) => a - b);
+                const idx80 = Math.min(returns.length - 1, Math.floor(0.8 * (returns.length - 1)));
+                const targetReturn = returns[idx80];
+                aggressive = frontier.find(s => s.return >= targetReturn);
+                if (!aggressive) aggressive = frontier[frontier.length - 1];
+            } else {
+                const eligible = samples.filter(s => s.risk <= maxRisk);
+                if (eligible.length === 0) {
+                    aggressive = null;
+                    warnings.aggressive = `ไม่มีสัดส่วนใดในกลุ่มตัวอย่างที่ความเสี่ยง ≤ ${(maxRisk * 100).toFixed(2)}% (ต่ำสุดที่ทำได้ ${(Math.min(...samples.map(s => s.risk)) * 100).toFixed(2)}%) — กรุณาเพิ่มเพดาน S.D.`;
+                } else {
+                    aggressive = eligible.reduce((best, s) => (s.return > best.return ? s : best), eligible[0]);
+                }
+            }
+
+            return { conservative, sharpe, aggressive, warnings };
+        }
+
         // Deterministic "what if this money just sat in a fixed-rate deposit instead"
         // benchmark for the Withdrawal Sustainability Heatmap. No volatility, so a single
         // pass is enough (no Monte Carlo needed) — returns the month it runs out, or null
@@ -909,6 +1193,7 @@
             updatePhaseStatsTable();
             document.getElementById('status-badge').innerHTML = '⚠️ ค่าเปลี่ยนแปลง กรุณากด Run ใหม่';
             document.getElementById('status-badge').className = 'text-[10px] bg-red-900/40 py-1 px-2 rounded text-red-400 font-bold border border-red-500/30';
+            hideOptimizerSection(); // any input change can invalidate the last Optimizer result -- force a re-click instead of showing stale data
         }
 
         function renderPriorityOrderUI() {
@@ -1167,6 +1452,34 @@
             document.getElementById('btn-ai-advisor').addEventListener('click', openAIModal);
             document.getElementById('btn-close-ai').addEventListener('click', closeAIModal);
             document.getElementById('ai-modal-bg').addEventListener('click', closeAIModal);
+
+            // Optimizer
+            ['btn-optimize-sharpe', 'btn-optimize-conservative', 'btn-optimize-aggressive'].forEach(id => {
+                document.getElementById(id).addEventListener('click', (e) => {
+                    runOptimizer(e.currentTarget.dataset.mode);
+                });
+            });
+            document.getElementById('optimizer-mc-toggle').addEventListener('change', (e) => {
+                document.getElementById('optimizer-mc-wrap').classList.toggle('hidden', !e.target.checked);
+                if (e.target.checked) renderOptimizerCompareChart();
+            });
+            // Optional constraint boxes: re-pick the presets from the cloud that was already
+            // sampled (no re-sampling, no markDirty -- these don't affect the simulation inputs).
+            // Debounced, because with the comparison chart open every keystroke would otherwise
+            // kick off a full 1,000-path simulation (typing "5.25" = four of them).
+            ['opt-conservative-min-return', 'opt-aggressive-max-risk'].forEach(id => {
+                document.getElementById(id).addEventListener('input', () => {
+                    if (optimizerConstraintDebounce) clearTimeout(optimizerConstraintDebounce);
+                    optimizerConstraintDebounce = setTimeout(() => {
+                        optimizerConstraintDebounce = null;
+                        refreshOptimizerFromConstraints();
+                    }, 400);
+                });
+            });
+            // "เทียบกับ" selector for the Monte Carlo comparison chart.
+            document.querySelectorAll('input[name="optimizer-compare-mode"]').forEach(radio => {
+                radio.addEventListener('change', renderOptimizerCompareChart);
+            });
         }
 
         // --- PORTFOLIO MANAGER LOGIC ---
@@ -1231,6 +1544,7 @@
             activePortId = id;
             renderPortTabs();
             syncActivePortUI();
+            hideOptimizerSection(); // avoid showing an Optimizer result for the port that's no longer selected
         }
 
         function addPortfolio() {
@@ -1322,6 +1636,7 @@
             document.getElementById("current-phase-label").innerText = `แก้ไขสัดส่วน: เฟส ${currentEditingPhase}`;
             document.getElementById("btn-copy-prev").style.display = currentEditingPhase > 1 ? 'flex' : 'none';
             renderFundRows();
+            hideOptimizerSection(); // avoid showing an Optimizer result for the phase that's no longer selected
         }
 
         function renderFundRows() {
@@ -1358,21 +1673,49 @@
         // =========================================================================
         // ENGINE 1: MAIN MONTE CARLO ENGINE (WITH GLOBAL WATERFALL & PRIORITY)
         // =========================================================================
-        function runSimulation() {
+        // opts (all optional, backward-compatible -- calling runSimulation() with no
+        // args behaves exactly as before):
+        //   - overridePortId / overridePhase / overrideWeights: for the Optimizer's
+        //     "compare Monte Carlo" overlay. When all three are set, the ONE portfolio+
+        //     phase named is simulated using overrideWeights (a {fundId: weightPercent}
+        //     map) instead of that phase's actual pt.fundsData -- computed on a cloned
+        //     funds array, so pt.fundsData itself is never mutated. Every other
+        //     portfolio/phase is unaffected.
+        //   - silent: when true, skips writing to globalExportData and to the shared DOM
+        //     elements (survival rate, cashflow tiles, etc.) that the main chart reads --
+        //     used for the Optimizer comparison run so it never clobbers the baseline
+        //     result already on screen. The computed result is returned either way.
+        function runSimulation(opts) {
+            opts = opts || {};
+            const overridePortId = opts.overridePortId;
+            const overridePhase = opts.overridePhase;
+            const overrideWeights = opts.overrideWeights;
+            const silent = !!opts.silent;
+
             const initPrincipal = parseFloat(document.getElementById("init-investment").value) || 0;
             const inflationAnnual = (parseFloat(document.getElementById("inflation-rate").value) || 0) / 100;
             const infMonthly = Math.pow(1 + inflationAnnual, 1/12) - 1;
             const globalRebalanceFreq = parseInt(document.getElementById("global-rebalance").value) || 0;
 
             const totalPortWeight = portfolios.reduce((s,p) => s + (parseFloat(p.allocWeight)||0), 0);
-            
+
             const allStats = {};
             const allActivePhaseMaps = {};
-            
+
             portfolios.forEach(pt => {
                 allStats[pt.id] = {};
-                [1, 2, 3, 4].forEach(i => { allStats[pt.id][i] = calculatePhaseStats(pt.fundsData[i]); });
-                
+                [1, 2, 3, 4].forEach(i => {
+                    let fundsForStats = pt.fundsData[i];
+                    if (overrideWeights && pt.id === overridePortId && i === overridePhase) {
+                        // Clone with substituted weights -- pt.fundsData[i] itself is untouched.
+                        fundsForStats = pt.fundsData[i].map(f => ({
+                            ...f,
+                            weight: (overrideWeights[f.id] !== undefined) ? overrideWeights[f.id] : f.weight
+                        }));
+                    }
+                    allStats[pt.id][i] = calculatePhaseStats(fundsForStats);
+                });
+
                 const numMonths = 30 * 12;
                 allActivePhaseMaps[pt.id] = new Array(numMonths + 1);
                 for (let m = 1; m <= numMonths; m++) {
@@ -1385,8 +1728,10 @@
                 }
             });
 
-            globalExportData.allActivePhaseMaps = allActivePhaseMaps;
-            updatePhaseStatsTable();
+            if (!silent) {
+                globalExportData.allActivePhaseMaps = allActivePhaseMaps;
+                updatePhaseStatsTable();
+            }
 
             const numPaths = 1000;
             const numMonths = 30 * 12;
@@ -1586,13 +1931,17 @@
                 if (endTotal > 0) successfulPaths++;
             }
 
-            document.getElementById("metric-total-capital").innerText = `${expectedTotalCapitalInjected.toLocaleString('th-TH', {maximumFractionDigits:0})} บาท`;
+            if (!silent) {
+                document.getElementById("metric-total-capital").innerText = `${expectedTotalCapitalInjected.toLocaleString('th-TH', {maximumFractionDigits:0})} บาท`;
+            }
 
             const survivalRate = (successfulPaths / numPaths) * 100;
-            const srElement = document.getElementById("metric-survival-rate");
-            srElement.innerText = `${survivalRate.toFixed(1)}%`;
-            srElement.className = survivalRate > 90 ? "text-xs font-bold text-emerald-400" : (survivalRate > 60 ? "text-xs font-bold text-yellow-400" : "text-xs font-bold text-red-400");
-            
+            if (!silent) {
+                const srElement = document.getElementById("metric-survival-rate");
+                srElement.innerText = `${survivalRate.toFixed(1)}%`;
+                srElement.className = survivalRate > 90 ? "text-xs font-bold text-emerald-400" : (survivalRate > 60 ? "text-xs font-bold text-yellow-400" : "text-xs font-bold text-red-400");
+            }
+
             const processedResults = { 'total': [] };
             portfolios.forEach(pt => processedResults[pt.id] = []);
             
@@ -1612,15 +1961,22 @@
                 cfByYear.push(yearlyCashflows[y-1].sort((a,b)=>a-b)[Math.floor(numPaths * 0.5)]);
             }
 
-            document.getElementById("cf-year-1").innerText = Math.round(cfByYear[0] || 0).toLocaleString('th-TH');
-            document.getElementById("cf-year-10").innerText = Math.round(cfByYear[9] || 0).toLocaleString('th-TH');
-            document.getElementById("cf-year-20").innerText = Math.round(cfByYear[19] || 0).toLocaleString('th-TH');
-            document.getElementById("cf-year-30").innerText = Math.round(cfByYear[29] || 0).toLocaleString('th-TH');
-            document.getElementById("total-cf-withdrawn").innerText = cfByYear.reduce((s,v)=>s+v, 0).toLocaleString('th-TH', {maximumFractionDigits:0}) + ' บาท';
+            if (!silent) {
+                document.getElementById("cf-year-1").innerText = Math.round(cfByYear[0] || 0).toLocaleString('th-TH');
+                document.getElementById("cf-year-10").innerText = Math.round(cfByYear[9] || 0).toLocaleString('th-TH');
+                document.getElementById("cf-year-20").innerText = Math.round(cfByYear[19] || 0).toLocaleString('th-TH');
+                document.getElementById("cf-year-30").innerText = Math.round(cfByYear[29] || 0).toLocaleString('th-TH');
+                document.getElementById("total-cf-withdrawn").innerText = cfByYear.reduce((s,v)=>s+v, 0).toLocaleString('th-TH', {maximumFractionDigits:0}) + ' บาท';
 
-            globalExportData.resultsByYear = processedResults;
-            globalExportData.randomPaths = randomPaths;
-            globalExportData.cashflows = cfByYear;
+                globalExportData.resultsByYear = processedResults;
+                globalExportData.randomPaths = randomPaths;
+                globalExportData.cashflows = cfByYear;
+            }
+
+            // Always returned (even on a normal, non-silent call) so the Optimizer's
+            // comparison-run caller can read results directly -- nothing in the existing
+            // codebase uses runSimulation()'s return value, so this is additive only.
+            return { resultsByYear: processedResults, randomPaths, cashflows: cfByYear, survivalRate, totalCapitalInjected: expectedTotalCapitalInjected };
         }
 
         // =========================================================================
@@ -2029,6 +2385,369 @@
                     }
                 });
             }
+        }
+
+        // --- PORTFOLIO OPTIMIZER: UI wiring (buttons -> sample cloud -> chart/table/MC compare) ---
+        const OPTIMIZER_MODE_LABELS = {
+            sharpe: 'Sharpe Ratio สูงสุด',
+            conservative: 'Conservative ที่สุด',
+            aggressive: 'Aggressive ที่สุด'
+        };
+
+        function hideOptimizerSection() {
+            const section = document.getElementById('section-optimizer');
+            if (section.classList.contains('hidden')) return; // nothing to reset
+            section.classList.add('hidden');
+            optimizerCloud = null;
+            optimizerPresets = null;
+            optimizerSelectedMode = null;
+            optimizerCompareCache = {};
+            document.querySelectorAll('.optimizer-btn').forEach(btn => btn.classList.remove('brightness-125', 'border-2'));
+            const warn = document.getElementById('opt-constraint-warning');
+            warn.classList.add('hidden');
+            warn.innerHTML = '';
+            if (optimizerFrontierChartInstance) { optimizerFrontierChartInstance.destroy(); optimizerFrontierChartInstance = null; }
+            if (optimizerCompareChartInstance) { optimizerCompareChartInstance.destroy(); optimizerCompareChartInstance = null; }
+        }
+
+        // Reads the two optional constraint boxes. An empty/blank/invalid box means "no
+        // constraint" (null), which restores that preset's original definition exactly.
+        // Returns decimals (4 -> 0.04) to match calculatePhaseStats()'s units.
+        function readOptimizerConstraints() {
+            const rawMinReturn = document.getElementById('opt-conservative-min-return').value;
+            const rawMaxRisk = document.getElementById('opt-aggressive-max-risk').value;
+            const minReturn = (rawMinReturn !== null && String(rawMinReturn).trim() !== '') ? parseFloat(rawMinReturn) : NaN;
+            const maxRisk = (rawMaxRisk !== null && String(rawMaxRisk).trim() !== '') ? parseFloat(rawMaxRisk) : NaN;
+            return {
+                conservativeMinReturn: isFinite(minReturn) ? minReturn / 100 : null,
+                aggressiveMaxRisk: isFinite(maxRisk) ? maxRisk / 100 : null
+            };
+        }
+
+        function renderOptimizerWarnings() {
+            const el = document.getElementById('opt-constraint-warning');
+            const w = (optimizerPresets && optimizerPresets.warnings) ? optimizerPresets.warnings : {};
+            const msgs = [];
+            if (w.conservative) msgs.push('⚠️ Conservative: ' + escapeHtml(w.conservative));
+            if (w.aggressive) msgs.push('⚠️ Aggressive: ' + escapeHtml(w.aggressive));
+            if (msgs.length === 0) {
+                el.classList.add('hidden');
+                el.innerHTML = '';
+            } else {
+                el.classList.remove('hidden');
+                el.innerHTML = msgs.join('<br>');
+            }
+        }
+
+        function updateOptimizerSubtitle() {
+            const pt = portfolios.find(p => p.id === activePortId);
+            if (!pt || !optimizerCloud) return;
+            const c = readOptimizerConstraints();
+            const bits = [];
+            if (c.conservativeMinReturn !== null) bits.push(`Conservative: ผลตอบแทน ≥ ${(c.conservativeMinReturn * 100).toFixed(2)}%`);
+            if (c.aggressiveMaxRisk !== null) bits.push(`Aggressive: S.D. ≤ ${(c.aggressiveMaxRisk * 100).toFixed(2)}%`);
+            const constraintText = bits.length ? ` | เงื่อนไข: ${bits.join(', ')}` : '';
+            document.getElementById('optimizer-subtitle').innerText =
+                `พอร์ต "${pt.name}" เฟส ${currentEditingPhase} — กำลังแสดง: ${OPTIMIZER_MODE_LABELS[optimizerSelectedMode] || '--'} (จากกลุ่มตัวอย่างสุ่ม ${optimizerCloud.samples.length.toLocaleString()} ชุด)${constraintText}`;
+        }
+
+        function runOptimizer(mode) {
+            const pt = portfolios.find(p => p.id === activePortId);
+            if (!pt) return;
+            const funds = pt.fundsData[currentEditingPhase];
+            if (!funds || funds.length < 2) {
+                alert('ต้องมีกองทุนอย่างน้อย 2 กองทุนในเฟสนี้ ถึงจะแสดง Efficient Frontier ได้');
+                return;
+            }
+
+            const riskFreeAnnual = (parseFloat(document.getElementById('heatmap-benchmark-rate').value) || 0) / 100;
+
+            optimizerCloud = generateFrontierCloud(activePortId, currentEditingPhase);
+            optimizerPresets = pickOptimizerPresets(optimizerCloud, riskFreeAnnual, readOptimizerConstraints());
+            optimizerSelectedMode = mode;
+            optimizerCompareCache = {}; // a fresh cloud invalidates every cached comparison run
+
+            const section = document.getElementById('section-optimizer');
+            section.classList.remove('hidden');
+            section.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+
+            // Default the comparison selector to the button just clicked (but the user can
+            // change it afterwards without re-sampling anything).
+            setOptimizerCompareModeRadio(mode);
+
+            document.querySelectorAll('.optimizer-btn').forEach(btn => {
+                btn.classList.toggle('brightness-125', btn.dataset.mode === mode);
+                btn.classList.toggle('border-2', btn.dataset.mode === mode);
+            });
+
+            updateOptimizerSubtitle();
+            renderOptimizerWarnings();
+            renderOptimizerFrontierChart();
+            renderOptimizerTable();
+
+            if (document.getElementById('optimizer-mc-toggle').checked) {
+                renderOptimizerCompareChart();
+            }
+        }
+
+        // Called when a constraint box changes while the Optimizer is already open. Only the
+        // preset SELECTION is redone -- the sampled cloud is reused as-is, so this is instant
+        // and the frontier/point cloud stays identical between constraint tweaks (which also
+        // makes the before/after comparison honest: same samples, different pick).
+        function refreshOptimizerFromConstraints() {
+            if (!optimizerCloud || !optimizerSelectedMode) return;
+            const riskFreeAnnual = (parseFloat(document.getElementById('heatmap-benchmark-rate').value) || 0) / 100;
+            optimizerPresets = pickOptimizerPresets(optimizerCloud, riskFreeAnnual, readOptimizerConstraints());
+            // No cache flush needed: entries are keyed by the preset point's coordinates, so a
+            // preset that moved simply misses, while one that didn't move stays reusable.
+
+            updateOptimizerSubtitle();
+            renderOptimizerWarnings();
+            renderOptimizerFrontierChart();
+            renderOptimizerTable();
+            if (document.getElementById('optimizer-mc-toggle').checked) {
+                renderOptimizerCompareChart();
+            }
+        }
+
+        function getOptimizerCompareMode() {
+            const checked = document.querySelector('input[name="optimizer-compare-mode"]:checked');
+            return checked ? checked.value : optimizerSelectedMode;
+        }
+
+        function setOptimizerCompareModeRadio(mode) {
+            document.querySelectorAll('input[name="optimizer-compare-mode"]').forEach(r => {
+                r.checked = (r.value === mode);
+            });
+        }
+
+        function renderOptimizerFrontierChart() {
+            if (!optimizerCloud || !optimizerPresets) return;
+            const { samples, frontier, currentPoint } = optimizerCloud;
+            const { conservative, sharpe, aggressive } = optimizerPresets;
+
+            const ctx = document.getElementById('optimizerFrontierChart').getContext('2d');
+            if (optimizerFrontierChartInstance) optimizerFrontierChartInstance.destroy();
+
+            const toPt = (s) => ({ x: +(s.risk * 100).toFixed(3), y: +(s.return * 100).toFixed(3) });
+
+            const datasets = [
+                { type: 'scatter', label: 'กลุ่มตัวอย่างสุ่ม', data: samples.map(toPt), backgroundColor: 'rgba(148,163,184,0.25)', pointRadius: 2, pointHoverRadius: 3, order: 5 },
+                { type: 'line', label: 'เส้นขอบ Frontier (ประมาณการ)', data: frontier.map(toPt), borderColor: '#38bdf8', backgroundColor: 'transparent', borderWidth: 2, pointRadius: 0, tension: 0, fill: false, order: 4 }
+            ];
+
+            // Reference lines for whichever optional constraints are active, so the user can
+            // see WHY a preset landed where it did (and how much room the cap/floor left).
+            const c = readOptimizerConstraints();
+            const xs = samples.map(s => s.risk * 100), ys = samples.map(s => s.return * 100);
+            const xMin = Math.min(...xs), xMax = Math.max(...xs);
+            const yMin = Math.min(...ys), yMax = Math.max(...ys);
+            if (c.conservativeMinReturn !== null) {
+                const y = +(c.conservativeMinReturn * 100).toFixed(3);
+                datasets.push({
+                    type: 'line', label: `เกณฑ์ผลตอบแทนขั้นต่ำ (${y.toFixed(2)}%)`,
+                    data: [{ x: xMin, y }, { x: xMax, y }],
+                    borderColor: 'rgba(34,211,238,0.85)', backgroundColor: 'transparent',
+                    borderWidth: 1.5, borderDash: [6, 4], pointRadius: 0, fill: false, order: 3
+                });
+            }
+            if (c.aggressiveMaxRisk !== null) {
+                const x = +(c.aggressiveMaxRisk * 100).toFixed(3);
+                datasets.push({
+                    type: 'line', label: `เพดานความเสี่ยง S.D. (${x.toFixed(2)}%)`,
+                    data: [{ x, y: yMin }, { x, y: yMax }],
+                    borderColor: 'rgba(251,113,133,0.85)', backgroundColor: 'transparent',
+                    borderWidth: 1.5, borderDash: [6, 4], pointRadius: 0, fill: false, order: 3
+                });
+            }
+
+            // Preset markers. A preset can be null when its constraint excluded every sampled
+            // point -- in that case it is simply not plotted (the warning text says why).
+            const conservativeLabel = (c.conservativeMinReturn !== null) ? 'Conservative (เสี่ยงต่ำสุดที่ผ่านเกณฑ์)' : 'Conservative (Min-Variance)';
+            const aggressiveLabel = (c.aggressiveMaxRisk !== null) ? 'Aggressive (ผลตอบแทนสูงสุดในเพดาน)' : 'Aggressive (80th pct)';
+            if (conservative) {
+                datasets.push({ type: 'scatter', label: conservativeLabel, data: [toPt(conservative)], backgroundColor: '#22d3ee', borderColor: '#0e7490', borderWidth: optimizerSelectedMode === 'conservative' ? 3 : 1, pointRadius: optimizerSelectedMode === 'conservative' ? 8 : 6, pointStyle: 'circle', order: 2 });
+            }
+            if (sharpe) {
+                datasets.push({ type: 'scatter', label: 'Sharpe สูงสุด', data: [toPt(sharpe)], backgroundColor: '#facc15', borderColor: '#a16207', borderWidth: optimizerSelectedMode === 'sharpe' ? 3 : 1, pointRadius: optimizerSelectedMode === 'sharpe' ? 9 : 6, pointStyle: 'triangle', order: 2 });
+            }
+            if (aggressive) {
+                datasets.push({ type: 'scatter', label: aggressiveLabel, data: [toPt(aggressive)], backgroundColor: '#fb7185', borderColor: '#9f1239', borderWidth: optimizerSelectedMode === 'aggressive' ? 3 : 1, pointRadius: optimizerSelectedMode === 'aggressive' ? 9 : 6, pointStyle: 'rectRot', order: 2 });
+            }
+            datasets.push({ type: 'scatter', label: 'พอร์ตที่กรอกปัจจุบัน', data: [toPt(currentPoint)], backgroundColor: '#a855f7', borderColor: '#6b21a8', borderWidth: 2, pointRadius: 8, pointStyle: 'star', order: 1 });
+
+            optimizerFrontierChartInstance = new Chart(ctx, {
+                type: 'scatter',
+                data: { datasets },
+                options: {
+                    responsive: true, maintainAspectRatio: false,
+                    plugins: {
+                        legend: { position: 'bottom', labels: { color: '#cbd5e1', font: { family: 'Sarabun', size: 9 }, boxWidth: 10 } },
+                        tooltip: { callbacks: { label: (c2) => `${c2.dataset.label}: ความเสี่ยง ${c2.parsed.x.toFixed(2)}% / ผลตอบแทน ${c2.parsed.y.toFixed(2)}%` } }
+                    },
+                    scales: {
+                        x: { title: { display: true, text: 'ความเสี่ยง S.D. (%)', color: '#94a3b8', font: { family: 'Sarabun', size: 10 } }, ticks: { color: '#94a3b8', font: { family: 'Sarabun', size: 10 } }, grid: { color: '#334155' } },
+                        y: { title: { display: true, text: 'ผลตอบแทนคาดหวัง (%)', color: '#94a3b8', font: { family: 'Sarabun', size: 10 } }, ticks: { color: '#94a3b8', font: { family: 'Sarabun', size: 10 } }, grid: { color: '#334155' } }
+                    }
+                }
+            });
+        }
+
+        function renderOptimizerTable() {
+            if (!optimizerCloud || !optimizerPresets || !optimizerSelectedMode) return;
+            const pt = portfolios.find(p => p.id === activePortId);
+            if (!pt) return;
+            const funds = pt.fundsData[currentEditingPhase];
+            const selected = optimizerPresets[optimizerSelectedMode];
+
+            const tbody = document.getElementById('optimizer-table-body');
+            tbody.innerHTML = '';
+
+            if (!selected) {
+                // Constraint excluded every sampled point for this preset -- say so instead of
+                // showing weights from some other point the user did not ask for.
+                tbody.innerHTML = `
+                    <tr>
+                        <td colspan="4" class="py-3 text-center text-[10px] text-amber-400">
+                            ไม่มีสัดส่วนใดผ่านเงื่อนไขที่ตั้งไว้สำหรับปุ่มนี้ — ปรับเงื่อนไขด้านซ้ายแล้วลองใหม่
+                        </td>
+                    </tr>
+                `;
+                return;
+            }
+
+            funds.forEach(f => {
+                const curW = f.weight;
+                const optW = selected.weights[f.id] !== undefined ? selected.weights[f.id] : curW;
+                const diff = optW - curW;
+                const diffColor = Math.abs(diff) < 0.05 ? 'text-slate-400' : (diff > 0 ? 'text-emerald-400' : 'text-red-400');
+                const diffSign = diff > 0 ? '+' : '';
+                tbody.innerHTML += `
+                    <tr>
+                        <td class="py-1 pr-1">${escapeHtml(f.name)}</td>
+                        <td class="py-1 text-center text-slate-300">${curW.toFixed(1)}%</td>
+                        <td class="py-1 text-center text-cyan-300 font-semibold">${optW.toFixed(1)}%</td>
+                        <td class="py-1 text-center font-semibold ${diffColor}">${diffSign}${diff.toFixed(1)}%</td>
+                    </tr>
+                `;
+            });
+
+            // Summary row: the preset point's own expected return / risk vs the current mix.
+            const cur = optimizerCloud.currentPoint;
+            tbody.innerHTML += `
+                <tr class="bg-slate-900/60 border-t border-slate-700">
+                    <td class="py-1.5 pr-1 text-[10px] font-bold text-purple-300">ผลตอบแทน / ความเสี่ยง (S.D.)</td>
+                    <td class="py-1.5 text-center text-[10px] text-slate-300">${(cur.return * 100).toFixed(2)}% / ${(cur.risk * 100).toFixed(2)}%</td>
+                    <td class="py-1.5 text-center text-[10px] text-cyan-300 font-semibold">${(selected.return * 100).toFixed(2)}% / ${(selected.risk * 100).toFixed(2)}%</td>
+                    <td class="py-1.5 text-center text-[10px] ${selected.return >= cur.return ? 'text-emerald-400' : 'text-red-400'} font-semibold">
+                        ${selected.return >= cur.return ? '+' : ''}${((selected.return - cur.return) * 100).toFixed(2)}% / ${selected.risk <= cur.risk ? '' : '+'}${((selected.risk - cur.risk) * 100).toFixed(2)}%
+                    </td>
+                </tr>
+            `;
+        }
+
+        function renderOptimizerCompareChart() {
+            if (!optimizerPresets) return;
+            const wrap = document.getElementById('optimizer-mc-wrap');
+            if (wrap.classList.contains('hidden')) return; // not currently shown
+
+            const note = document.getElementById('optimizer-mc-note');
+            const destroyChart = () => {
+                if (optimizerCompareChartInstance) { optimizerCompareChartInstance.destroy(); optimizerCompareChartInstance = null; }
+            };
+
+            if (!hasRunOnce) {
+                note.innerText = 'กรุณากด "ประมวลผลกราฟ (Run Simulation)" หลักอย่างน้อย 1 ครั้งก่อน เพื่อใช้เป็นเส้นฐาน (Baseline) สำหรับเทียบ';
+                destroyChart();
+                return;
+            }
+
+            const compareMode = getOptimizerCompareMode();
+            const selected = optimizerPresets[compareMode];
+            if (!selected) {
+                note.innerText = `ไม่มีสัดส่วนใดผ่านเงื่อนไขที่ตั้งไว้สำหรับ "${OPTIMIZER_MODE_LABELS[compareMode]}" — ปรับเงื่อนไขด้านซ้าย หรือเลือกเทียบกับปุ่มอื่น`;
+                destroyChart();
+                return;
+            }
+
+            // The comparison run is a full 1,000-path simulation, so yield to the browser
+            // first (same pattern as the main Run button / Heatmap) instead of freezing mid-click.
+            note.innerText = `กำลังคำนวณ Monte Carlo ของสัดส่วน "${OPTIMIZER_MODE_LABELS[compareMode]}" ...`;
+            setTimeout(() => {
+                // Re-check: the user may have closed/changed things during the timeout.
+                if (!optimizerPresets || wrap.classList.contains('hidden')) return;
+                const stillSelected = optimizerPresets[getOptimizerCompareMode()];
+                if (!stillSelected) return;
+                const modeNow = getOptimizerCompareMode();
+
+                const cacheKey = `${modeNow}|${stillSelected.risk.toFixed(9)}|${stillSelected.return.toFixed(9)}`;
+                let optimizedSeries = optimizerCompareCache[cacheKey];
+                if (!optimizedSeries) {
+                    const overrideResult = runSimulation({
+                        silent: true,
+                        overridePortId: activePortId,
+                        overridePhase: currentEditingPhase,
+                        overrideWeights: stillSelected.weights
+                    });
+                    optimizedSeries = overrideResult.resultsByYear['total'];
+                    optimizerCompareCache[cacheKey] = optimizedSeries;
+                }
+
+                const base = globalExportData.resultsByYear['total'];
+                const labels = Array.from({ length: 31 }, (_, i) => `Y${i}`);
+
+                const origP90 = base.map(d => d.best);
+                const origP50 = base.map(d => d.median);
+                const origP10 = base.map(d => d.worst);
+                const optP90 = optimizedSeries.map(d => d.best);
+                const optP50 = optimizedSeries.map(d => d.median);
+                const optP10 = optimizedSeries.map(d => d.worst);
+
+                // Dataset order matters: the 10th-percentile line fills UP TO the index of its
+                // own 90th-percentile line (fill: 0 / fill: 3), which is what turns each pair
+                // into a shaded band between 10th and 90th rather than a fill down to zero.
+                const datasets = [
+                    { label: 'พอร์ตเดิม: 90th', data: origP90, borderColor: 'rgba(168,85,247,0.55)', backgroundColor: 'transparent', borderWidth: 1, pointRadius: 0, tension: 0.3, fill: false },
+                    { label: 'พอร์ตเดิม: กรอบ 10th–90th', data: origP10, borderColor: 'rgba(168,85,247,0.55)', backgroundColor: 'rgba(168,85,247,0.20)', borderWidth: 1, pointRadius: 0, tension: 0.3, fill: 0 },
+                    { label: 'พอร์ตเดิม: มัธยฐาน 50th', data: origP50, borderColor: '#a855f7', backgroundColor: 'transparent', borderWidth: 2.5, pointRadius: 0, tension: 0.3, fill: false },
+                    { label: 'Optimize: 90th', data: optP90, borderColor: 'rgba(34,211,238,0.55)', backgroundColor: 'transparent', borderWidth: 1, pointRadius: 0, tension: 0.3, fill: false },
+                    { label: 'Optimize: กรอบ 10th–90th', data: optP10, borderColor: 'rgba(34,211,238,0.55)', backgroundColor: 'rgba(34,211,238,0.20)', borderWidth: 1, pointRadius: 0, tension: 0.3, fill: 3 },
+                    { label: 'Optimize: มัธยฐาน 50th', data: optP50, borderColor: '#22d3ee', backgroundColor: 'transparent', borderWidth: 2.5, borderDash: [5, 4], pointRadius: 0, tension: 0.3, fill: false }
+                ];
+
+                const ctx = document.getElementById('optimizerCompareChart').getContext('2d');
+                if (optimizerCompareChartInstance) optimizerCompareChartInstance.destroy();
+                optimizerCompareChartInstance = new Chart(ctx, {
+                    type: 'line',
+                    data: { labels, datasets },
+                    options: {
+                        responsive: true, maintainAspectRatio: false,
+                        interaction: { mode: 'index', intersect: false },
+                        plugins: {
+                            legend: {
+                                position: 'bottom',
+                                labels: {
+                                    color: '#cbd5e1', font: { family: 'Sarabun', size: 9 }, boxWidth: 10,
+                                    // The two bare 90th-percentile lines only exist as fill anchors --
+                                    // their band partner already represents them in the legend.
+                                    filter: (item) => item.datasetIndex !== 0 && item.datasetIndex !== 3
+                                }
+                            },
+                            tooltip: { callbacks: { label: (c2) => `${c2.dataset.label}: ${new Intl.NumberFormat('th-TH', { style: 'currency', currency: 'THB', maximumFractionDigits: 0 }).format(c2.parsed.y)}` } }
+                        },
+                        scales: {
+                            y: { ticks: { color: '#94a3b8', font: { family: 'Sarabun', size: 10 }, callback: (v) => (v / 1000000) + 'M' }, grid: { color: '#334155' } },
+                            x: { ticks: { color: '#94a3b8', font: { family: 'Sarabun', size: 10 } }, grid: { display: false } }
+                        }
+                    }
+                });
+
+                const endBase = origP50[30] || 0, endOpt = optP50[30] || 0;
+                const deltaPct = endBase > 0 ? ((endOpt - endBase) / endBase) * 100 : 0;
+                note.innerHTML = `เทียบกับ <b>${escapeHtml(OPTIMIZER_MODE_LABELS[modeNow])}</b> — มัธยฐานปีที่ 30: ` +
+                    `เดิม ${Math.round(endBase).toLocaleString('th-TH')} บาท vs Optimize ${Math.round(endOpt).toLocaleString('th-TH')} บาท ` +
+                    `(<span class="${deltaPct >= 0 ? 'text-emerald-400' : 'text-red-400'} font-bold">${deltaPct >= 0 ? '+' : ''}${deltaPct.toFixed(1)}%</span>)`;
+            }, 50);
         }
 
         // --- EXPORT TO EXCEL ---
