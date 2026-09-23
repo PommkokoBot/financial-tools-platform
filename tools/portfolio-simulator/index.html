@@ -8,6 +8,9 @@
     <script src="https://cdn.jsdelivr.net/npm/chart.js@4.5.1/dist/chart.umd.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/marked@15.0.7/marked.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
+    <!-- PDF report export: html2canvas renders each report page, jsPDF assembles them (A4 landscape). -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <style>
         @import url('https://fonts.googleapis.com/css2?family=Sarabun:wght@300;400;500;600;700&display=swap');
@@ -16,7 +19,7 @@
         .tab-inactive { background-color: #1e293b; color: #94a3b8; border-color: #334155; }
         .tab-inactive:hover:not(:disabled) { background-color: #334155; color: #f8fafc; }
         .tab-inactive:disabled { opacity: 0.4; cursor: not-allowed; }
-        
+
         .heat-green { background-color: rgba(16, 185, 129, 0.2); color: #34d399; }
         .heat-yellow { background-color: rgba(245, 158, 11, 0.2); color: #fbbf24; }
         .heat-red { background-color: rgba(239, 68, 68, 0.2); color: #f87171; }
@@ -35,6 +38,65 @@
         .ai-content li { margin-bottom: 0.25rem; line-height: 1.5; }
         .ai-content strong { color: #f8fafc; font-weight: 600; }
         .ai-content em { color: #a78bfa; font-style: italic; }
+
+        /* ===== PDF REPORT PAGES (A4 landscape = 1123 x 794 CSS px @96dpi) =====
+           Self-contained styles (no Tailwind) so the printed report is light/print-friendly
+           and independent of the dark app theme. Only used inside #mdr-report-root. */
+        #mdr-report-root { position: absolute; left: 0; top: 0; right: auto; margin: 0; padding: 0; z-index: 9998; width: 1123px; }
+        #mdr-export-overlay { position: fixed; inset: 0; z-index: 9999; background: rgba(2,6,23,0.92); display: flex; align-items: center; justify-content: center; color: #fbbf24; font-family: 'Sarabun', sans-serif; font-size: 16px; font-weight: 600; }
+        .mdr-page { position: relative; width: 1123px; height: 794px; box-sizing: border-box; padding: 26px 40px 20px 40px; background: #ffffff; color: #0f172a; font-family: 'Sarabun', sans-serif; display: flex; flex-direction: column; overflow: hidden; margin: 0 0 20px 0; }
+        .mdr-page * { box-sizing: border-box; }
+        .mdr-head { display: flex; justify-content: space-between; align-items: flex-end; border-bottom: 2px solid #0f172a; padding-bottom: 6px; margin-bottom: 12px; flex: 0 0 auto; }
+        .mdr-head-brand { font-size: 15px; font-weight: 700; color: #0f172a; letter-spacing: 0.2px; }
+        .mdr-head-brand span { color: #b45309; }
+        .mdr-head-meta { font-size: 10.5px; color: #475569; text-align: right; }
+        .mdr-title { font-size: 20px; font-weight: 700; color: #0f172a; margin: 0 0 2px 0; }
+        .mdr-subtitle { font-size: 11px; color: #64748b; margin: 0 0 10px 0; }
+        .mdr-content { flex: 1 1 auto; min-height: 0; overflow: hidden; position: relative; }
+        .mdr-content-inner { transform-origin: top left; }
+        .mdr-foot { flex: 0 0 auto; border-top: 1px solid #cbd5e1; padding-top: 7px; margin-top: 10px; font-size: 9.5px; line-height: 1.5; color: #475569; }
+        .mdr-foot b { color: #0f172a; }
+        .mdr-foot-credit { margin-top: 2px; color: #334155; font-weight: 600; }
+        .mdr-watermark { position: absolute; left: 0; top: 0; width: 100%; height: 100%; display: flex; flex-direction: column; align-items: center; justify-content: center; pointer-events: none; z-index: 5; transform: rotate(-24deg); }
+        .mdr-watermark-main { font-size: 104px; font-weight: 700; color: rgba(15,23,42,0.055); white-space: nowrap; line-height: 1; }
+        .mdr-watermark-sub { font-size: 30px; font-weight: 600; color: rgba(15,23,42,0.055); white-space: nowrap; margin-top: 8px; }
+        .mdr-block { margin-bottom: 12px; }
+        .mdr-h2 { font-size: 13px; font-weight: 700; color: #0f172a; margin: 0 0 6px 0; display: flex; align-items: center; gap: 6px; }
+        .mdr-note { font-size: 9.5px; color: #64748b; line-height: 1.45; }
+        .mdr-table { width: 100%; border-collapse: collapse; font-size: 10.5px; }
+        .mdr-table th { background: #f1f5f9; color: #334155; font-weight: 700; text-align: left; padding: 4px 6px; border-bottom: 1px solid #cbd5e1; }
+        .mdr-table td { padding: 3.5px 6px; border-bottom: 1px solid #e2e8f0; color: #0f172a; }
+        .mdr-table .num { text-align: right; font-variant-numeric: tabular-nums; }
+        .mdr-table .ctr { text-align: center; }
+        .mdr-table tr.mdr-total td { background: #f8fafc; font-weight: 700; border-top: 1px solid #cbd5e1; }
+        .mdr-kpis { display: grid; grid-template-columns: repeat(4, 1fr); gap: 10px; margin-bottom: 12px; }
+        .mdr-kpi { border: 1px solid #e2e8f0; border-radius: 8px; padding: 9px 11px; background: #f8fafc; }
+        .mdr-kpi-label { font-size: 10px; color: #64748b; }
+        .mdr-kpi-value { font-size: 17px; font-weight: 700; color: #0f172a; margin-top: 2px; font-variant-numeric: tabular-nums; }
+        .mdr-kpi-value.good { color: #047857; } .mdr-kpi-value.warn { color: #b45309; } .mdr-kpi-value.bad { color: #b91c1c; }
+        .mdr-grid2 { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; }
+        .mdr-chip { display: inline-flex; align-items: center; gap: 5px; font-weight: 700; }
+        .mdr-dot { width: 9px; height: 9px; border-radius: 50%; display: inline-block; }
+        .mdr-port { border: 1px solid #e2e8f0; border-radius: 8px; padding: 9px 11px; }
+        .mdr-port-head { display: flex; justify-content: space-between; align-items: baseline; margin-bottom: 4px; font-size: 12px; }
+        .mdr-port-meta { font-size: 10px; color: #475569; margin-bottom: 6px; }
+        .mdr-phases { display: grid; grid-template-columns: repeat(4, 1fr); gap: 8px; }
+        .mdr-phase-title { font-size: 10.5px; font-weight: 700; color: #b45309; margin-bottom: 2px; }
+        .mdr-phases .mdr-table { font-size: 9.5px; }
+        .mdr-phases .mdr-table th, .mdr-phases .mdr-table td { padding: 2.5px 4px; }
+        .mdr-chart-img { display: block; }
+        .mdr-heat-g { background: #d1fae5; color: #065f46; } .mdr-heat-y { background: #fef3c7; color: #92400e; } .mdr-heat-r { background: #fee2e2; color: #991b1b; }
+        .mdr-heat td.cell { text-align: center; font-weight: 700; font-size: 13px; padding: 7px 6px; border: 1px solid #ffffff; }
+        .mdr-heat td.cell small { display: block; font-size: 9px; font-weight: 600; opacity: 0.8; margin-top: 1px; }
+        .mdr-cover { justify-content: flex-start; }
+        .mdr-cover-band { position: absolute; left: 0; top: 0; bottom: 0; width: 14px; background: linear-gradient(180deg, #b45309, #0f172a); }
+        .mdr-cover-brand { font-size: 46px; font-weight: 700; color: #0f172a; margin-top: 70px; line-height: 1.1; }
+        .mdr-cover-link { font-size: 15px; color: #b45309; font-weight: 600; margin-top: 4px; }
+        .mdr-cover-title { font-size: 28px; font-weight: 700; color: #1e293b; margin-top: 44px; }
+        .mdr-cover-sub { font-size: 14px; color: #475569; margin-top: 4px; }
+        .mdr-cover-date { font-size: 13px; color: #334155; margin-top: 22px; }
+        .mdr-toc { margin-top: 30px; width: 460px; font-size: 12px; }
+        .mdr-toc-row { display: flex; justify-content: space-between; border-bottom: 1px dotted #cbd5e1; padding: 4px 0; color: #334155; }
     </style>
 </head>
 <body class="bg-slate-900 text-slate-100 min-h-screen pb-12 relative">
@@ -58,6 +120,9 @@
                         <button id="btn-export-excel" class="bg-slate-800 hover:bg-slate-700 text-emerald-400 px-3 py-2 rounded-lg text-sm font-bold shadow-lg transition-all flex items-center gap-2 border border-emerald-500/30">
                             <i class="fa-solid fa-file-excel"></i> โหลด Excel
                         </button>
+                        <button id="btn-export-pdf" class="bg-slate-800 hover:bg-slate-700 text-rose-300 px-3 py-2 rounded-lg text-sm font-bold shadow-lg transition-all flex items-center gap-2 border border-rose-500/30">
+                            <i class="fa-solid fa-file-pdf"></i> โหลด PDF
+                        </button>
                         <!-- Hidden until the AI Advisor is ready to ship: apiKey is still empty (see script below),
                              so every click would currently fail against the Gemini API. Remove `hidden` to re-enable
                              once a real key (and ideally a backend proxy instead of a client-side key) is in place. -->
@@ -70,10 +135,10 @@
         </header>
 
         <div class="grid grid-cols-1 xl:grid-cols-12 gap-6">
-            
+
             <!-- Left Panel: Controls -->
             <div class="xl:col-span-5 space-y-5">
-                
+
                 <!-- 1. Global Settings -->
                 <div class="bg-slate-800 p-5 rounded-2xl border border-slate-700 shadow-xl">
                     <h2 class="text-base font-semibold text-amber-400 mb-3 flex items-center gap-2">
@@ -315,7 +380,7 @@
                                     <tbody id="fund-rows" class="divide-y divide-slate-800">
                                     </tbody>
                                 </table>
-                                
+
                                 <div class="flex justify-between items-center mt-3 px-1">
                                     <button id="btn-add-fund" class="text-[10px] text-emerald-400 hover:text-emerald-300 transition flex items-center gap-1 font-bold">
                                         <i class="fa-solid fa-plus-circle"></i> เพิ่มกองทุน
@@ -389,7 +454,7 @@
                                 </div>
                             </div>
                         </div>
-                        
+
                         <div class="overflow-x-auto">
                             <table class="w-full text-left text-xs text-slate-200">
                                 <thead>
@@ -417,13 +482,13 @@
                                 <i class="fa-solid fa-play"></i> ประมวลผลกราฟ (Run Simulation)
                             </button>
                         </div>
-                        
+
                         <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center mb-4 gap-3 mt-2">
                             <div>
                                 <h2 class="text-base font-semibold text-slate-100 flex items-center gap-2">
                                     <i class="fa-solid fa-chart-line text-amber-500"></i> วิถีความมั่งคั่ง 30 ปี (หักเงินเฟ้อ)
                                 </h2>
-                                
+
                                 <!-- Chart Controls -->
                                 <div class="flex flex-col gap-2 mt-2">
                                     <div class="flex flex-wrap items-center gap-2">
@@ -435,7 +500,7 @@
                                         <span class="text-[10px] text-slate-400">ถึง</span>
                                         <input type="number" id="chart-end-y" value="30" min="1" max="30" class="w-12 bg-slate-900 border border-slate-600 rounded px-1 py-0.5 text-xs text-center text-slate-200">
                                     </div>
-                                    
+
                                     <!-- Chart Type Toggles -->
                                     <div class="flex items-center gap-2">
                                         <div class="flex items-center gap-1 bg-slate-900 p-1 rounded-lg border border-slate-700 w-max">
@@ -450,7 +515,7 @@
                                     </div>
                                 </div>
                             </div>
-                            
+
                             <div class="flex flex-col items-end gap-2 mt-4 sm:mt-0">
                                 <div class="flex items-center gap-1 bg-slate-900 p-1 rounded-lg border border-slate-700">
                                     <button id="sim-mc-trad" class="px-2 py-1 text-[10px] rounded bg-amber-500/20 text-amber-300 font-bold transition">แบบปกติ</button>
@@ -462,7 +527,7 @@
                                 </div>
                             </div>
                         </div>
-                        
+
                         <div class="h-72 w-full mt-2">
                             <canvas id="portfolioChart"></canvas>
                         </div>
@@ -470,13 +535,13 @@
                             * เส้น <span class="text-purple-400 font-bold">Random Path</span> คือการจำลองสุ่ม 1 เส้นทางจาก 1,000 รูปแบบ ที่มีการ Rebalance และ Waterfall ถอนเงินตามลำดับ
                         </p>
                     </div>
-                    
+
                     <!-- Cash Flow Outcomes -->
                     <div class="bg-slate-800 p-5 rounded-2xl border border-slate-700 shadow-xl">
                         <h2 class="text-base font-semibold text-slate-100 mb-3 flex items-center gap-2">
                             <i class="fa-solid fa-money-bill-trend-up text-emerald-500"></i> กระแสเงินสดเฉลี่ยที่จะได้รับสุทธิ (รวมทุกพอร์ต)
                         </h2>
-                        
+
                         <div class="grid grid-cols-2 md:grid-cols-4 gap-3 mb-3">
                             <div class="bg-slate-900/60 p-2.5 rounded-lg text-center border border-slate-800">
                                 <span class="text-[10px] text-slate-400 block">ปีที่ 1</span>
@@ -495,7 +560,7 @@
                                 <span id="cf-year-30" class="text-sm font-bold text-amber-300">--</span>
                             </div>
                         </div>
-                        
+
                         <div class="bg-slate-900 p-3 rounded-xl border border-slate-800">
                             <div class="flex justify-between items-center text-xs text-slate-300 mb-1">
                                 <span>ถอนสะสมรวม: <span id="total-cf-withdrawn" class="font-bold text-amber-400 text-sm ml-2">-- บาท</span></span>
@@ -602,7 +667,7 @@
                                 </p>
                             </div>
                         </div>
-                        
+
                         <div class="flex flex-col gap-2 xl:items-end">
                             <div class="flex items-center gap-1 bg-slate-900 p-1 rounded-lg border border-slate-700 w-max">
                                 <button id="sim-hm-trad" class="px-2 py-1 text-[10px] rounded bg-amber-500/20 text-amber-300 font-bold transition">แบบปกติ</button>
@@ -637,6 +702,52 @@
         </div>
     </div>
 
+    <!-- PDF Export Modal: pick optional sections, then generate. -->
+    <div id="pdf-modal" class="fixed inset-0 z-50 hidden">
+        <div class="absolute inset-0 bg-slate-950/80 backdrop-blur-sm" id="pdf-modal-bg"></div>
+        <div class="absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 w-11/12 max-w-md bg-slate-900 border border-rose-500/30 rounded-2xl shadow-2xl flex flex-col">
+            <div class="flex items-center justify-between p-4 border-b border-slate-800">
+                <h3 class="text-base font-bold text-rose-300 flex items-center gap-2">
+                    <i class="fa-solid fa-file-pdf"></i> Export รายงาน PDF (แนวนอน)
+                </h3>
+                <button id="btn-close-pdf" class="text-slate-400 hover:text-white transition px-2 py-1">
+                    <i class="fa-solid fa-times text-xl"></i>
+                </button>
+            </div>
+            <div class="p-5 space-y-3 text-xs text-slate-300">
+                <p id="pdf-main-status" class="text-[11px] leading-relaxed"></p>
+                <div class="bg-slate-800/60 border border-slate-700 rounded-lg p-3 space-y-1">
+                    <div class="text-[10px] text-slate-400 font-semibold mb-1">ส่วนที่รวมอยู่เสมอ</div>
+                    <div class="text-[11px] text-slate-300">ปก · สรุปผลการจำลอง · โครงสร้างพอร์ต · กราฟวิถีความมั่งคั่ง 30 ปี</div>
+                </div>
+                <div class="bg-slate-800/60 border border-slate-700 rounded-lg p-3 space-y-2">
+                    <div class="text-[10px] text-slate-400 font-semibold">ส่วนเสริม (เลือกได้)</div>
+                    <label class="flex items-start gap-2 cursor-pointer">
+                        <input type="checkbox" id="pdf-opt-heatmap" class="accent-rose-500 mt-0.5 cursor-pointer disabled:cursor-not-allowed">
+                        <span>
+                            <span class="font-semibold text-slate-200">Withdrawal Sustainability Heatmap</span>
+                            <span id="pdf-opt-heatmap-note" class="block text-[10px] text-slate-500"></span>
+                        </span>
+                    </label>
+                    <label class="flex items-start gap-2 cursor-pointer">
+                        <input type="checkbox" id="pdf-opt-optimizer" class="accent-rose-500 mt-0.5 cursor-pointer disabled:cursor-not-allowed">
+                        <span>
+                            <span class="font-semibold text-slate-200">Portfolio Optimizer (Efficient Frontier)</span>
+                            <span id="pdf-opt-optimizer-note" class="block text-[10px] text-slate-500"></span>
+                        </span>
+                    </label>
+                </div>
+                <p id="pdf-progress" class="hidden text-[11px] text-amber-300 font-semibold"></p>
+                <div class="flex justify-end gap-2 pt-1">
+                    <button id="btn-cancel-pdf" class="px-3 py-2 rounded-lg text-xs text-slate-300 bg-slate-800 border border-slate-700 hover:bg-slate-700">ยกเลิก</button>
+                    <button id="btn-generate-pdf" class="px-4 py-2 rounded-lg text-xs font-bold text-white bg-rose-600 hover:bg-rose-500 disabled:opacity-40 disabled:cursor-not-allowed">
+                        <i class="fa-solid fa-download"></i> สร้าง PDF
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+
     <!-- AI Advisor Modal -->
     <div id="ai-modal" class="fixed inset-0 z-50 hidden">
         <div class="absolute inset-0 bg-slate-950/80 backdrop-blur-sm" id="ai-modal-bg"></div>
@@ -649,7 +760,7 @@
                     <i class="fa-solid fa-times text-xl"></i>
                 </button>
             </div>
-            
+
             <div class="p-6 overflow-y-auto custom-scrollbar flex-1 relative">
                 <div id="ai-loading" class="flex flex-col items-center justify-center py-12 hidden">
                     <i class="fa-solid fa-circle-notch fa-spin text-4xl text-purple-500 mb-4"></i>
@@ -667,19 +778,15 @@
     <script>
         // Data Templates
         const templatePhase1 = [
-            { id: 1, name: "MAUTOCALL-UH", weight: 10, yield: 5.5, capGain: 1.0, sd: 8.0 },
-            { id: 2, name: "ASP-AAA-R", weight: 10, yield: 1.8, capGain: 0.2, sd: 1.5 },
-            { id: 3, name: "ES-GAINCOME-RP", weight: 20, yield: 3.5, capGain: 1.5, sd: 5.5 },
-            { id: 4, name: "KF-INCOME", weight: 10, yield: 3.2, capGain: 1.2, sd: 5.0 },
-            { id: 5, name: "KF-SINCOME-FX-R", weight: 10, yield: 2.5, capGain: 0.5, sd: 3.0 },
-            { id: 6, name: "MGALL-UH", weight: 40, yield: 0.8, capGain: 6.5, sd: 14.0 }
+            { id: 1, name: "ES-WDEQ", weight: 20, yield: "", capGain: "", sd: "" },
+            { id: 2, name: "MGALL-UH", weight: 40, yield: "", capGain: "", sd: "" },
+            { id: 3, name: "TGSMART-A", weight: 20, yield: "", capGain: "", sd: "" },
+            { id: 4, name: "SCBGEARA", weight: 20, yield: "", capGain: "", sd: "" }
         ];
         const templatePhase2 = [
-            { id: 1, name: "MAUTOCALL-UH", weight: 10, yield: 5.5, capGain: 1.0, sd: 8.0 },
-            { id: 2, name: "ASP-AAA-R", weight: 40, yield: 1.8, capGain: 0.2, sd: 1.5 },
-            { id: 3, name: "ES-GAINCOME-RP", weight: 20, yield: 3.5, capGain: 1.5, sd: 5.5 },
-            { id: 4, name: "KF-INCOME", weight: 20, yield: 3.2, capGain: 1.2, sd: 5.0 },
-            { id: 5, name: "KF-SINCOME-FX-R", weight: 10, yield: 2.5, capGain: 0.5, sd: 3.0 }
+            { id: 1, name: "MGALL-UH", weight: 40, yield: "", capGain: "", sd: "" },
+            { id: 2, name: "TGSMART-A", weight: 40, yield: "", capGain: "", sd: "" },
+            { id: 3, name: "SCBGEARA", weight: 20, yield: "", capGain: "", sd: "" }
         ];
 
         // Portfolio State
@@ -715,16 +822,16 @@
         };
 
         let activePortId = 1;
-        let currentEditingPhase = 1; 
-        
+        let currentEditingPhase = 1;
+
         let portfolioChartInstance = null;
         let chartSimMethod = 'traditional';
         let heatmapSimMethod = 'traditional';
         let heatmapWithdrawalMode = 'immediate'; // 'immediate' or 'planned'
-        
+
         let currentChartView = 'line'; // 'line' or 'bar'
         let currentTooltipType = 'amt'; // 'amt' or 'pct'
-        
+
         let hasRunOnce = false;
 
         // Stores
@@ -744,6 +851,11 @@
         // the Aggressive entry by itself and leaves a cached Sharpe run usable.
         let optimizerCompareCache = {};
         let optimizerConstraintDebounce = null;
+
+        // PDF export state. Neither flag feeds any simulation -- they only let the export
+        // refuse to print results that no longer match the inputs on screen.
+        let simResultsStale = false;     // true after markDirty() until the next main Run
+        let lastHeatmapResult = null;    // { meta, rows, stale } captured when runHeatmap() finishes
 
         const barColors = ['#3b82f6', '#10b981', '#f59e0b', '#ef4444', '#8b5cf6', '#ec4899', '#06b6d4', '#f97316', '#6366f1', '#14b8a6'];
 
@@ -769,7 +881,7 @@
 
             let y = 0, g = 0;
             const normW = [];
-            
+
             funds.forEach(f => {
                 const w = f.weight / totalW;
                 normW.push(w);
@@ -1194,6 +1306,8 @@
             document.getElementById('status-badge').innerHTML = '⚠️ ค่าเปลี่ยนแปลง กรุณากด Run ใหม่';
             document.getElementById('status-badge').className = 'text-[10px] bg-red-900/40 py-1 px-2 rounded text-red-400 font-bold border border-red-500/30';
             hideOptimizerSection(); // any input change can invalidate the last Optimizer result -- force a re-click instead of showing stale data
+            simResultsStale = true;
+            if (lastHeatmapResult) lastHeatmapResult.stale = true;
         }
 
         function renderPriorityOrderUI() {
@@ -1253,6 +1367,7 @@
                     runSimulation(); // Engine 1: 1000 Paths with Global Waterfall & Rebalance
                     runDriftVisualizer(); // Engine 2: 100 Paths Pure Drift
                     hasRunOnce = true;
+                    simResultsStale = false;
                     renderPortfolioChart();
                     btn.innerHTML = originalHtml;
                     
@@ -1452,6 +1567,18 @@
             document.getElementById('btn-ai-advisor').addEventListener('click', openAIModal);
             document.getElementById('btn-close-ai').addEventListener('click', closeAIModal);
             document.getElementById('ai-modal-bg').addEventListener('click', closeAIModal);
+
+            // PDF report export
+            document.getElementById('btn-export-pdf').addEventListener('click', openPdfModal);
+            document.getElementById('btn-close-pdf').addEventListener('click', closePdfModal);
+            document.getElementById('btn-cancel-pdf').addEventListener('click', closePdfModal);
+            document.getElementById('pdf-modal-bg').addEventListener('click', closePdfModal);
+            document.getElementById('btn-generate-pdf').addEventListener('click', () => {
+                generatePdfReport({
+                    includeHeatmap: document.getElementById('pdf-opt-heatmap').checked,
+                    includeOptimizer: document.getElementById('pdf-opt-optimizer').checked
+                });
+            });
 
             // Optimizer
             ['btn-optimize-sharpe', 'btn-optimize-conservative', 'btn-optimize-aggressive'].forEach(id => {
@@ -2798,7 +2925,8 @@
         function runHeatmap() {
             const btn = document.getElementById('btn-run-heatmap');
             btn.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i> Processing Waterfall...';
-            
+            if (lastHeatmapResult) lastHeatmapResult.stale = true; // superseded until this run finishes
+
             setTimeout(() => {
                 const initPrincipal = parseFloat(document.getElementById("init-investment").value) || 10000000;
                 const inflationAnnual = (parseFloat(document.getElementById("inflation-rate").value) || 2.5) / 100;
@@ -2833,8 +2961,9 @@
                 if (testCases.length === 0) testCases = ["3%", "4%", "50000"];
 
                 const horizons = [20, 30, 40];
-                const paths = 500; 
+                const paths = 500;
                 let html = "";
+                const reportRows = []; // structured copy of the table for the PDF report (read-only side output)
 
                 testCases.forEach(caseStr => {
                     let isPercent = caseStr.includes('%');
@@ -2843,6 +2972,7 @@
 
                     let label = isPercent ? `${rawValue}%` : `${rawValue.toLocaleString()} ฿/ด.`;
                     html += `<tr><td class="border border-slate-700 p-3 text-amber-300 font-bold">${label}</td>`;
+                    const reportRow = { label, cells: [] };
 
                     // "immediate" mode ignores the Global Waterfall start date entirely
                     // (month 1 = day one of the stress test). "planned" mode instead starts
@@ -3000,6 +3130,7 @@
                         const fdLabel = fdSurvivedThisHorizon
                             ? 'FD: รอดตลอด'
                             : `FD: หมดปีที่ ${(fdDepletionMonth / 12).toFixed(1)}`;
+                        reportRow.cells.push({ years, survRate, cls, fdLabel, fdSurvived: fdSurvivedThisHorizon });
 
                         html += `<td class="border border-slate-700 p-3 ${cls}">
                             <div class="font-semibold">${survRate.toFixed(1)}%</div>
@@ -3007,15 +3138,621 @@
                         </td>`;
                     });
                     html += "</tr>";
+                    reportRows.push(reportRow);
                 });
-                
+
                 document.getElementById('heatmap-body').innerHTML = html;
+                lastHeatmapResult = {
+                    meta: {
+                        ratesStr, benchmarkRateAnnual, simMethod: heatmapSimMethod,
+                        withdrawalMode: heatmapWithdrawalMode, paths, horizons: horizons.slice(),
+                        startY: globalWithdrawal.startY, startM: globalWithdrawal.startM
+                    },
+                    rows: reportRows,
+                    stale: false
+                };
                 btn.innerHTML = '<i class="fa-solid fa-play"></i> Run Analysis';
             }, 50);
         }
 
+        // =========================================================================
+        // PDF REPORT EXPORT (A4 landscape, Money Director branding)
+        // Read-only: builds light-themed report pages in a temporary DOM container from
+        // the results already on screen (globalExportData, lastHeatmapResult, optimizer
+        // state), rasterizes each page with html2canvas and assembles them with jsPDF.
+        // Never runs or alters any simulation.
+        // =========================================================================
+        const PDF_BRAND = 'Money Director';
+        const PDF_BRAND_LINK_TEXT = 'facebook.com/themoneydirector';
+        const PDF_BRAND_LINK_URL = 'https://www.facebook.com/themoneydirector';
+        const PDF_PAGE_W_PX = 1123, PDF_PAGE_H_PX = 794;      // A4 landscape @ 96 dpi
+        const PDF_PAGE_W_PT = 841.89, PDF_PAGE_H_PT = 595.28; // A4 landscape in pt (jsPDF unit 'pt')
+        const PDF_WD_MODE_LABELS = { yield_only: 'ดึงเฉพาะ Total Yield', constant: 'ดึงคงที่สู้เงินเฟ้อ', fixed_baht: 'ระบุยอดถอน (บาท/งวด)' };
+        const PDF_SIM_METHOD_LABELS = { traditional: 'แบบปกติ (Normal)', gbm: 'GBM (Geometric Brownian Motion)', volcluster: 'Vol. Cluster (GARCH 1,1)' };
+        const PDF_FREQ_LABELS = { 1: 'รายเดือน', 3: 'รายไตรมาส', 6: 'ทุก 6 เดือน', 12: 'รายปี' };
+        const PDF_HEAT_CLASS = { 'heat-green': 'mdr-heat-g', 'heat-yellow': 'mdr-heat-y', 'heat-red': 'mdr-heat-r' };
+        let pdfExportInProgress = false;
+
+        // What can be exported right now. The main report requires a Run whose results still
+        // match the inputs; optional sections require their own up-to-date results.
+        function getPdfAvailability() {
+            let mainReason = '';
+            if (!hasRunOnce) mainReason = 'ยังไม่ได้กด "ประมวลผลกราฟ (Run Simulation)" — กรุณากด Run ก่อน export';
+            else if (simResultsStale) mainReason = 'มีการแก้ค่าหลังจาก Run ล่าสุด — กรุณากด Run Simulation ใหม่ก่อน export เพื่อให้ตัวเลขในรายงานตรงกับค่าที่ตั้งไว้';
+            const main = mainReason === '' && !!(globalExportData.resultsByYear && globalExportData.resultsByYear.total);
+
+            let heatmapReason = '';
+            if (!lastHeatmapResult) heatmapReason = 'ยังไม่ได้กด Run Analysis ในส่วน Heatmap';
+            else if (lastHeatmapResult.stale) heatmapReason = 'ผล Heatmap เก่ากว่าค่าที่ตั้งไว้ตอนนี้ — กด Run Analysis ใหม่ก่อน';
+            else if (lastHeatmapResult.rows.length === 0) heatmapReason = 'ไม่มีอัตราถอนที่อ่านค่าได้ในตาราง Heatmap';
+            const heatmap = heatmapReason === '';
+
+            const optimizer = !!(optimizerCloud && optimizerPresets && optimizerSelectedMode);
+            const optimizerReason = optimizer ? '' : 'ยังไม่ได้กดปุ่ม Optimize (หรือผลถูกล้างไปเพราะมีการแก้ค่า/สลับพอร์ต/สลับเฟส)';
+            return { main, mainReason, heatmap, heatmapReason, optimizer, optimizerReason };
+        }
+
+        function openPdfModal() {
+            const av = getPdfAvailability();
+            const status = document.getElementById('pdf-main-status');
+            status.textContent = av.main ? '✅ พร้อม export — รายงานใช้ผล Run Simulation ล่าสุดที่แสดงอยู่บนจอ' : '⚠️ ' + av.mainReason;
+            status.className = av.main ? 'text-[11px] leading-relaxed text-emerald-400' : 'text-[11px] leading-relaxed text-amber-400 font-semibold';
+
+            const pt = portfolios.find(p => p.id === activePortId);
+            const notes = {
+                heatmap: av.heatmap ? 'ใช้ผล Run Analysis ล่าสุด' : av.heatmapReason,
+                optimizer: av.optimizer ? `พอร์ต "${pt ? pt.name : ''}" เฟส ${currentEditingPhase} — ${OPTIMIZER_MODE_LABELS[optimizerSelectedMode]}` : av.optimizerReason
+            };
+            ['heatmap', 'optimizer'].forEach(key => {
+                const cb = document.getElementById(`pdf-opt-${key}`);
+                cb.disabled = !av[key];
+                cb.checked = av[key]; // default: include whatever is available
+                document.getElementById(`pdf-opt-${key}-note`).textContent = notes[key];
+            });
+            document.getElementById('btn-generate-pdf').disabled = !av.main;
+            const progress = document.getElementById('pdf-progress');
+            progress.classList.add('hidden');
+            progress.textContent = '';
+            document.getElementById('pdf-modal').classList.remove('hidden');
+        }
+
+        function closePdfModal() {
+            if (pdfExportInProgress) return;
+            document.getElementById('pdf-modal').classList.add('hidden');
+        }
+
+        // --- small formatting helpers ---
+        function pdfEl(tag, className, html) {
+            const e = document.createElement(tag);
+            if (className) e.className = className;
+            if (html !== undefined) e.innerHTML = html;
+            return e;
+        }
+        function pdfFmtBaht(v) { return (isFinite(v) ? Math.round(v) : 0).toLocaleString('th-TH') + ' บาท'; }
+        function pdfFmtPct(dec) { return (isFinite(dec) ? dec * 100 : 0).toFixed(2) + '%'; }
+        // Fund fields are stored as whole percents and may be blank ("") -- show a dash for blank.
+        function pdfFmtFundPct(v) {
+            if (v === '' || v === null || v === undefined) return '–';
+            const n = parseFloat(v);
+            return isFinite(n) ? `${+n.toFixed(2)}%` : '–';
+        }
+        function pdfFormatAsOf(d) {
+            const pad = (n) => String(n).padStart(2, '0');
+            return {
+                date: d.toLocaleDateString('th-TH', { day: 'numeric', month: 'long', year: 'numeric' }),
+                time: `${pad(d.getHours())}:${pad(d.getMinutes())}`,
+                fileStamp: `${d.getFullYear()}-${pad(d.getMonth() + 1)}-${pad(d.getDate())}_${pad(d.getHours())}${pad(d.getMinutes())}`
+            };
+        }
+
+        // Agreed disclaimer text (full version, printed at the bottom of EVERY page).
+        function pdfDisclaimerHtml(asOfDateText) {
+            return `<div><b>เกี่ยวกับรายงานฉบับนี้</b></div>
+                <div>รายงานนี้จัดทำโดยเครื่องมือจำลองพอร์ตการลงทุน (Portfolio Simulator) ของ Money Director เพื่อการทดลองจัดพอร์ตเท่านั้น ไม่ถือเป็นคำแนะนำการลงทุน ตัวเลขและกราฟทั้งหมดเกิดจากการจำลองทางสถิติ (Monte Carlo) โดยอ้างอิงสมมติฐานที่ผู้ใช้งานกำหนดเอง ไม่ใช่เครื่องยืนยันผลตอบแทนหรือความเสี่ยงที่จะเกิดขึ้นจริง การลงทุนมีความเสี่ยง ผู้ลงทุนควรศึกษาข้อมูลและปรึกษาผู้เชี่ยวชาญก่อนตัดสินใจลงทุนจริง เครื่องมือนี้ใช้งานฟรี ไม่มีความเกี่ยวข้องกับสถาบันการเงินหรือบริษัทหลักทรัพย์ใดๆ</div>
+                <div class="mdr-foot-credit">จัดทำโดย ${PDF_BRAND} | <span data-pdf-link="${PDF_BRAND_LINK_URL}">${PDF_BRAND_LINK_TEXT}</span> — ข้อมูลจำลองโดยผู้ใช้ ณ วันที่ ${escapeHtml(asOfDateText)}</div>`;
+        }
+
+        function pdfAddChrome(page, ctx) {
+            page.appendChild(pdfEl('div', 'mdr-foot', pdfDisclaimerHtml(ctx.asOf.date)));
+            page.appendChild(pdfEl('div', 'mdr-watermark', `<div class="mdr-watermark-main">${PDF_BRAND}</div><div class="mdr-watermark-sub">${PDF_BRAND_LINK_TEXT}</div>`));
+        }
+
+        // Standard content page: header strip, title, flexible content area, disclaimer, watermark.
+        function pdfCreatePage(ctx, title, subtitle) {
+            const page = pdfEl('div', 'mdr-page');
+            page.appendChild(pdfEl('div', 'mdr-head',
+                `<div class="mdr-head-brand">${PDF_BRAND} <span>· Portfolio Simulator</span></div>
+                 <div class="mdr-head-meta">รายงานผลการจำลองพอร์ตการลงทุน · ณ ${escapeHtml(ctx.asOf.date)} ${ctx.asOf.time} น.<br><span class="mdr-pageno"></span></div>`));
+            const content = pdfEl('div', 'mdr-content');
+            const inner = pdfEl('div', 'mdr-content-inner');
+            if (title) inner.appendChild(pdfEl('div', 'mdr-title', escapeHtml(title)));
+            if (subtitle) inner.appendChild(pdfEl('div', 'mdr-subtitle', escapeHtml(subtitle)));
+            content.appendChild(inner);
+            page.appendChild(content);
+            pdfAddChrome(page, ctx);
+            ctx.root.appendChild(page);
+            return { page, content, inner };
+        }
+
+        // Kept as its own global function so tests can substitute a fake layout measurement
+        // (jsdom has no layout engine, so every element measures 0px there).
+        function mdrPageOverflows(p) {
+            return p.inner.offsetHeight > p.content.clientHeight + 1;
+        }
+
+        // Last-resort fit: if a page is still too tall (e.g. a single block bigger than a whole
+        // page), shrink its content proportionally instead of clipping it.
+        function pdfFitPage(p) {
+            if (!mdrPageOverflows(p)) return;
+            const avail = p.content.clientHeight, need = p.inner.offsetHeight;
+            if (!(avail > 0 && need > 0)) return;
+            const s = Math.max(0.55, avail / need);
+            p.inner.style.transform = `scale(${s})`;
+            p.inner.style.width = `${100 / s}%`;
+            p.scaled = s;
+        }
+
+        // Places blocks top-to-bottom, starting a continuation page ("(ต่อ)") whenever the
+        // next block no longer fits. A block is never split across pages.
+        function pdfFlowBlocks(ctx, title, subtitle, blocks) {
+            const pages = [];
+            let p = pdfCreatePage(ctx, title, subtitle);
+            pages.push(p);
+            let blocksOnPage = 0;
+            blocks.forEach(block => {
+                p.inner.appendChild(block);
+                if (blocksOnPage > 0 && mdrPageOverflows(p)) {
+                    p.inner.removeChild(block);
+                    p = pdfCreatePage(ctx, `${title} (ต่อ)`, null);
+                    pages.push(p);
+                    p.inner.appendChild(block);
+                    blocksOnPage = 0;
+                }
+                blocksOnPage++;
+            });
+            pages.forEach(pdfFitPage);
+            return pages;
+        }
+
+        function pdfKvTable(rows) {
+            return `<table class="mdr-table"><tbody>${rows.map(([k, v]) => `<tr><td style="width:44%;color:#475569">${k}</td><td>${v}</td></tr>`).join('')}</tbody></table>`;
+        }
+
+        // --- chart re-render (light theme, print resolution) ---
+        function pdfCloneOptions(o) {
+            if (Array.isArray(o)) return o.map(pdfCloneOptions);
+            if (o && typeof o === 'object' && Object.getPrototypeOf(o) === Object.prototype) {
+                const r = {};
+                Object.keys(o).forEach(k => { r[k] = pdfCloneOptions(o[k]); });
+                return r;
+            }
+            return o; // functions, primitives, class instances: kept by reference
+        }
+        function pdfApplyLightTheme(opts) {
+            opts.responsive = false;
+            opts.maintainAspectRatio = false;
+            opts.animation = false;
+            opts.devicePixelRatio = 2;
+            opts.plugins = opts.plugins || {};
+            opts.plugins.legend = Object.assign({}, opts.plugins.legend);
+            opts.plugins.legend.labels = Object.assign({}, opts.plugins.legend.labels, { color: '#1e293b', font: { family: 'Sarabun', size: 12 } });
+            opts.plugins.tooltip = Object.assign({}, opts.plugins.tooltip, { enabled: false });
+            Object.keys(opts.scales || {}).forEach(k => {
+                const sc = opts.scales[k];
+                sc.ticks = Object.assign({}, sc.ticks, { color: '#334155', font: { family: 'Sarabun', size: 12 } });
+                sc.grid = Object.assign({}, sc.grid, { color: '#e2e8f0' });
+                sc.border = Object.assign({}, sc.border, { color: '#94a3b8' });
+                if (sc.title) sc.title = Object.assign({}, sc.title, { color: '#334155', font: { family: 'Sarabun', size: 12 } });
+            });
+        }
+        const pdfWhiteBgPlugin = {
+            id: 'mdrWhiteBg',
+            beforeDraw(chart) {
+                const c = chart.ctx;
+                c.save();
+                c.globalCompositeOperation = 'destination-over';
+                c.fillStyle = '#ffffff';
+                c.fillRect(0, 0, chart.width, chart.height);
+                c.restore();
+            }
+        };
+        // Re-draws an on-screen chart with the same data/options but a light print theme,
+        // on a temporary canvas, and returns it as a PNG data URL. The on-screen chart is
+        // never touched (its data and options are copied, not reused).
+        function pdfRenderChartImage(srcChart, w, h) {
+            const holder = pdfEl('div');
+            holder.style.cssText = `position:absolute;left:-30000px;top:0;width:${w}px;height:${h}px;`;
+            const canvas = document.createElement('canvas');
+            canvas.width = w; canvas.height = h;
+            canvas.style.width = `${w}px`; canvas.style.height = `${h}px`;
+            holder.appendChild(canvas);
+            document.body.appendChild(holder);
+            const cfg = srcChart.config;
+            const data = {
+                labels: cfg.data.labels ? cfg.data.labels.slice() : undefined,
+                datasets: cfg.data.datasets.map(ds => Object.assign({}, ds, {
+                    data: Array.isArray(ds.data) ? ds.data.map(v => (v && typeof v === 'object') ? Object.assign({}, v) : v) : ds.data
+                }))
+            };
+            const options = pdfCloneOptions(cfg.options || {});
+            pdfApplyLightTheme(options);
+            let chart = null;
+            try {
+                chart = new Chart(canvas.getContext('2d'), { type: cfg.type, data, options, plugins: [pdfWhiteBgPlugin] });
+                return chart.toBase64Image('image/png', 1);
+            } finally {
+                if (chart) chart.destroy();
+                holder.remove();
+            }
+        }
+        function pdfChartImgHtml(dataUrl, w, h) {
+            return `<img class="mdr-chart-img" src="${dataUrl}" style="width:${w}px;height:${h}px" alt="chart">`;
+        }
+
+        // Same computation as updatePhaseStatsTable(), returned as data instead of HTML.
+        function pdfPhaseStatsRows() {
+            const allStats = {};
+            portfolios.forEach(pt => {
+                allStats[pt.id] = {};
+                [1, 2, 3, 4].forEach(i => { allStats[pt.id][i] = calculatePhaseStats(pt.fundsData[i]); });
+            });
+            const totalW = portfolios.reduce((s, p) => s + (parseFloat(p.allocWeight) || 0), 0);
+            const out = [];
+            [1, 2, 3, 4].forEach(i => {
+                const rows = portfolios
+                    .map((pt, idx) => ({ pt, idx, s: allStats[pt.id][i] }))
+                    .filter(({ pt, s }) => pt.phaseSettings[i].enabled && s.valid);
+                if (rows.length === 0) return;
+                rows.forEach(r => out.push({ type: 'port', phase: i, pt: r.pt, idx: r.idx, s: r.s }));
+                const overview = blendWeightedStats(rows.map(({ pt, s }) => ({
+                    weight: (parseFloat(pt.allocWeight) || 0) / (totalW || 1),
+                    yield: s.yield, growth: s.growth, sd: s.sd
+                })));
+                if (overview.valid) out.push({ type: 'overview', phase: i, s: overview });
+            });
+            return out;
+        }
+
+        // ----- Section builders (each returns an array of page objects) -----
+        function pdfBuildCover(ctx) {
+            const page = pdfEl('div', 'mdr-page mdr-cover');
+            const initPrincipal = parseFloat(document.getElementById('init-investment').value) || 0;
+            const content = pdfEl('div', 'mdr-content');
+            const inner = pdfEl('div', 'mdr-content-inner', `
+                <div class="mdr-cover-brand">${PDF_BRAND}</div>
+                <div class="mdr-cover-link" data-pdf-link="${PDF_BRAND_LINK_URL}">${PDF_BRAND_LINK_TEXT}</div>
+                <div class="mdr-cover-title">รายงานผลการจำลองพอร์ตการลงทุน</div>
+                <div class="mdr-cover-sub">Portfolio Simulator · Multi-Portfolio Global Waterfall · Monte Carlo 30 ปี</div>
+                <div class="mdr-cover-sub">พอร์ตย่อย ${portfolios.length} พอร์ต · เงินต้นเริ่มต้น ${pdfFmtBaht(initPrincipal)}</div>
+                <div class="mdr-cover-date">ข้อมูล ณ วันที่ ${escapeHtml(ctx.asOf.date)} เวลา ${ctx.asOf.time} น.</div>
+                <div class="mdr-toc"><div style="font-weight:700;color:#0f172a;margin-bottom:4px">สารบัญ</div><div class="mdr-toc-rows"></div></div>`);
+            content.appendChild(inner);
+            page.appendChild(pdfEl('div', 'mdr-cover-band'));
+            page.appendChild(content);
+            pdfAddChrome(page, ctx);
+            ctx.root.appendChild(page);
+            return { page, content, inner, isCover: true };
+        }
+
+        function pdfBuildSummary(ctx) {
+            const res = globalExportData.resultsByYear.total;
+            const cfs = globalExportData.cashflows || [];
+            const survText = document.getElementById('metric-survival-rate').textContent;
+            const survNum = parseFloat(survText);
+            const survCls = survNum > 90 ? 'good' : (survNum > 60 ? 'warn' : 'bad');
+            const totalWithdrawn = cfs.reduce((s, v) => s + (v || 0), 0);
+            const capitalText = document.getElementById('metric-total-capital').textContent;
+
+            const kpis = pdfEl('div', 'mdr-kpis mdr-block', `
+                <div class="mdr-kpi"><div class="mdr-kpi-label">โอกาสพอร์ตรวมอยู่รอดครบ 30 ปี</div><div class="mdr-kpi-value ${survCls}">${escapeHtml(survText)}</div></div>
+                <div class="mdr-kpi"><div class="mdr-kpi-label">มูลค่าพอร์ตรวมปีที่ 30 (มัธยฐาน, หักเงินเฟ้อ)</div><div class="mdr-kpi-value">${pdfFmtBaht(res[30] ? res[30].median : 0)}</div></div>
+                <div class="mdr-kpi"><div class="mdr-kpi-label">ถอนสะสมรวม 30 ปี (มัธยฐาน, หักเงินเฟ้อ)</div><div class="mdr-kpi-value">${pdfFmtBaht(totalWithdrawn)}</div></div>
+                <div class="mdr-kpi"><div class="mdr-kpi-label">ทุนที่ใส่ไปจริง (รวม DCA)</div><div class="mdr-kpi-value">${escapeHtml(capitalText)}</div></div>`);
+
+            const initPrincipal = parseFloat(document.getElementById('init-investment').value) || 0;
+            const inflation = parseFloat(document.getElementById('inflation-rate').value) || 0;
+            const rbSel = document.getElementById('global-rebalance');
+            const totalW = portfolios.reduce((s, p) => s + (parseFloat(p.allocWeight) || 0), 0);
+            const assumptions = pdfKvTable([
+                ['เงินต้นรวมเริ่มต้น', pdfFmtBaht(initPrincipal)],
+                ['เงินเฟ้อทั่วไป', `${inflation}% ต่อปี`],
+                ['ความถี่การปรับสมดุล (Auto-Rebalance)', escapeHtml(rbSel.options[rbSel.selectedIndex].text)],
+                ['วิธีจำลอง', escapeHtml(PDF_SIM_METHOD_LABELS[chartSimMethod] || chartSimMethod)],
+                ['จำนวนเส้นทางจำลอง / ระยะเวลา', '1,000 paths / 30 ปี'],
+                ['จำนวนพอร์ตย่อย (น้ำหนักรวม)', `${portfolios.length} พอร์ต (${totalW}%)`]
+            ]);
+            const wdRows = [['โหมดการถอน', escapeHtml(PDF_WD_MODE_LABELS[globalWithdrawal.mode] || globalWithdrawal.mode)]];
+            if (globalWithdrawal.mode === 'fixed_baht') {
+                wdRows.push(['ยอดถอนต่อครั้ง', `${pdfFmtBaht(globalWithdrawal.fixedAmt)} (ปรับตามเงินเฟ้อ)`]);
+                wdRows.push(['ความถี่การถอน', PDF_FREQ_LABELS[globalWithdrawal.freq] || `ทุก ${globalWithdrawal.freq} เดือน`]);
+            }
+            wdRows.push(['เริ่มถอน', `ปีที่ ${globalWithdrawal.startY} เดือนที่ ${globalWithdrawal.startM}`]);
+            wdRows.push(['ลำดับขายเงินต้นเมื่อ Yield ไม่พอ', globalWithdrawal.priorityOrder
+                .map((id, i) => { const p = portfolios.find(x => x.id === id); return p ? `${i + 1}. ${escapeHtml(p.name)}` : ''; })
+                .filter(Boolean).join(' → ')]);
+            const grid = pdfEl('div', 'mdr-grid2 mdr-block', `
+                <div><div class="mdr-h2">สมมติฐานหลัก</div>${assumptions}</div>
+                <div><div class="mdr-h2">นโยบายถอนเงินพอร์ตรวม (Global Waterfall)</div>${pdfKvTable(wdRows)}
+                    <div class="mdr-note" style="margin-top:4px">รวม Yield จากทุกพอร์ตจ่ายก่อน หากไม่พอจึงขายเงินต้นตามลำดับข้างต้น</div></div>`);
+
+            const years = [1, 5, 10, 15, 20, 25, 30];
+            const yearly = pdfEl('div', 'mdr-block', `
+                <div class="mdr-h2">ผลลัพธ์รายช่วงเวลา (มูลค่าปัจจุบัน หักเงินเฟ้อแล้ว)</div>
+                <table class="mdr-table">
+                    <thead><tr><th>ปีที่</th><th class="num">กระแสเงินสดรับสุทธิในปีนั้น (มัธยฐาน)</th><th class="num">พอร์ตรวม — กรณีแย่ (10th)</th><th class="num">พอร์ตรวม — กรณีฐาน (50th)</th><th class="num">พอร์ตรวม — กรณีดี (90th)</th></tr></thead>
+                    <tbody>${years.map(y => {
+                        const r = res[y] || {};
+                        return `<tr><td>ปีที่ ${y}</td><td class="num">${pdfFmtBaht(cfs[y - 1] || 0)}</td><td class="num">${pdfFmtBaht(r.worst)}</td><td class="num">${pdfFmtBaht(r.median)}</td><td class="num">${pdfFmtBaht(r.best)}</td></tr>`;
+                    }).join('')}</tbody>
+                </table>
+                <div class="mdr-note" style="margin-top:4px">มัธยฐานของกระแสเงินสดและของมูลค่าพอร์ตคำนวณแยกกันจาก 1,000 เส้นทางจำลอง จึงอาจไม่ได้มาจากเส้นทางเดียวกัน</div>`);
+
+            return pdfFlowBlocks(ctx, 'สรุปผลการจำลอง', 'ภาพรวมผลลัพธ์จาก Run Simulation ล่าสุด', [kpis, grid, yearly]);
+        }
+
+        function pdfBuildStructure(ctx) {
+            const initPrincipal = parseFloat(document.getElementById('init-investment').value) || 0;
+            const totalW = portfolios.reduce((s, p) => s + (parseFloat(p.allocWeight) || 0), 0);
+            const blocks = portfolios.map((pt, idx) => {
+                const color = barColors[idx % barColors.length];
+                const w = parseFloat(pt.allocWeight) || 0;
+                const t = pt.topup;
+                const dca = t.amount > 0
+                    ? `DCA ${pdfFmtBaht(t.amount)}/ครั้ง ${PDF_FREQ_LABELS[t.freq] || `ทุก ${t.freq} เดือน`} เพิ่ม ${t.growth}%/ปี (ปีที่ ${t.startY} ด.${t.startM} – ปีที่ ${t.endY} ด.${t.endM})`
+                    : 'ไม่มี DCA';
+                const rb = pt.rebalance || { startY: 1, startM: 1 };
+                const prio = globalWithdrawal.priorityOrder.indexOf(pt.id) + 1;
+                const phaseCols = [1, 2, 3, 4].filter(i => pt.phaseSettings[i].enabled).map(i => {
+                    const funds = pt.fundsData[i] || [];
+                    const sumW = funds.reduce((s, f) => s + (parseFloat(f.weight) || 0), 0);
+                    return `<div>
+                        <div class="mdr-phase-title">เฟส ${i} (เริ่มปีที่ ${i === 1 ? 1 : pt.phaseSettings[i].startYear})</div>
+                        <table class="mdr-table">
+                            <thead><tr><th>กองทุน</th><th class="num">สัดส่วน</th><th class="num">Yield</th><th class="num">Growth</th><th class="num">S.D.</th></tr></thead>
+                            <tbody>${funds.map(f => `<tr><td>${escapeHtml(f.name)}</td><td class="num">${pdfFmtFundPct(f.weight)}</td><td class="num">${pdfFmtFundPct(f.yield)}</td><td class="num">${pdfFmtFundPct(f.capGain)}</td><td class="num">${pdfFmtFundPct(f.sd)}</td></tr>`).join('')}
+                                <tr class="mdr-total"><td>รวม</td><td class="num">${+sumW.toFixed(2)}%</td><td></td><td></td><td></td></tr></tbody>
+                        </table></div>`;
+                }).join('');
+                return pdfEl('div', 'mdr-port mdr-block', `
+                    <div class="mdr-port-head">
+                        <span class="mdr-chip" style="color:${color}"><span class="mdr-dot" style="background:${color}"></span>${escapeHtml(pt.name)}</span>
+                        <span style="font-weight:700">สัดส่วนเป้าหมาย ${w}% · เงินต้นเริ่มต้น ≈ ${pdfFmtBaht(totalW > 0 ? initPrincipal * w / totalW : 0)}</span>
+                    </div>
+                    <div class="mdr-port-meta">${dca} · เริ่มเข้ารอบ Rebalance ปีที่ ${rb.startY} เดือนที่ ${rb.startM} · ลำดับขายเงินต้น: ${prio > 0 ? prio : '-'}</div>
+                    <div class="mdr-phases">${phaseCols}</div>`);
+            });
+
+            const stats = pdfPhaseStatsRows();
+            blocks.push(pdfEl('div', 'mdr-block', `
+                <div class="mdr-h2">ข้อมูลคาดการณ์ทุกพอร์ต (Phase Stats Matrix)</div>
+                <table class="mdr-table">
+                    <thead><tr><th>พอร์ต</th><th>เฟส</th><th class="ctr">เริ่ม (ปีที่)</th><th class="num">Yield เฉลี่ย</th><th class="num">เติบโต</th><th class="num">ผลตอบแทนรวม</th><th class="num">S.D. พอร์ตจริง</th></tr></thead>
+                    <tbody>${stats.map(r => r.type === 'port'
+                        ? `<tr><td><span class="mdr-chip" style="color:${barColors[r.idx % barColors.length]}"><span class="mdr-dot" style="background:${barColors[r.idx % barColors.length]}"></span>${escapeHtml(r.pt.name)}</span></td><td>เฟส ${r.phase}</td><td class="ctr">${r.pt.phaseSettings[r.phase].startYear}</td><td class="num">${pdfFmtPct(r.s.yield)}</td><td class="num">${pdfFmtPct(r.s.growth)}</td><td class="num">${pdfFmtPct(r.s.totalR)}</td><td class="num">${pdfFmtPct(r.s.sd)}</td></tr>`
+                        : `<tr class="mdr-total"><td colspan="2">ภาพรวม เฟส ${r.phase} (ถ่วงน้ำหนัก)</td><td class="ctr">–</td><td class="num">${pdfFmtPct(r.s.yield)}</td><td class="num">${pdfFmtPct(r.s.growth)}</td><td class="num">${pdfFmtPct(r.s.totalR)}</td><td class="num">${pdfFmtPct(r.s.sd)}</td></tr>`).join('')}</tbody>
+                </table>
+                <div class="mdr-note" style="margin-top:4px">Yield / Growth / S.D. ต่อกองทุนเป็นค่าที่ผู้ใช้กรอกเอง (ช่องที่เว้นว่าง "–" นับเป็น 0% ในการคำนวณ) · S.D. พอร์ตคำนวณรวมผลของสหสัมพันธ์ระหว่างกองทุน/พอร์ต</div>`));
+
+            return pdfFlowBlocks(ctx, 'โครงสร้างพอร์ตและสมมติฐานกองทุน', 'สัดส่วนกองทุน ผลตอบแทนคาดหวัง และความผันผวนที่ใช้ในการจำลอง', blocks);
+        }
+
+        function pdfBuildMcChart(ctx) {
+            const sel = document.getElementById('chart-port-selector');
+            const viewText = currentChartView === 'line'
+                ? 'กราฟเส้น 10th / 50th / 90th + Random Path (1,000 paths)'
+                : 'กราฟแท่งแยกสัดส่วน (Pure Asset Drift, มัธยฐานจาก 100 paths)';
+            const labels = portfolioChartInstance.config.data.labels || [];
+            const range = labels.length ? `${labels[0]}–${labels[labels.length - 1]}` : '';
+            const subtitle = `${viewText} · แสดง: ${sel.options[sel.selectedIndex] ? sel.options[sel.selectedIndex].text : ''} · ช่วง ${range} · วิธีจำลอง: ${PDF_SIM_METHOD_LABELS[chartSimMethod] || chartSimMethod} · หน่วย: บาท (หักเงินเฟ้อ)`;
+            const w = 1040, h = 440;
+            const img = pdfRenderChartImage(portfolioChartInstance, w, h);
+            const block = pdfEl('div', 'mdr-block', pdfChartImgHtml(img, w, h) +
+                `<div class="mdr-note" style="margin-top:4px">${currentChartView === 'line'
+                    ? '10th = กรณีแย่ (Conservative) · 50th = กรณีฐาน · 90th = กรณีดี (Optimistic) · Random Path = ตัวอย่างสุ่ม 1 เส้นทางจากการจำลอง ที่มีการ Rebalance และ Waterfall ถอนเงินตามลำดับ'
+                    : 'แสดงมูลค่า (มัธยฐาน) ของแต่ละพอร์ต/กองทุนตามการตั้งค่า Auto-Rebalance เพื่อดูการเบี้ยวของสัดส่วนเมื่อเวลาผ่านไป'}</div>`);
+            return pdfFlowBlocks(ctx, 'วิถีความมั่งคั่ง 30 ปี (หักเงินเฟ้อ)', subtitle, [block]);
+        }
+
+        function pdfBuildHeatmap(ctx) {
+            const hm = lastHeatmapResult;
+            const m = hm.meta;
+            const timing = m.withdrawalMode === 'planned'
+                ? `ตามแผนจริง (เริ่มถอนปีที่ ${m.startY} เดือนที่ ${m.startM})`
+                : 'Stress ทันที (เริ่มถอนเดือนที่ 1)';
+            const subtitle = `อัตราถอนที่ทดสอบ: ${m.ratesStr} · จังหวะเริ่มถอน: ${timing} · วิธีจำลอง: ${PDF_SIM_METHOD_LABELS[m.simMethod] || m.simMethod} · ${m.paths} paths ต่อช่อง`;
+            const table = pdfEl('div', 'mdr-block', `
+                <table class="mdr-table mdr-heat">
+                    <thead><tr><th style="width:28%">อัตรา/ยอดถอน (ต่อปี/เดือน)</th>${m.horizons.map(y => `<th class="ctr">${y} ปี</th>`).join('')}</tr></thead>
+                    <tbody>${hm.rows.map(r => `<tr><td style="font-weight:700">${escapeHtml(r.label)}</td>${r.cells.map(c =>
+                        `<td class="cell ${PDF_HEAT_CLASS[c.cls] || ''}">${c.survRate.toFixed(1)}%<small>${escapeHtml(c.fdLabel)}</small></td>`).join('')}</tr>`).join('')}</tbody>
+                </table>`);
+            const notes = pdfEl('div', 'mdr-block mdr-note', `
+                ตัวเลขในช่อง = โอกาสที่พอร์ตรวมยังเหลือเงินเมื่อครบระยะเวลานั้น เมื่อบังคับถอนตามอัตราในแถวผ่านกลไก Global Waterfall ภายใต้แผน DCA และ Rebalance ปัจจุบัน<br>
+                สี: เขียว ≥ 90% · เหลือง 70–89.9% · แดง &lt; 70% · "FD" = กรณีนำเงินก้อนเดียวกัน (รวม DCA) ไปฝากอัตราคงที่ ${m.benchmarkRateAnnual}% ต่อปีแทนการลงทุน (รอดตลอด / หมดในปีที่ระบุ)<br>
+                อัตราแบบ % คำนวณจาก${m.withdrawalMode === 'planned' ? 'มูลค่าพอร์ต ณ วันเริ่มถอนจริง' : 'เงินต้นเริ่มต้น'} และปรับเพิ่มตามเงินเฟ้อทุกเดือน`);
+            return pdfFlowBlocks(ctx, 'Withdrawal Sustainability Heatmap', subtitle, [table, notes]);
+        }
+
+        function pdfBuildOptimizer(ctx) {
+            const pt = portfolios.find(p => p.id === activePortId);
+            const funds = pt ? pt.fundsData[currentEditingPhase] : [];
+            const selected = optimizerPresets[optimizerSelectedMode];
+            const cur = optimizerCloud.currentPoint;
+            const c = readOptimizerConstraints();
+            const bits = [];
+            if (c.conservativeMinReturn !== null) bits.push(`Conservative: ผลตอบแทน ≥ ${(c.conservativeMinReturn * 100).toFixed(2)}%`);
+            if (c.aggressiveMaxRisk !== null) bits.push(`Aggressive: S.D. ≤ ${(c.aggressiveMaxRisk * 100).toFixed(2)}%`);
+            const subtitle = `พอร์ต "${pt ? pt.name : ''}" · เฟส ${currentEditingPhase} · กำลังแสดง: ${OPTIMIZER_MODE_LABELS[optimizerSelectedMode]} · กลุ่มตัวอย่างสุ่ม ${optimizerCloud.samples.length.toLocaleString()} ชุด${bits.length ? ' · เงื่อนไข: ' + bits.join(', ') : ''}`;
+
+            const w = 600, h = 430;
+            const img = pdfRenderChartImage(optimizerFrontierChartInstance, w, h);
+
+            let tableHtml;
+            if (!selected) {
+                tableHtml = `<div class="mdr-note" style="color:#b45309;font-weight:700">ไม่มีสัดส่วนใดผ่านเงื่อนไขที่ตั้งไว้สำหรับ "${OPTIMIZER_MODE_LABELS[optimizerSelectedMode]}"</div>`;
+            } else {
+                tableHtml = `<table class="mdr-table">
+                    <thead><tr><th>กองทุน</th><th class="num">ปัจจุบัน</th><th class="num">Optimize</th><th class="num">ส่วนต่าง</th></tr></thead>
+                    <tbody>${funds.map(f => {
+                        const curW = parseFloat(f.weight) || 0;
+                        const optW = selected.weights[f.id] !== undefined ? selected.weights[f.id] : curW;
+                        const diff = optW - curW;
+                        return `<tr><td>${escapeHtml(f.name)}</td><td class="num">${curW.toFixed(1)}%</td><td class="num" style="font-weight:700">${optW.toFixed(1)}%</td><td class="num" style="color:${Math.abs(diff) < 0.05 ? '#64748b' : (diff > 0 ? '#047857' : '#b91c1c')}">${diff > 0 ? '+' : ''}${diff.toFixed(1)}%</td></tr>`;
+                    }).join('')}</tbody></table>`;
+            }
+            const presetRow = (name, p) => `<tr><td>${name}</td><td class="num">${p ? pdfFmtPct(p.return) : '–'}</td><td class="num">${p ? pdfFmtPct(p.risk) : '–'}</td></tr>`;
+            const warn = optimizerPresets.warnings || {};
+            const warnHtml = [warn.conservative ? 'Conservative: ' + escapeHtml(warn.conservative) : '', warn.aggressive ? 'Aggressive: ' + escapeHtml(warn.aggressive) : '']
+                .filter(Boolean).map(t => `<div class="mdr-note" style="color:#b45309;margin-top:4px">⚠ ${t}</div>`).join('');
+
+            const block = pdfEl('div', 'mdr-block', `
+                <div style="display:grid;grid-template-columns:${w}px 1fr;gap:18px;align-items:start">
+                    <div>${pdfChartImgHtml(img, w, h)}</div>
+                    <div>
+                        <div class="mdr-h2">เทียบสัดส่วนกองทุน: ปัจจุบัน vs ${escapeHtml(OPTIMIZER_MODE_LABELS[optimizerSelectedMode])}</div>
+                        ${tableHtml}
+                        <div class="mdr-h2" style="margin-top:12px">ผลตอบแทนคาดหวัง / ความเสี่ยง (S.D.) ต่อปี</div>
+                        <table class="mdr-table"><thead><tr><th>จุดบนกราฟ</th><th class="num">ผลตอบแทน</th><th class="num">S.D.</th></tr></thead>
+                            <tbody>${presetRow('พอร์ตที่กรอกปัจจุบัน', cur)}${presetRow('Conservative', optimizerPresets.conservative)}${presetRow('Sharpe สูงสุด', optimizerPresets.sharpe)}${presetRow('Aggressive', optimizerPresets.aggressive)}</tbody></table>
+                        ${warnHtml}
+                        <div class="mdr-note" style="margin-top:8px">เส้น Frontier มาจากการสุ่มสัดส่วนกองทุนหลายพันชุดแล้วคำนวณด้วยโมเดลเดียวกับตารางสถิติหลัก จึงเป็นเส้นประมาณการ ไม่ใช่คำตอบทางคณิตศาสตร์ที่แม่นยำ 100% และขึ้นกับค่า Yield/Growth/S.D. ที่ผู้ใช้กรอก — สัดส่วน Optimize เป็นเพียงตัวอย่างเพื่อการศึกษา ไม่ได้ถูกนำไปใช้แทนสัดส่วนจริงในรายงานนี้</div>
+                    </div>
+                </div>`);
+            return pdfFlowBlocks(ctx, 'Portfolio Optimizer — Efficient Frontier', subtitle, [block]);
+        }
+
+        // Builds every page (cover first) in ctx.root, numbers them, fills the table of contents.
+        function buildPdfReportPages(ctx, include) {
+            const cover = pdfBuildCover(ctx);
+            const sections = [];
+            const add = (key, label, builder) => sections.push({ key, label, pages: builder(ctx) });
+            add('summary', 'สรุปผลการจำลอง', pdfBuildSummary);
+            add('structure', 'โครงสร้างพอร์ตและสมมติฐานกองทุน', pdfBuildStructure);
+            add('mc', 'วิถีความมั่งคั่ง 30 ปี (Monte Carlo)', pdfBuildMcChart);
+            if (include.heatmap) add('heatmap', 'Withdrawal Sustainability Heatmap', pdfBuildHeatmap);
+            if (include.optimizer) add('optimizer', 'Portfolio Optimizer — Efficient Frontier', pdfBuildOptimizer);
+
+            const pages = [cover];
+            sections.forEach(s => { s.startPage = pages.length + 1; pages.push(...s.pages); });
+            const total = pages.length;
+            pages.forEach((p, i) => {
+                const el = p.page.querySelector('.mdr-pageno');
+                if (el) el.textContent = `หน้า ${i + 1} / ${total}`;
+            });
+            cover.page.querySelector('.mdr-toc-rows').innerHTML = sections.map(s =>
+                `<div class="mdr-toc-row"><span>${escapeHtml(s.label)}</span><span>หน้า ${s.startPage}</span></div>`).join('');
+            return { pages, sections };
+        }
+
+        function pdfWaitForImages(root, timeoutMs) {
+            const imgs = Array.from(root.querySelectorAll('img'));
+            const waits = imgs.map(img => (img.complete && img.naturalWidth > 0) ? Promise.resolve()
+                : new Promise(res => { img.onload = res; img.onerror = res; }));
+            return Promise.race([Promise.all(waits), new Promise(res => setTimeout(res, timeoutMs || 4000))]);
+        }
+        // Pagination measures text height, so every font face the report uses must be loaded
+        // BEFORE the pages are built (otherwise pages are measured with fallback-font metrics
+        // and the real font can push the last line under the footer). Loads Thai + Latin
+        // subsets for each weight used; failures (offline) just fall back gracefully.
+        async function pdfPreloadFonts() {
+            if (!document.fonts || !document.fonts.load) return;
+            const sample = 'กขคงภาพรวมรายงาน ABCabc0123%฿';
+            try {
+                await Promise.race([
+                    Promise.all(['400', '600', '700'].map(wt => document.fonts.load(`${wt} 16px Sarabun`, sample))),
+                    new Promise(res => setTimeout(res, 4000))
+                ]);
+            } catch (e) { /* fall back to whatever font is available */ }
+            if (document.fonts.ready) await document.fonts.ready;
+        }
+        function pdfNextFrame() {
+            return new Promise(res => requestAnimationFrame(() => setTimeout(res, 0)));
+        }
+        // Clickable link annotations over every [data-pdf-link] element (pages are images,
+        // so without this the Facebook link would not be clickable in the PDF).
+        function pdfAddLinks(pdf, pageEl) {
+            const k = PDF_PAGE_W_PT / PDF_PAGE_W_PX;
+            const pr = pageEl.getBoundingClientRect();
+            pageEl.querySelectorAll('[data-pdf-link]').forEach(el => {
+                const r = el.getBoundingClientRect();
+                if (!(r.width > 0 && r.height > 0)) return;
+                pdf.link((r.left - pr.left) * k, (r.top - pr.top) * k, r.width * k, r.height * k, { url: el.getAttribute('data-pdf-link') });
+            });
+        }
+
+        async function generatePdfReport(options) {
+            if (pdfExportInProgress) return;
+            const av = getPdfAvailability();
+            if (!av.main) { alert(av.mainReason); return; }
+            if (typeof html2canvas === 'undefined' || !window.jspdf || !window.jspdf.jsPDF) {
+                alert('โหลดไลบรารีสำหรับสร้าง PDF ไม่สำเร็จ (ต้องเชื่อมต่ออินเทอร์เน็ต) — กรุณารีเฟรชหน้าแล้วลองใหม่');
+                return;
+            }
+            const include = {
+                heatmap: !!(options && options.includeHeatmap) && av.heatmap,
+                optimizer: !!(options && options.includeOptimizer) && av.optimizer
+            };
+
+            pdfExportInProgress = true;
+            const genBtn = document.getElementById('btn-generate-pdf');
+            const progress = document.getElementById('pdf-progress');
+            genBtn.disabled = true;
+            progress.classList.remove('hidden');
+            progress.textContent = 'กำลังเตรียมรายงาน...';
+            const savedScroll = { x: window.scrollX, y: window.scrollY };
+            let root = null, overlay = null;
+            try {
+                overlay = pdfEl('div', null, 'กำลังเตรียมรายงาน PDF...');
+                overlay.id = 'mdr-export-overlay';
+                document.body.appendChild(overlay);
+                window.scrollTo(0, 0); // capture from the top-left: avoids html2canvas scroll-offset crops
+                root = pdfEl('div');
+                root.id = 'mdr-report-root';
+                document.body.appendChild(root);
+
+                const now = new Date();
+                const ctx = { root, asOf: pdfFormatAsOf(now) };
+                await pdfPreloadFonts();
+                const built = buildPdfReportPages(ctx, include);
+                await pdfWaitForImages(root);
+                if (document.fonts && document.fonts.ready) await document.fonts.ready;
+                built.pages.forEach(p => { if (!p.isCover) pdfFitPage(p); }); // safety net if anything reflowed after build
+
+                const { jsPDF } = window.jspdf;
+                const pdf = new jsPDF({ orientation: 'landscape', unit: 'pt', format: 'a4', compress: true });
+                const total = built.pages.length;
+                for (let i = 0; i < total; i++) {
+                    overlay.textContent = `กำลังสร้าง PDF... หน้า ${i + 1} / ${total}`;
+                    progress.textContent = overlay.textContent;
+                    await pdfNextFrame();
+                    const pageEl = built.pages[i].page;
+                    const canvas = await html2canvas(pageEl, {
+                        scale: 2, backgroundColor: '#ffffff', useCORS: true, logging: false,
+                        scrollX: 0, scrollY: 0,
+                        width: PDF_PAGE_W_PX, height: PDF_PAGE_H_PX,
+                        windowWidth: Math.max(window.innerWidth, PDF_PAGE_W_PX + 40)
+                    });
+                    if (i > 0) pdf.addPage('a4', 'landscape');
+                    pdf.addImage(canvas.toDataURL('image/jpeg', 0.92), 'JPEG', 0, 0, PDF_PAGE_W_PT, PDF_PAGE_H_PT, undefined, 'FAST');
+                    pdfAddLinks(pdf, pageEl);
+                }
+                pdf.save(`MoneyDirector_Portfolio_Report_${ctx.asOf.fileStamp}.pdf`);
+                progress.textContent = `✅ สร้าง PDF สำเร็จ (${total} หน้า)`;
+            } catch (err) {
+                console.error(err);
+                progress.textContent = '';
+                alert('สร้าง PDF ไม่สำเร็จ: ' + (err && err.message ? err.message : err));
+            } finally {
+                if (root) root.remove();
+                if (overlay) overlay.remove();
+                window.scrollTo(savedScroll.x, savedScroll.y);
+                pdfExportInProgress = false;
+                genBtn.disabled = !getPdfAvailability().main;
+            }
+        }
+
         // --- AI INTEGRATION ---
-        const apiKey = ""; 
+        const apiKey = "";
 
         function openAIModal() {
             document.getElementById('ai-modal').classList.remove('hidden');
