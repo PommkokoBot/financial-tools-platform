@@ -58,8 +58,11 @@
         .mdr-foot b { color: #0f172a; }
         .mdr-foot-credit { margin-top: 2px; color: #334155; font-weight: 600; }
         .mdr-watermark { position: absolute; left: 0; top: 0; width: 100%; height: 100%; display: flex; flex-direction: column; align-items: center; justify-content: center; pointer-events: none; z-index: 5; transform: rotate(-24deg); }
-        .mdr-watermark-main { font-size: 104px; font-weight: 700; color: rgba(15,23,42,0.055); white-space: nowrap; line-height: 1; }
-        .mdr-watermark-sub { font-size: 30px; font-weight: 600; color: rgba(15,23,42,0.055); white-space: nowrap; margin-top: 8px; }
+        /* One small watermark in the middle of the page (~30% of the original size).
+           Opacity raised from 0.055 to 0.11 because at this size the old value was
+           practically invisible. */
+        .mdr-watermark-main { font-size: 31px; font-weight: 700; color: rgba(15,23,42,0.11); white-space: nowrap; line-height: 1; }
+        .mdr-watermark-sub { font-size: 9px; font-weight: 600; color: rgba(15,23,42,0.11); white-space: nowrap; margin-top: 3px; }
         .mdr-block { margin-bottom: 12px; }
         .mdr-h2 { font-size: 13px; font-weight: 700; color: #0f172a; margin: 0 0 6px 0; display: flex; align-items: center; gap: 6px; }
         .mdr-note { font-size: 9.5px; color: #64748b; line-height: 1.45; }
@@ -118,8 +121,12 @@
                     </div>
                     <div class="flex gap-2">
                         <button id="btn-export-excel" class="bg-slate-800 hover:bg-slate-700 text-emerald-400 px-3 py-2 rounded-lg text-sm font-bold shadow-lg transition-all flex items-center gap-2 border border-emerald-500/30">
-                            <i class="fa-solid fa-file-excel"></i> โหลด Excel
+                            <i class="fa-solid fa-file-excel"></i> บันทึกเคส (Excel)
                         </button>
+                        <button id="btn-import-case" class="bg-slate-800 hover:bg-slate-700 text-sky-300 px-3 py-2 rounded-lg text-sm font-bold shadow-lg transition-all flex items-center gap-2 border border-sky-500/30">
+                            <i class="fa-solid fa-folder-open"></i> เปิดเคส
+                        </button>
+                        <input type="file" id="case-file-input" accept=".xlsx,.xls" class="hidden">
                         <button id="btn-export-pdf" class="bg-slate-800 hover:bg-slate-700 text-rose-300 px-3 py-2 rounded-lg text-sm font-bold shadow-lg transition-all flex items-center gap-2 border border-rose-500/30">
                             <i class="fa-solid fa-file-pdf"></i> โหลด PDF
                         </button>
@@ -699,6 +706,39 @@
 
             </div>
 
+        </div>
+    </div>
+
+    <!-- Save-case Modal: name the case, then write the .xlsx (all inputs + results if available). -->
+    <div id="case-modal" class="fixed inset-0 z-50 hidden">
+        <div class="absolute inset-0 bg-slate-950/80 backdrop-blur-sm" id="case-modal-bg"></div>
+        <div class="absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 w-11/12 max-w-md bg-slate-900 border border-emerald-500/30 rounded-2xl shadow-2xl flex flex-col">
+            <div class="flex items-center justify-between p-4 border-b border-slate-800">
+                <h3 class="text-base font-bold text-emerald-300 flex items-center gap-2">
+                    <i class="fa-solid fa-file-excel"></i> บันทึกเคสเป็นไฟล์ Excel
+                </h3>
+                <button id="btn-close-case" class="text-slate-400 hover:text-white transition px-2 py-1">
+                    <i class="fa-solid fa-times text-xl"></i>
+                </button>
+            </div>
+            <div class="p-5 space-y-3 text-xs text-slate-300">
+                <div>
+                    <label class="block text-[10px] text-slate-400 mb-1">ชื่อเคส (ใช้ตั้งชื่อไฟล์เท่านั้น ไม่ปรากฏในรายงาน PDF)</label>
+                    <input type="text" id="case-name-input" maxlength="80" placeholder="เช่น ลูกค้า A แผน 1 / ทดลองพอร์ตปันผล" class="w-full bg-slate-800 border border-slate-600 rounded px-3 py-2 text-xs text-slate-100 focus:outline-none focus:border-emerald-500 placeholder:text-slate-600">
+                </div>
+                <div class="bg-slate-800/60 border border-slate-700 rounded-lg p-3 space-y-1">
+                    <div class="text-[10px] text-slate-400 font-semibold">ไฟล์นี้จะเก็บ</div>
+                    <div class="text-[11px]">ค่าทั้งหมดที่กรอกไว้ (พารามิเตอร์หลัก, นโยบายถอนเงิน, ทุกพอร์ต, ทุกกองทุนในทุกเฟส, ค่า Heatmap/Optimizer) — เปิดกลับเข้ามาได้ด้วยปุ่ม "เปิดเคส"</div>
+                    <div id="case-results-status" class="text-[11px] pt-1"></div>
+                </div>
+                <p class="text-[10px] text-slate-500 leading-relaxed">ไฟล์ถูกสร้างในเบราว์เซอร์และดาวน์โหลดลงเครื่องของคุณโดยตรง เครื่องมือนี้ไม่มีเซิร์ฟเวอร์เก็บข้อมูล จึงไม่มีการส่งข้อมูลออกไปที่ใด</p>
+                <div class="flex justify-end gap-2 pt-1">
+                    <button id="btn-cancel-case" class="px-3 py-2 rounded-lg text-xs text-slate-300 bg-slate-800 border border-slate-700 hover:bg-slate-700">ยกเลิก</button>
+                    <button id="btn-save-case" class="px-4 py-2 rounded-lg text-xs font-bold text-white bg-emerald-600 hover:bg-emerald-500">
+                        <i class="fa-solid fa-download"></i> บันทึกไฟล์
+                    </button>
+                </div>
+            </div>
         </div>
     </div>
 
@@ -1562,8 +1602,20 @@
             document.getElementById('btn-run-heatmap').addEventListener('click', runHeatmap);
             document.getElementById('heatmap-rates').addEventListener('change', runHeatmap);
 
-            // Export & AI
-            document.getElementById('btn-export-excel').addEventListener('click', exportToExcel);
+            // Save / open a case (Excel)
+            document.getElementById('btn-export-excel').addEventListener('click', openCaseModal);
+            document.getElementById('btn-close-case').addEventListener('click', closeCaseModal);
+            document.getElementById('btn-cancel-case').addEventListener('click', closeCaseModal);
+            document.getElementById('case-modal-bg').addEventListener('click', closeCaseModal);
+            document.getElementById('btn-save-case').addEventListener('click', exportCaseToExcel);
+            document.getElementById('case-name-input').addEventListener('keydown', (e) => { if (e.key === 'Enter') exportCaseToExcel(); });
+            document.getElementById('btn-import-case').addEventListener('click', () => document.getElementById('case-file-input').click());
+            document.getElementById('case-file-input').addEventListener('change', (e) => {
+                const file = e.target.files && e.target.files[0];
+                handleCaseFileChosen(file).then(() => { e.target.value = ''; }); // allow re-picking the same file
+            });
+
+            // AI
             document.getElementById('btn-ai-advisor').addEventListener('click', openAIModal);
             document.getElementById('btn-close-ai').addEventListener('click', closeAIModal);
             document.getElementById('ai-modal-bg').addEventListener('click', closeAIModal);
@@ -2877,48 +2929,513 @@
             }, 50);
         }
 
-        // --- EXPORT TO EXCEL ---
-        function exportToExcel() {
-            if (typeof XLSX === 'undefined') {
-                alert("เกิดข้อผิดพลาดในการโหลดไลบรารี Excel");
-                return;
-            }
+        // =========================================================================
+        // SAVE / OPEN A CASE AS .XLSX
+        // 100% client-side: SheetJS builds the workbook inside the browser and the
+        // browser downloads it; opening a case reads the chosen file locally. Nothing
+        // is uploaded anywhere -- this tool has no backend at all.
+        //
+        // File layout (schema v1):
+        //   _meta           tool id, schema version, case name, export time, hasResults
+        //   ตั้งค่าหลัก     key / label / value rows (global inputs, withdrawal policy,
+        //                   heatmap + optimizer settings)
+        //   พอร์ต           one row per portfolio
+        //   กองทุน          one row per fund per phase
+        //   ผลจำลอง 30 ปี  simulation output -- only when a Run exists that still
+        //                   matches the inputs (otherwise a note explaining why)
+        // The พอร์ต/กองทุน sheets carry TWO header rows: Thai labels for humans and
+        // machine keys underneath. Import reads the machine-key row, so re-ordering
+        // columns or rewriting the Thai labels in Excel does not break re-import.
+        // =========================================================================
+        const CASE_TOOL_ID = 'institutional-portfolio-simulator';
+        const CASE_SCHEMA_VERSION = 1;
+        const CASE_SHEETS = { meta: '_meta', settings: 'ตั้งค่าหลัก', ports: 'พอร์ต', funds: 'กองทุน', results: 'ผลจำลอง 30 ปี' };
+        const CASE_PORT_COLS = [
+            ['portId', 'รหัสพอร์ต'], ['name', 'ชื่อพอร์ต'], ['allocWeight', 'สัดส่วนเป้าหมาย (%)'],
+            ['topupAmount', 'DCA: ยอด/ครั้ง (บาท)'], ['topupGrowth', 'DCA: เพิ่ม (%/ปี)'], ['topupFreq', 'DCA: ความถี่ (เดือน)'],
+            ['topupStartY', 'DCA: เริ่มปีที่'], ['topupStartM', 'DCA: เริ่มเดือนที่'], ['topupEndY', 'DCA: จบปีที่'], ['topupEndM', 'DCA: จบเดือนที่'],
+            ['rebalStartY', 'Rebalance: เริ่มปีที่'], ['rebalStartM', 'Rebalance: เริ่มเดือนที่'],
+            ['p2Enabled', 'เปิดเฟส 2'], ['p2StartYear', 'เฟส 2 เริ่มปีที่'],
+            ['p3Enabled', 'เปิดเฟส 3'], ['p3StartYear', 'เฟส 3 เริ่มปีที่'],
+            ['p4Enabled', 'เปิดเฟส 4'], ['p4StartYear', 'เฟส 4 เริ่มปีที่']
+        ];
+        const CASE_FUND_COLS = [
+            ['portId', 'รหัสพอร์ต'], ['phase', 'เฟส'], ['fundName', 'ชื่อกองทุน'],
+            ['weight', 'สัดส่วน (%)'], ['yield', 'Yield (%)'], ['capGain', 'Growth (%)'], ['sd', 'S.D. (%)']
+        ];
 
-            const inputAOA = [
-                ["หมวดหมู่", "พารามิเตอร์", "ค่าที่ตั้งไว้"],
-                ["การลงทุน", "เงินต้นรวมเริ่มต้น (บาท)", document.getElementById('init-investment').value],
-                ["การลงทุน", "เงินเฟ้อทั่วไป (%)", document.getElementById('inflation-rate').value],
-                ["การถอนเงิน", "โหมดถอนเงินพอร์ตรวม (Global Waterfall)", globalWithdrawal.mode],
-                ["การถอนเงิน", "ยอดถอนต่อครั้ง (บาท)", globalWithdrawal.fixedAmt],
-                ["การปรับสมดุล", "รอบ Auto-Rebalance", document.getElementById('global-rebalance').options[document.getElementById('global-rebalance').selectedIndex].text]
+        function caseNum(v, fallback) {
+            if (v === '' || v === null || v === undefined) return fallback;
+            const n = (typeof v === 'number') ? v : parseFloat(String(v).replace(/,/g, '').trim());
+            return isFinite(n) ? n : fallback;
+        }
+        function caseBool(v) {
+            const s = String(v).trim().toLowerCase();
+            return s === 'true' || s === '1' || s === 'yes' || s === 'y' || s === 'ใช่' || s === 'เปิด';
+        }
+        // Fund Expected fields may legitimately be blank -- blanks must survive the round trip.
+        function caseFundCell(v) {
+            if (v === '' || v === null || v === undefined) return '';
+            const n = (typeof v === 'number') ? v : parseFloat(String(v).replace(/,/g, '').trim());
+            return isFinite(n) ? n : '';
+        }
+
+        // ----- building the workbook -----
+        function caseSettingsAoa() {
+            const g = (id) => document.getElementById(id);
+            return [
+                ['คีย์ (ห้ามแก้)', 'รายการ', 'ค่า'],
+                ['initInvestment', 'เงินต้นรวมเริ่มต้น (บาท)', caseNum(g('init-investment').value, 0)],
+                ['inflationRate', 'เงินเฟ้อทั่วไป (% ต่อปี)', caseNum(g('inflation-rate').value, 0)],
+                ['globalRebalanceFreq', 'ความถี่ Auto-Rebalance (เดือน, 0 = ปล่อยไหล)', parseInt(g('global-rebalance').value) || 0],
+                ['chartSimMethod', 'วิธีจำลองกราฟหลัก (traditional / gbm / volcluster)', chartSimMethod],
+                ['wdMode', 'โหมดถอนเงิน (yield_only / constant / fixed_baht)', globalWithdrawal.mode],
+                ['wdFixedAmt', 'ยอดถอนต่อครั้ง (บาท)', globalWithdrawal.fixedAmt],
+                ['wdFreq', 'ความถี่การถอน (เดือน)', globalWithdrawal.freq],
+                ['wdStartY', 'เริ่มถอนปีที่', globalWithdrawal.startY],
+                ['wdStartM', 'เริ่มถอนเดือนที่', globalWithdrawal.startM],
+                ['priorityOrder', 'ลำดับขายเงินต้น (รหัสพอร์ต คั่นด้วยจุลภาค)', globalWithdrawal.priorityOrder.join(',')],
+                ['heatmapRates', 'Heatmap: อัตรา/ยอดถอนที่ทดสอบ', g('heatmap-rates').value],
+                ['heatmapBenchmarkRate', 'Heatmap: อัตราเงินฝากคงที่ (% ต่อปี)', caseNum(g('heatmap-benchmark-rate').value, 0)],
+                ['heatmapSimMethod', 'Heatmap: วิธีจำลอง', heatmapSimMethod],
+                ['heatmapWithdrawalMode', 'Heatmap: จังหวะเริ่มถอน (immediate / planned)', heatmapWithdrawalMode],
+                ['optConservativeMinReturn', 'Optimizer: ผลตอบแทนขั้นต่ำของ Conservative (%) — ว่าง = ไม่ระบุ', g('opt-conservative-min-return').value],
+                ['optAggressiveMaxRisk', 'Optimizer: เพดาน S.D. ของ Aggressive (%) — ว่าง = ไม่ระบุ', g('opt-aggressive-max-risk').value]
             ];
-
-            const wsInputs = XLSX.utils.aoa_to_sheet(inputAOA);
-
-            let headers = ["ปีที่ (Year)", "กระแสเงินสดรวมสุทธิ (Total CF)", "มูลค่าพอร์ตรวม 10th", "มูลค่าพอร์ตรวม 50th", "มูลค่าพอร์ตรวม 90th"];
+        }
+        function casePortsAoa() {
+            const rows = portfolios.map(pt => {
+                const t = pt.topup, rb = pt.rebalance || { startY: 1, startM: 1 }, ps = pt.phaseSettings;
+                const v = {
+                    portId: pt.id, name: pt.name, allocWeight: parseFloat(pt.allocWeight) || 0,
+                    topupAmount: t.amount, topupGrowth: t.growth, topupFreq: t.freq,
+                    topupStartY: t.startY, topupStartM: t.startM, topupEndY: t.endY, topupEndM: t.endM,
+                    rebalStartY: rb.startY, rebalStartM: rb.startM,
+                    p2Enabled: ps[2].enabled ? 'TRUE' : 'FALSE', p2StartYear: ps[2].startYear,
+                    p3Enabled: ps[3].enabled ? 'TRUE' : 'FALSE', p3StartYear: ps[3].startYear,
+                    p4Enabled: ps[4].enabled ? 'TRUE' : 'FALSE', p4StartYear: ps[4].startYear
+                };
+                return CASE_PORT_COLS.map(c => v[c[0]]);
+            });
+            return [CASE_PORT_COLS.map(c => c[1]), CASE_PORT_COLS.map(c => c[0]), ...rows];
+        }
+        function caseFundsAoa() {
+            const rows = [];
+            portfolios.forEach(pt => {
+                [1, 2, 3, 4].forEach(phase => {
+                    (pt.fundsData[phase] || []).forEach(f => {
+                        const v = {
+                            portId: pt.id, phase, fundName: f.name,
+                            weight: caseFundCell(f.weight), yield: caseFundCell(f.yield),
+                            capGain: caseFundCell(f.capGain), sd: caseFundCell(f.sd)
+                        };
+                        rows.push(CASE_FUND_COLS.map(c => v[c[0]]));
+                    });
+                });
+            });
+            return [CASE_FUND_COLS.map(c => c[1]), CASE_FUND_COLS.map(c => c[0]), ...rows];
+        }
+        // Results are written only when they still match the inputs in the same file.
+        function caseResultsAoa() {
+            if (!hasRunOnce || !globalExportData.resultsByYear || !globalExportData.resultsByYear['total']) {
+                return { aoa: [['ยังไม่มีผลจำลองในไฟล์นี้'], ['เหตุผล', 'ยังไม่ได้กด "ประมวลผลกราฟ (Run Simulation)" ตอนบันทึกไฟล์'], ['วิธีใช้', 'เปิดเคสนี้กลับเข้าเครื่องมือแล้วกด Run Simulation ได้เลย']], hasResults: false };
+            }
+            if (simResultsStale) {
+                return { aoa: [['ยังไม่มีผลจำลองในไฟล์นี้'], ['เหตุผล', 'มีการแก้ค่าหลัง Run ล่าสุด ผลเดิมจึงไม่ตรงกับสมมติฐานในไฟล์นี้'], ['วิธีใช้', 'เปิดเคสนี้กลับเข้าเครื่องมือแล้วกด Run Simulation ใหม่']], hasResults: false };
+            }
+            const headers = ['ปีที่ (Year)', 'กระแสเงินสดรวมสุทธิ (Total CF)', 'มูลค่าพอร์ตรวม 10th', 'มูลค่าพอร์ตรวม 50th', 'มูลค่าพอร์ตรวม 90th'];
             portfolios.forEach(pt => { headers.push(`${pt.name} (50th)`); });
-            const simAOA = [headers];
-            
-            for(let i=0; i<=30; i++) {
+            const aoa = [headers];
+            for (let i = 0; i <= 30; i++) {
                 const row = [i];
-                const cashflow = i > 0 ? (globalExportData.cashflows[i-1] || 0) : 0;
-                row.push(cashflow);
-                
+                row.push(i > 0 ? (globalExportData.cashflows[i - 1] || 0) : 0);
                 row.push(globalExportData.resultsByYear['total'][i]?.worst || 0);
                 row.push(globalExportData.resultsByYear['total'][i]?.median || 0);
                 row.push(globalExportData.resultsByYear['total'][i]?.best || 0);
-
-                portfolios.forEach(pt => {
-                    row.push(globalExportData.resultsByYear[pt.id][i]?.median || 0);
-                });
-                simAOA.push(row);
+                portfolios.forEach(pt => { row.push(globalExportData.resultsByYear[pt.id]?.[i]?.median || 0); });
+                aoa.push(row);
             }
-            const wsSim = XLSX.utils.aoa_to_sheet(simAOA);
-
+            return { aoa, hasResults: true };
+        }
+        function buildCaseWorkbook(caseName) {
+            const results = caseResultsAoa();
+            const metaAoa = [
+                ['คีย์ (ห้ามแก้)', 'ค่า'],
+                ['tool', CASE_TOOL_ID],
+                ['toolName', 'Institutional Portfolio Simulator — Money Director'],
+                ['schemaVersion', CASE_SCHEMA_VERSION],
+                ['caseName', caseName || ''],
+                ['exportedAt', new Date().toISOString()],
+                ['hasResults', results.hasResults ? 'TRUE' : 'FALSE'],
+                ['note', 'ไฟล์นี้เปิดกลับเข้าเครื่องมือได้ด้วยปุ่ม "เปิดเคส" — แก้ค่าในชีตได้ แต่ห้ามลบชีตหรือแถวที่เป็นคีย์']
+            ];
             const wb = XLSX.utils.book_new();
-            XLSX.utils.book_append_sheet(wb, wsInputs, "สมมติฐาน (Inputs)");
-            XLSX.utils.book_append_sheet(wb, wsSim, "ผลจำลอง 30 ปี (Simulation)");
-            XLSX.writeFile(wb, "Multi_Portfolio_Waterfall_Simulation.xlsx");
+            XLSX.utils.book_append_sheet(wb, XLSX.utils.aoa_to_sheet(metaAoa), CASE_SHEETS.meta);
+            XLSX.utils.book_append_sheet(wb, XLSX.utils.aoa_to_sheet(caseSettingsAoa()), CASE_SHEETS.settings);
+            XLSX.utils.book_append_sheet(wb, XLSX.utils.aoa_to_sheet(casePortsAoa()), CASE_SHEETS.ports);
+            XLSX.utils.book_append_sheet(wb, XLSX.utils.aoa_to_sheet(caseFundsAoa()), CASE_SHEETS.funds);
+            XLSX.utils.book_append_sheet(wb, XLSX.utils.aoa_to_sheet(results.aoa), CASE_SHEETS.results);
+            return wb;
+        }
+        function caseFileName(caseName) {
+            const d = new Date();
+            const pad = (n) => String(n).padStart(2, '0');
+            const stamp = `${d.getFullYear()}-${pad(d.getMonth() + 1)}-${pad(d.getDate())}_${pad(d.getHours())}${pad(d.getMinutes())}`;
+            const safe = String(caseName || '').trim().replace(/[\\/:*?"<>|]/g, '').replace(/\s+/g, '_').slice(0, 60);
+            return safe ? `PortfolioCase_${safe}_${stamp}.xlsx` : `PortfolioCase_${stamp}.xlsx`;
+        }
+
+        function openCaseModal() {
+            const el = document.getElementById('case-results-status');
+            const r = caseResultsAoa();
+            el.textContent = r.hasResults
+                ? '✅ ไฟล์จะมีตารางผลจำลอง 30 ปีของ Run ล่าสุดด้วย'
+                : (!hasRunOnce ? '⚠️ ยังไม่ได้กด Run Simulation — ไฟล์จะมีเฉพาะค่าที่กรอกไว้ (เปิดกลับมาแล้วกด Run ได้)'
+                               : '⚠️ ผล Run ล่าสุดไม่ตรงกับค่าที่แก้ไว้ — ไฟล์จะมีเฉพาะค่าที่กรอกไว้');
+            el.className = r.hasResults ? 'text-[11px] pt-1 text-emerald-400' : 'text-[11px] pt-1 text-amber-400';
+            document.getElementById('case-modal').classList.remove('hidden');
+            document.getElementById('case-name-input').focus();
+        }
+        function closeCaseModal() { document.getElementById('case-modal').classList.add('hidden'); }
+
+        async function exportCaseToExcel() {
+            if (typeof XLSX === 'undefined') { alert('โหลดไลบรารี Excel ไม่สำเร็จ — กรุณารีเฟรชหน้าแล้วลองใหม่'); return; }
+            const name = document.getElementById('case-name-input').value;
+            let wb, fileName;
+            try {
+                fileName = caseFileName(name);
+                wb = buildCaseWorkbook(name);
+            } catch (err) {
+                console.error(err);
+                alert('บันทึกไฟล์ไม่สำเร็จ: ' + (err && err.message ? err.message : err));
+                return;
+            }
+
+            // Preferred path: a real "Save as" dialog. It keeps Thai characters in the file
+            // name (some browsers silently drop non-ASCII from a plain download's suggested
+            // name, leaving a file called just "download") and lets the user pick the folder.
+            // Chrome/Edge only -- everything else falls through to the plain download below.
+            // Must be called before any await so it still counts as a user gesture.
+            if (typeof window.showSaveFilePicker === 'function') {
+                let handle = null;
+                try {
+                    handle = await window.showSaveFilePicker({
+                        suggestedName: fileName,
+                        types: [{ description: 'Excel Workbook', accept: { 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet': ['.xlsx'] } }]
+                    });
+                } catch (err) {
+                    if (err && err.name === 'AbortError') return; // user cancelled -- save nothing
+                    handle = null;                                // blocked/unsupported -- use the fallback
+                }
+                if (handle) {
+                    try {
+                        const out = XLSX.write(wb, { type: 'array', bookType: 'xlsx' });
+                        const writable = await handle.createWritable();
+                        await writable.write(new Blob([out], { type: 'application/octet-stream' }));
+                        await writable.close();
+                        closeCaseModal();
+                        return;
+                    } catch (err) {
+                        console.error(err);
+                        alert('บันทึกไฟล์ไม่สำเร็จ: ' + (err && err.message ? err.message : err));
+                        return;
+                    }
+                }
+            }
+
+            try {
+                XLSX.writeFile(wb, fileName);
+                closeCaseModal();
+            } catch (err) {
+                console.error(err);
+                alert('บันทึกไฟล์ไม่สำเร็จ: ' + (err && err.message ? err.message : err));
+            }
+        }
+
+        // ----- reading a case back -----
+        function caseSheetAoa(wb, name) {
+            const ws = wb.Sheets[name];
+            if (!ws) return null;
+            return XLSX.utils.sheet_to_json(ws, { header: 1, defval: '', blankrows: false });
+        }
+        // Locates the machine-key header row (searches the first few rows so an extra
+        // title row added by hand in Excel does not break the import).
+        function caseFindKeyRow(aoa, requiredKey) {
+            for (let i = 0; i < Math.min(aoa.length, 6); i++) {
+                if (aoa[i].some(c => String(c).trim() === requiredKey)) return i;
+            }
+            return -1;
+        }
+        function caseRowsByKey(aoa, requiredKey) {
+            const h = caseFindKeyRow(aoa, requiredKey);
+            if (h < 0) return null;
+            const keys = aoa[h].map(c => String(c).trim());
+            return aoa.slice(h + 1)
+                .filter(r => r.some(c => String(c).trim() !== ''))
+                .map(r => {
+                    const o = {};
+                    keys.forEach((k, i) => { if (k) o[k] = (r[i] === undefined ? '' : r[i]); });
+                    return o;
+                });
+        }
+        function caseKeyValues(aoa) {
+            const o = {};
+            (aoa || []).forEach(r => {
+                const k = String(r[0] || '').trim();
+                if (k && k !== 'คีย์ (ห้ามแก้)') o[k] = r[r.length - 1];
+            });
+            return o;
+        }
+
+        // Validates the whole workbook and returns the state to apply. Throws with a
+        // human-readable list of problems -- nothing is applied unless everything parses.
+        function parseCaseWorkbook(wb) {
+            const errors = [], warnings = [];
+            const metaAoa = caseSheetAoa(wb, CASE_SHEETS.meta);
+            const meta = metaAoa ? caseKeyValues(metaAoa.map(r => [r[0], r[1]])) : {};
+            if (!metaAoa) {
+                errors.push('ไม่พบชีต "_meta" — ไฟล์นี้อาจไม่ใช่ไฟล์เคส หรือเป็นไฟล์ที่ export จากเวอร์ชันเก่าก่อนมีระบบเปิดเคส');
+            } else if (meta.tool && String(meta.tool).trim() !== CASE_TOOL_ID) {
+                errors.push(`ไฟล์นี้เป็นเคสของเครื่องมืออื่น (${String(meta.tool).trim()})`);
+            } else if (caseNum(meta.schemaVersion, 0) > CASE_SCHEMA_VERSION) {
+                errors.push(`ไฟล์ถูกสร้างจากเครื่องมือเวอร์ชันใหม่กว่า (schema ${meta.schemaVersion}) — กรุณาอัปเดตเครื่องมือก่อน`);
+            }
+
+            const settings = caseKeyValues(caseSheetAoa(wb, CASE_SHEETS.settings));
+            if (!settings.initInvestment && settings.initInvestment !== 0) errors.push(`ชีต "${CASE_SHEETS.settings}": ไม่พบค่า initInvestment`);
+
+            const portRows = caseRowsByKey(caseSheetAoa(wb, CASE_SHEETS.ports), 'portId');
+            if (!portRows) errors.push(`ชีต "${CASE_SHEETS.ports}": ไม่พบแถวคีย์ (ต้องมีคอลัมน์ portId)`);
+            const fundRows = caseRowsByKey(caseSheetAoa(wb, CASE_SHEETS.funds), 'portId');
+            if (!fundRows) errors.push(`ชีต "${CASE_SHEETS.funds}": ไม่พบแถวคีย์ (ต้องมีคอลัมน์ portId)`);
+            if (errors.length) throw new Error(errors.join('\n'));
+
+            if (portRows.length === 0) errors.push(`ชีต "${CASE_SHEETS.ports}": ไม่มีข้อมูลพอร์ตเลย`);
+            if (portRows.length > 3) errors.push(`ชีต "${CASE_SHEETS.ports}": มี ${portRows.length} พอร์ต แต่เครื่องมือรองรับสูงสุด 3 พอร์ต`);
+
+            const seenIds = new Set();
+            const newPorts = portRows.map((r, idx) => {
+                const rowNo = idx + 3; // 2 header rows above
+                const id = parseInt(caseNum(r.portId, NaN));
+                if (!isFinite(id)) errors.push(`ชีต "${CASE_SHEETS.ports}" แถว ${rowNo}: รหัสพอร์ต (portId) ต้องเป็นตัวเลข`);
+                else if (seenIds.has(id)) errors.push(`ชีต "${CASE_SHEETS.ports}" แถว ${rowNo}: รหัสพอร์ต ${id} ซ้ำกับแถวก่อนหน้า`);
+                else seenIds.add(id);
+                const name = String(r.name === undefined ? '' : r.name).trim() || `พอร์ต ${idx + 1}`;
+                if (!String(r.name || '').trim()) warnings.push(`พอร์ตแถว ${rowNo} ไม่มีชื่อ ใช้ชื่อ "${name}" แทน`);
+                const p2 = caseBool(r.p2Enabled), p3 = caseBool(r.p3Enabled), p4 = caseBool(r.p4Enabled);
+                const e2 = p2, e3 = p2 && p3, e4 = p2 && p3 && p4;
+                if (p3 !== e3 || p4 !== e4) warnings.push(`พอร์ต "${name}": เปิดเฟสข้ามลำดับ (เฟส 3 ต้องเปิดเฟส 2 ก่อน) ระบบปรับให้อัตโนมัติแล้ว`);
+                return {
+                    id: isFinite(id) ? id : idx + 1,
+                    name,
+                    allocWeight: caseNum(r.allocWeight, 0),
+                    topup: {
+                        amount: caseNum(r.topupAmount, 0), growth: caseNum(r.topupGrowth, 0),
+                        freq: Math.max(1, parseInt(caseNum(r.topupFreq, 1)) || 1),
+                        startY: Math.max(1, parseInt(caseNum(r.topupStartY, 1)) || 1), startM: Math.max(1, parseInt(caseNum(r.topupStartM, 1)) || 1),
+                        endY: Math.max(1, parseInt(caseNum(r.topupEndY, 1)) || 1), endM: Math.max(1, parseInt(caseNum(r.topupEndM, 12)) || 12)
+                    },
+                    rebalance: { startY: Math.max(1, parseInt(caseNum(r.rebalStartY, 1)) || 1), startM: Math.max(1, parseInt(caseNum(r.rebalStartM, 1)) || 1) },
+                    phaseSettings: {
+                        1: { enabled: true, startYear: 1 },
+                        2: { enabled: e2, startYear: Math.max(2, parseInt(caseNum(r.p2StartYear, 11)) || 11) },
+                        3: { enabled: e3, startYear: Math.max(3, parseInt(caseNum(r.p3StartYear, 20)) || 20) },
+                        4: { enabled: e4, startYear: Math.max(4, parseInt(caseNum(r.p4StartYear, 25)) || 25) }
+                    },
+                    fundsData: { 1: [], 2: [], 3: [], 4: [] }
+                };
+            });
+
+            const byId = {};
+            newPorts.forEach(p => { byId[p.id] = p; });
+            let fundSeq = 1;
+            fundRows.forEach((r, idx) => {
+                const rowNo = idx + 3;
+                const pid = parseInt(caseNum(r.portId, NaN));
+                const phase = parseInt(caseNum(r.phase, NaN));
+                const fname = String(r.fundName === undefined ? '' : r.fundName).trim();
+                if (!byId[pid]) { errors.push(`ชีต "${CASE_SHEETS.funds}" แถว ${rowNo}: รหัสพอร์ต ${r.portId} ไม่มีอยู่ในชีตพอร์ต`); return; }
+                if (!(phase >= 1 && phase <= 4)) { errors.push(`ชีต "${CASE_SHEETS.funds}" แถว ${rowNo}: เฟสต้องเป็น 1–4`); return; }
+                if (!fname) { errors.push(`ชีต "${CASE_SHEETS.funds}" แถว ${rowNo}: ไม่มีชื่อกองทุน`); return; }
+                byId[pid].fundsData[phase].push({
+                    id: fundSeq++, name: fname,
+                    weight: caseNum(r.weight, 0),
+                    yield: caseFundCell(r.yield), capGain: caseFundCell(r.capGain), sd: caseFundCell(r.sd)
+                });
+            });
+            if (errors.length) throw new Error(errors.join('\n'));
+
+            newPorts.forEach(p => {
+                [1, 2, 3, 4].forEach(ph => {
+                    if (!p.phaseSettings[ph].enabled) return;
+                    const funds = p.fundsData[ph];
+                    if (funds.length === 0) { warnings.push(`พอร์ต "${p.name}" เฟส ${ph} ไม่มีกองทุนเลย`); return; }
+                    const sum = funds.reduce((s, f) => s + (parseFloat(f.weight) || 0), 0);
+                    if (Math.abs(sum - 100) > 0.001) warnings.push(`พอร์ต "${p.name}" เฟส ${ph}: น้ำหนักกองทุนรวม ${+sum.toFixed(2)}% (ไม่เท่ากับ 100%)`);
+                });
+            });
+            const totalW = newPorts.reduce((s, p) => s + p.allocWeight, 0);
+            if (Math.abs(totalW - 100) > 0.001) warnings.push(`สัดส่วนพอร์ตรวม ${+totalW.toFixed(2)}% (ไม่เท่ากับ 100%)`);
+
+            let priority = String(settings.priorityOrder || '').split(',').map(s => parseInt(s.trim())).filter(n => isFinite(n) && byId[n]);
+            newPorts.forEach(p => { if (!priority.includes(p.id)) priority.push(p.id); });
+
+            const wdMode = ['yield_only', 'constant', 'fixed_baht'].includes(String(settings.wdMode).trim()) ? String(settings.wdMode).trim() : 'yield_only';
+            if (settings.wdMode && wdMode !== String(settings.wdMode).trim()) warnings.push(`โหมดถอนเงิน "${settings.wdMode}" ไม่รู้จัก ใช้ "yield_only" แทน`);
+            const pickMethod = (v, fallback) => ['traditional', 'gbm', 'volcluster'].includes(String(v).trim()) ? String(v).trim() : fallback;
+
+            return {
+                meta,
+                warnings,
+                state: {
+                    globals: {
+                        initInvestment: caseNum(settings.initInvestment, 10000000),
+                        inflationRate: caseNum(settings.inflationRate, 2.5),
+                        globalRebalanceFreq: parseInt(caseNum(settings.globalRebalanceFreq, 12)),
+                        chartSimMethod: pickMethod(settings.chartSimMethod, 'traditional')
+                    },
+                    withdrawal: {
+                        mode: wdMode,
+                        fixedAmt: caseNum(settings.wdFixedAmt, 50000),
+                        freq: Math.max(1, parseInt(caseNum(settings.wdFreq, 1)) || 1),
+                        startY: Math.max(1, parseInt(caseNum(settings.wdStartY, 11)) || 11),
+                        startM: Math.max(1, parseInt(caseNum(settings.wdStartM, 1)) || 1),
+                        priorityOrder: priority
+                    },
+                    heatmap: {
+                        rates: String(settings.heatmapRates === undefined ? '3%, 4%, 50000, 100000' : settings.heatmapRates),
+                        benchmarkRate: caseNum(settings.heatmapBenchmarkRate, 1.5),
+                        simMethod: pickMethod(settings.heatmapSimMethod, 'traditional'),
+                        withdrawalMode: String(settings.heatmapWithdrawalMode).trim() === 'planned' ? 'planned' : 'immediate'
+                    },
+                    optimizer: {
+                        conservativeMinReturn: settings.optConservativeMinReturn === undefined ? '' : String(settings.optConservativeMinReturn).trim(),
+                        aggressiveMaxRisk: settings.optAggressiveMaxRisk === undefined ? '' : String(settings.optAggressiveMaxRisk).trim()
+                    },
+                    portfolios: newPorts
+                }
+            };
+        }
+
+        // Re-styles the mode buttons after an import (the click handlers that normally do
+        // this live inside setupUIEventListeners and also call markDirty, which we don't
+        // want here -- the state was just loaded, not edited).
+        function caseSyncModeButtons() {
+            const on = 'p-2 rounded border text-center transition duration-200 bg-amber-500/20 border-amber-500 text-amber-300 text-[10px] font-bold';
+            const onCyan = 'p-2 rounded border text-center transition duration-200 bg-cyan-500/20 border-cyan-500 text-cyan-300 text-[10px] font-bold';
+            const onPurple = 'p-2 rounded border text-center transition duration-200 bg-purple-500/20 border-purple-500 text-purple-300 text-[10px] font-bold';
+            const off = 'p-2 rounded border text-center transition duration-200 bg-slate-900 border-slate-700 text-slate-400 text-[10px] font-bold';
+            document.getElementById('global-wd-mode-yield').className = globalWithdrawal.mode === 'yield_only' ? on : off;
+            document.getElementById('global-wd-mode-constant').className = globalWithdrawal.mode === 'constant' ? onCyan : off;
+            document.getElementById('global-wd-mode-fixed').className = globalWithdrawal.mode === 'fixed_baht' ? onPurple : off;
+            document.getElementById('global-wd-fixed-settings').style.display = globalWithdrawal.mode === 'fixed_baht' ? 'block' : 'none';
+            document.getElementById('global-wd-fixed-amt').value = globalWithdrawal.fixedAmt;
+            document.getElementById('global-wd-freq').value = String(globalWithdrawal.freq);
+            document.getElementById('global-wd-start-y').value = globalWithdrawal.startY;
+            document.getElementById('global-wd-start-m').value = globalWithdrawal.startM;
+
+            const active = 'px-2 py-1 text-[10px] rounded bg-amber-500/20 text-amber-300 font-bold transition';
+            const idle = 'px-2 py-1 text-[10px] rounded text-slate-400 hover:text-slate-200 transition';
+            const key = { traditional: 'trad', gbm: 'gbm', volcluster: 'volcluster' };
+            ['trad', 'gbm', 'volcluster'].forEach(k => {
+                document.getElementById(`sim-mc-${k}`).className = (k === key[chartSimMethod]) ? active : idle;
+                document.getElementById(`sim-hm-${k}`).className = (k === key[heatmapSimMethod]) ? active : idle;
+            });
+            document.getElementById('hm-wd-immediate').className = heatmapWithdrawalMode === 'immediate' ? active : idle;
+            document.getElementById('hm-wd-planned').className = heatmapWithdrawalMode === 'planned' ? active : idle;
+        }
+
+        // Replaces everything on screen with the imported case and clears the previous
+        // run (results from another case must never be shown next to these inputs).
+        function applyCaseState(s) {
+            document.getElementById('init-investment').value = s.globals.initInvestment;
+            document.getElementById('inflation-rate').value = s.globals.inflationRate;
+            document.getElementById('global-rebalance').value = String(s.globals.globalRebalanceFreq);
+            document.getElementById('heatmap-rates').value = s.heatmap.rates;
+            document.getElementById('heatmap-benchmark-rate').value = s.heatmap.benchmarkRate;
+            document.getElementById('opt-conservative-min-return').value = s.optimizer.conservativeMinReturn;
+            document.getElementById('opt-aggressive-max-risk').value = s.optimizer.aggressiveMaxRisk;
+
+            chartSimMethod = s.globals.chartSimMethod;
+            heatmapSimMethod = s.heatmap.simMethod;
+            heatmapWithdrawalMode = s.heatmap.withdrawalMode;
+            globalWithdrawal = {
+                mode: s.withdrawal.mode, fixedAmt: s.withdrawal.fixedAmt, freq: s.withdrawal.freq,
+                startY: s.withdrawal.startY, startM: s.withdrawal.startM, priorityOrder: s.withdrawal.priorityOrder.slice()
+            };
+            portfolios = s.portfolios;
+            activePortId = portfolios[0].id;
+            currentEditingPhase = 1;
+
+            // clear the previous run entirely
+            hasRunOnce = false;
+            simResultsStale = false;
+            lastHeatmapResult = null;
+            globalExportData = { resultsByYear: {}, randomPaths: {}, cashflows: {}, allActivePhaseMaps: {} };
+            globalDriftData = { total: [], ports: {} };
+            if (portfolioChartInstance) { portfolioChartInstance.destroy(); portfolioChartInstance = null; }
+            hideOptimizerSection();
+            document.getElementById('metric-survival-rate').textContent = '-- %';
+            document.getElementById('metric-survival-rate').className = 'text-xs font-bold text-cyan-400';
+            ['cf-year-1', 'cf-year-10', 'cf-year-20', 'cf-year-30'].forEach(id => { document.getElementById(id).textContent = '--'; });
+            document.getElementById('total-cf-withdrawn').textContent = '-- บาท';
+            document.getElementById('metric-total-capital').textContent = '-- บาท';
+            document.getElementById('heatmap-body').innerHTML = '<tr><td colspan="4" class="p-8 text-slate-500 text-xs text-center">คลิกปุ่ม "Run Analysis" หรือแก้ไขตัวเลขเพื่อประมวลผลใหม่</td></tr>';
+
+            caseSyncModeButtons();
+            renderPortTabs();
+            renderPriorityOrderUI();
+            renderChartPortOptions();
+            syncActivePortUI();
+            updateGlobalWeightBadge();
+            updatePhaseStatsTable();
+            const badge = document.getElementById('status-badge');
+            badge.innerHTML = '📂 เปิดเคสแล้ว — กด Run Simulation เพื่อดูผล';
+            badge.className = 'text-[10px] bg-sky-900/40 py-1 px-2 rounded text-sky-300 font-bold border border-sky-500/30';
+        }
+
+        // Import entry point used by both the file picker and the tests.
+        function importCaseFromWorkbook(wb, opts) {
+            opts = opts || {};
+            const parsed = parseCaseWorkbook(wb); // throws on any structural problem
+            const s = parsed.state;
+            const fundCount = s.portfolios.reduce((n, p) => n + [1, 2, 3, 4].reduce((m, ph) => m + p.fundsData[ph].length, 0), 0);
+            if (!opts.skipConfirm) {
+                const name = String(parsed.meta.caseName || '').trim();
+                const msg = `เปิดเคส${name ? ` "${name}"` : ''}\n\n`
+                    + `• ${s.portfolios.length} พอร์ต, ${fundCount} รายการกองทุน\n`
+                    + `• เงินต้นรวม ${Math.round(s.globals.initInvestment).toLocaleString('th-TH')} บาท\n\n`
+                    + `ค่าทั้งหมดบนจอตอนนี้จะถูกแทนที่ และผล Run เดิมจะถูกล้าง — ยืนยันหรือไม่?`;
+                if (!confirm(msg)) return null;
+            }
+            applyCaseState(s);
+            return { portfolios: s.portfolios.length, funds: fundCount, warnings: parsed.warnings, meta: parsed.meta };
+        }
+
+        function handleCaseFileChosen(file) {
+            if (!file) return Promise.resolve(null);
+            if (typeof XLSX === 'undefined') { alert('โหลดไลบรารี Excel ไม่สำเร็จ — กรุณารีเฟรชหน้าแล้วลองใหม่'); return Promise.resolve(null); }
+            return new Promise(resolve => {
+                const reader = new FileReader();
+                reader.onerror = () => { alert('อ่านไฟล์ไม่สำเร็จ'); resolve(null); };
+                reader.onload = (e) => {
+                    try {
+                        const wb = XLSX.read(new Uint8Array(e.target.result), { type: 'array' });
+                        const res = importCaseFromWorkbook(wb);
+                        if (res) {
+                            let msg = `เปิดเคสสำเร็จ: ${res.portfolios} พอร์ต, ${res.funds} รายการกองทุน\nกด "ประมวลผลกราฟ (Run Simulation)" เพื่อดูผล`;
+                            if (res.warnings.length) msg += `\n\nข้อสังเกต (${res.warnings.length} รายการ):\n• ` + res.warnings.join('\n• ');
+                            alert(msg);
+                        }
+                        resolve(res);
+                    } catch (err) {
+                        console.error(err);
+                        alert('เปิดเคสไม่สำเร็จ:\n\n' + (err && err.message ? err.message : err));
+                        resolve(null);
+                    }
+                };
+                reader.readAsArrayBuffer(file);
+            });
         }
 
         // --- HEATMAP ENGINE ---
