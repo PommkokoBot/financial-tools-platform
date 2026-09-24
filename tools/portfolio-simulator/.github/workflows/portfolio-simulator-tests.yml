@@ -1,0 +1,33 @@
+name: Portfolio Simulator tests
+
+on:
+  push:
+    paths:
+      - 'tools/portfolio-simulator/**'
+      - '.github/workflows/portfolio-simulator-tests.yml'
+  pull_request:
+    paths:
+      - 'tools/portfolio-simulator/**'
+      - '.github/workflows/portfolio-simulator-tests.yml'
+  workflow_dispatch:
+
+jobs:
+  unit:
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: tools/portfolio-simulator
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+
+      - name: Install test dependencies
+        run: npm install --no-audit --no-fund --ignore-scripts
+        env:
+          PLAYWRIGHT_SKIP_BROWSER_DOWNLOAD: '1'
+
+      - name: Run jsdom suites
+        run: npm test
