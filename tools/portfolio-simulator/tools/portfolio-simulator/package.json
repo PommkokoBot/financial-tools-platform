@@ -1,0 +1,30 @@
+{
+  "name": "portfolio-simulator-tests",
+  "version": "0.0.0",
+  "private": true,
+  "description": "Test harness for the Institutional Portfolio Simulator (tools/portfolio-simulator/index.html). The tool itself is a single static HTML file with no build step -- nothing here is shipped to users.",
+  "scripts": {
+    "test": "node tests/run-unit.js",
+    "test:browser": "npm run build:css && node tests/browser/desktop-diff.js && node tests/browser/mobile-audit.js && node tests/browser/heatmap-badge.js && node tests/browser/case-roundtrip.js && node tests/browser/pdf-export.js",
+    "build:css": "tailwindcss -i tests/lib/tailwind-input.css -o tests/.out/tailwind.css --content index.html --content tests/baseline/portfolio-simulator.baseline.html --minify",
+    "baseline:update": "node tests/tools/update-baseline.js",
+    "make:template": "node tests/tools/make-template.js",
+    "postinstall": "node -e \"try{require('playwright')}catch(e){console.log('note: playwright not installed -- npm test still works, npm run test:browser does not')}\""
+  },
+  "devDependencies": {
+    "@fontsource/sarabun": "^5.0.0",
+    "chart.js": "4.5.1",
+    "html2canvas": "1.4.1",
+    "jsdom": "^24.0.0",
+    "jspdf": "2.5.1",
+    "marked": "15.0.7",
+    "playwright": "1.56.0",
+    "tailwindcss": "^3.4.0",
+    "xlsx": "0.18.5"
+  },
+  "comments": {
+    "devDependencies": "These mirror what index.html loads from CDNs. Versions are pinned to the exact CDN versions so the browser suites test what users actually get -- if you change a CDN version in index.html, change it here too, or the suites stop being representative.",
+    "xlsx": "Pinned to match index.html. Both are due to move to a newer SheetJS release from cdn.sheetjs.com -- see tests/README.md.",
+    "test:browser": "Needs a Chromium build (npx playwright install chromium). Not run in CI: slow, and it needs a browser download."
+  }
+}
