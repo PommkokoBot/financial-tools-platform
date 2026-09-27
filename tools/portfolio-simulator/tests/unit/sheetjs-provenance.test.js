@@ -16,8 +16,10 @@
 // installed mirror matched it exactly. If this suite ever goes red, the mirror moved:
 // stop, get the official file again, and compare before touching anything else.
 //
-// The same digest is the Subresource Integrity value for the <script> tag, so applying
-// SRI later needs no new fetch -- see tests/README.md.
+// The same digest is the Subresource Integrity value for the <script> tag, and as of round
+// C2 it is applied there. This suite still owns the SheetJS-specific checks -- the runtime
+// version the library reports, and the abandoned npm `xlsx` not creeping back in --
+// while unit/cdn-provenance.test.js owns the SRI tags for all four libraries.
 const fs = require('fs');
 const path = require('path');
 const crypto = require('crypto');
