@@ -1,5 +1,9 @@
 name: Portfolio Simulator tests
 
+# Runs the fast jsdom suites on every push and PR that touches the tool.
+# The browser suites (Playwright) are deliberately NOT run here: they need a
+# Chromium download and take minutes. Run those locally before a release:
+#   cd tools/portfolio-simulator && npx playwright install chromium && npm run test:browser
 on:
   push:
     paths:
@@ -18,14 +22,31 @@ jobs:
       run:
         working-directory: tools/portfolio-simulator
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v5
 
-      - uses: actions/setup-node@v4
+      - uses: actions/setup-node@v5
         with:
           node-version: '20'
 
+      # package-lock.json IS committed, and `npm ci` installs strictly from it.
+      #
+      # This matters more than it looks. package.json states some versions as ranges
+      # (jsdom ^24, tailwindcss ^3.4, @fontsource/sarabun ^5), so `npm install` would
+      # fetch "the newest thing still inside the range" on every run -- meaning two runs
+      # weeks apart can execute different code while the repository is untouched. jsdom is
+      # the dangerous one: it is not a dependency of the tool, it IS the environment the
+      # suites run inside, so a change in its DOM behaviour moves test results while the
+      # app is byte-for-byte identical.
+      #
+      # That would destroy the only claim this suite makes -- "green means nothing
+      # changed" -- and it would do it during a pause, when nobody remembers the context
+      # and the first assumption will be that something was broken on purpose.
+      #
+      # `npm ci` reads the lockfile alone and fails loudly if it disagrees with
+      # package.json, instead of quietly rewriting it. To take new versions deliberately:
+      # `npm update` locally, run the suites, and commit the new lockfile if they pass.
       - name: Install test dependencies
-        run: npm install --no-audit --no-fund --ignore-scripts
+        run: npm ci --no-audit --no-fund --ignore-scripts
         env:
           PLAYWRIGHT_SKIP_BROWSER_DOWNLOAD: '1'
 
