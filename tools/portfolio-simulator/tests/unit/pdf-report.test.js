@@ -107,11 +107,15 @@ async function runMain(run) {
   // ---------- 2b. Blank Expected fields render as "–" ----------
   {
     const e = makeEnv(FILE, 3, stubPdf);
+    // The default fund set now ships with example numbers (round C), so blank Expected
+    // boxes no longer occur by default -- but a user can still clear them, and the report
+    // must show "–" rather than NaN/0/undefined. Blank them explicitly to keep covering it.
+    e.run(`portfolios.forEach(pt => [1,2,3,4].forEach(ph => pt.fundsData[ph].forEach(f => { f.yield = ""; f.capGain = ""; f.sd = ""; })));`);
     await runMain(e.run);
     captureRoot(e.w);
     await e.run(`generatePdfReport({})`);
     const st = e.w.capturedPages[2];
-    check('blank Expected shown as – (not NaN/0/undefined)', st.includes('<td>ES-WDEQ</td><td class="num">20%</td><td class="num">–</td><td class="num">–</td><td class="num">–</td>') && !/NaN|undefined/.test(e.w.capturedPages.join('')));
+    check('blank Expected shown as – (not NaN/0/undefined)', st.includes('<td>กองทุนหุ้น (ตัวอย่าง)</td><td class="num">70%</td><td class="num">–</td><td class="num">–</td><td class="num">–</td>') && !/NaN|undefined/.test(e.w.capturedPages.join('')), st.slice(st.indexOf('กองทุนหุ้น') - 40, st.indexOf('กองทุนหุ้น') + 200));
   }
 
   // ---------- 3. Heatmap section ----------

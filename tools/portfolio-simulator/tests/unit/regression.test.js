@@ -21,7 +21,11 @@ async function snapshot(file, scenario) {
 }
 
 const scenarios = [
-  { name: 'new defaults (blank Expected)', setup: `` },
+  // Whatever ships as the page default. Round C replaced the real-fund set with a generic
+  // example set carrying numbers, so this scenario legitimately differed from the previous
+  // baseline once -- and the baseline was promoted deliberately at that release. It is the
+  // scenarios below, which set their own funds, that prove the engine math never moved.
+  { name: 'page defaults', setup: `` },
   { name: 'real funds, yield_only', setup: REAL_FUNDS },
   { name: 'real funds, fixed_baht + gbm', setup: REAL_FUNDS + `globalWithdrawal.mode='fixed_baht'; globalWithdrawal.fixedAmt=60000; chartSimMethod='gbm'; heatmapSimMethod='gbm';` },
   { name: 'real funds, constant + volcluster + 3 ports', setup: REAL_FUNDS + `addPortfolio(); portfolios[2].allocWeight=20; portfolios[1].allocWeight=40; globalWithdrawal.mode='constant'; chartSimMethod='volcluster'; heatmapSimMethod='volcluster';` },
