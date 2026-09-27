@@ -3,6 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta http-equiv="Content-Security-Policy" content="default-src 'none'; script-src 'self' 'sha256-yftwlYLT3AHGx8oPwKbvKYUl2z+GAd4lGwCTD+3raS8=' https://cdn.jsdelivr.net https://cdn.sheetjs.com https://cdnjs.cloudflare.com; style-src 'self' 'unsafe-inline' https://cdnjs.cloudflare.com https://fonts.googleapis.com; font-src https://cdnjs.cloudflare.com https://fonts.gstatic.com; img-src 'self' data: blob:; connect-src 'none'; form-action 'none'; base-uri 'none'; object-src 'none'; frame-src 'none'; worker-src 'none'; manifest-src 'none';">
     <title>Money Director — Institutional Portfolio Simulator</title>
     <!-- Tailwind is compiled ahead of time and inlined below instead of loading the Play
          CDN (cdn.tailwindcss.com). The CDN script is unversioned, compiles CSS in the
@@ -42,7 +43,9 @@
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"
             integrity="sha384-JcnsjUPPylna1s1fvi1u12X5qjY5OL56iySh75FdtrwhO/SWXgMjoVqcKyIIWOLk"
             crossorigin="anonymous"></script>
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css"
+          integrity="sha384-iw3OoTErCYJJB9mCa8LNS2hbsQ7M3C0EpIsO/H5+EGAkPGc6rk+V8i04oW/K5xq0"
+          crossorigin="anonymous">
     <style>
         @import url('https://fonts.googleapis.com/css2?family=Sarabun:wght@300;400;500;600;700&display=swap');
         body { font-family: 'Sarabun', sans-serif; }
@@ -1478,10 +1481,15 @@
                         <span class="text-[10px] text-purple-400">(${pt.allocWeight}%)</span>
                     </div>
                     <div class="flex gap-1">
-                        ${index > 0 ? `<button class="text-slate-400 hover:text-amber-400 px-1 text-xs" onclick="movePriority(${index}, -1)"><i class="fa-solid fa-arrow-up"></i></button>` : ''}
-                        ${index < globalWithdrawal.priorityOrder.length - 1 ? `<button class="text-slate-400 hover:text-amber-400 px-1 text-xs" onclick="movePriority(${index}, 1)"><i class="fa-solid fa-arrow-down"></i></button>` : ''}
+                        ${index > 0 ? `<button class="text-slate-400 hover:text-amber-400 px-1 text-xs" data-move="-1"><i class="fa-solid fa-arrow-up"></i></button>` : ''}
+                        ${index < globalWithdrawal.priorityOrder.length - 1 ? `<button class="text-slate-400 hover:text-amber-400 px-1 text-xs" data-move="1"><i class="fa-solid fa-arrow-down"></i></button>` : ''}
                     </div>
                 `;
+                // Wired here rather than with an inline handler attribute in the markup above: the page runs
+                // under a Content-Security-Policy that blocks those. Behaviour is identical.
+                item.querySelectorAll('[data-move]').forEach(b => {
+                    b.addEventListener('click', () => movePriority(index, Number(b.dataset.move)));
+                });
                 container.appendChild(item);
             });
         }
@@ -1771,8 +1779,16 @@
             portfolios.forEach(pt => {
                 const btn = document.createElement("button");
                 btn.className = `px-3 py-1.5 text-xs rounded-lg border transition whitespace-nowrap flex items-center gap-2 ${pt.id === activePortId ? 'port-tab-active' : 'port-tab-inactive'}`;
-                btn.innerHTML = `<span>${escapeHtml(pt.name)} (${pt.allocWeight}%)</span> ${portfolios.length > 1 ? `<i class="fa-solid fa-times hover:text-red-400" onclick="event.stopPropagation(); deletePortfolio(${pt.id});"></i>` : ''}`;
+                btn.innerHTML = `<span>${escapeHtml(pt.name)} (${pt.allocWeight}%)</span> ${portfolios.length > 1 ? `<i class="fa-solid fa-times hover:text-red-400" data-act="delete-port"></i>` : ''}`;
                 btn.onclick = () => switchActivePort(pt.id);
+                // Same reason as renderPriorityOrder: no inline handlers under CSP. The listener is
+                // attached to the icon itself (not delegated) so stopPropagation still runs before the
+                // tab's own onclick, which is what keeps clicking the X from also switching tabs.
+                const closeIcon = btn.querySelector('[data-act="delete-port"]');
+                if (closeIcon) closeIcon.addEventListener('click', (e) => {
+                    e.stopPropagation();
+                    deletePortfolio(pt.id);
+                });
                 container.appendChild(btn);
             });
 

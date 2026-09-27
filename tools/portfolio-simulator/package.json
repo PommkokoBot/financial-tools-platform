@@ -5,17 +5,19 @@
   "description": "Test harness for the Institutional Portfolio Simulator (tools/portfolio-simulator/index.html). The tool itself is a single static HTML file with no build step -- nothing here is shipped to users.",
   "scripts": {
     "test": "node tests/run-unit.js",
-    "test:browser": "npm run build:css && node tests/browser/sri-load.js && node tests/browser/desktop-diff.js && node tests/browser/mobile-audit.js && node tests/browser/heatmap-badge.js && node tests/browser/case-roundtrip.js && node tests/browser/pdf-export.js",
+    "test:browser": "npm run build:css && node tests/browser/sri-load.js && node tests/browser/csp-load.js && node tests/browser/desktop-diff.js && node tests/browser/mobile-audit.js && node tests/browser/heatmap-badge.js && node tests/browser/case-roundtrip.js && node tests/browser/pdf-export.js",
     "build:css": "tailwindcss -i tests/lib/tailwind-input.css -o tests/.out/tailwind.css --content index.html --content tests/baseline/portfolio-simulator.baseline.html --minify",
     "baseline:update": "node tests/tools/update-baseline.js",
     "make:template": "node tests/tools/make-template.js",
     "postinstall": "node -e \"try{require('playwright')}catch(e){console.log('note: playwright not installed -- npm test still works, npm run test:browser does not')}\"",
     "build:css:app": "node tests/tools/build-app-css.js",
-    "sri": "node tests/tools/make-sri.js"
+    "sri": "node tests/tools/make-sri.js",
+    "csp": "node tests/tools/make-csp.js"
   },
   "devDependencies": {
     "@e965/xlsx": "0.20.3",
     "@fontsource/sarabun": "^5.0.0",
+    "@fortawesome/fontawesome-free": "6.4.0",
     "chart.js": "4.5.1",
     "html2canvas": "1.4.1",
     "jsdom": "^24.0.0",
@@ -27,7 +29,8 @@
   "comments": {
     "devDependencies": "These mirror what index.html loads from CDNs. Versions are pinned to the exact CDN versions so the browser suites test what users actually get -- if you change a CDN version in index.html, change it here too, or the suites stop being representative.",
     "xlsx": "index.html loads SheetJS 0.20.3 from cdn.sheetjs.com. npm's own 'xlsx' package is abandoned at 0.18.5 (CVE-2023-30533 prototype pollution on parse, CVE-2024-22363 ReDoS), so the tests install @e965/xlsx -- a third-party republish of the same 0.20.3 release. tests/unit/sheetjs-provenance.test.js verifies on every run that the republish is byte-identical to the official CDN file, so 'a mirror we trust' is never load-bearing. Verified 2026-09-26.",
-    "test:browser": "Needs a Chromium build (npx playwright install chromium). Not run in CI: slow, and it needs a browser download.",
+    "test:browser": "Needs a Chromium build (npx playwright install chromium). Not run in CI: slow, and it needs a browser download. sri-load and csp-load run FIRST: if the libraries or the inline program are refused, every suite after them is measuring a dead page.",
+    "csp": "Rebuilds the Content-Security-Policy meta tag, including the SHA-256 of the inline <script>. That hash changes every time the app code changes, so run `npm run csp -- --write` after editing index.html -- unit/csp.test.js will tell you if you forgot, but only after you have pushed. A stale hash makes the browser refuse the whole program: the page renders and nothing works.",
     "build:css:app": "Recompiles the Tailwind CSS that is inlined in index.html and writes it back into the <style id=\"tw-build\"> block. Run it after adding or changing any Tailwind class, then re-run the browser suites.",
     "build:css": "Builds the CSS the BROWSER SUITES inject for the baseline build, which still loads the Tailwind Play CDN. Different from build:css:app.",
     "sri": "Prints <script>/<link> tags with Subresource Integrity hashes for the CDN assets. Must be run from a machine that can reach the CDNs -- the hash has to come from the bytes the CDN serves, not from a local npm copy. SRI is now APPLIED to all four scripts (round C2); use this only when changing a CDN version or host, and re-read tests/unit/cdn-provenance.test.js before re-pinning anything."
