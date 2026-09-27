@@ -68,18 +68,24 @@ const ASSETS = [
     bytes: 364463,
     sha384: 'sha384-JcnsjUPPylna1s1fvi1u12X5qjY5OL56iySh75FdtrwhO/SWXgMjoVqcKyIIWOLk',
   },
+  {
+    name: 'Font Awesome',
+    url: 'cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css',
+    mirror: '@fortawesome/fontawesome-free/css/all.min.css',
+    pkg: '@fortawesome/fontawesome-free',
+    version: '6.4.0',
+    bytes: 102025,
+    sha384: 'sha384-iw3OoTErCYJJB9mCa8LNS2hbsQ7M3C0EpIsO/H5+EGAkPGc6rk+V8i04oW/K5xq0',
+    tag: 'link',
+  },
 ];
 
 // Cross-origin subresources that deliberately carry no integrity attribute, with the reason.
 // Anything cross-origin and NOT listed here must be pinned, or the last check below fails.
 const UNPINNED_BY_DECISION = [
-  // Font Awesome ships one CSS file that pulls its own webfonts by relative URL. A digest for
-  // it needs the bytes cdnjs serves, and nobody has downloaded them yet. A tampered
-  // stylesheet cannot execute script, so this is a smaller hole than an unpinned <script> --
-  // but it is still open, and it is tracked, not forgotten.
-  'cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css',
   // Google Fonts answers with different CSS depending on the requesting browser, so a fixed
-  // digest would break the page on some of them. It cannot be pinned, only removed.
+  // digest would break the page on some of them. It cannot be pinned, only removed. It is also
+  // the only cross-origin subresource left without one: Font Awesome was pinned in round C2.
   'fonts.googleapis.com',
 ];
 
@@ -92,7 +98,10 @@ const pkgJson = JSON.parse(fs.readFileSync(path.join(TOOL_DIR, 'package.json'), 
 
 for (const a of ASSETS) {
   // --- the tag in index.html ---
-  const tagRe = new RegExp('<script\\b[^>]*src="https://' + a.url.replace(/[.*+?^${}()|[\]\\]/g, '\\$&') + '"[^>]*>', 's');
+  const kind = a.tag || 'script';
+  const attr = kind === 'link' ? 'href' : 'src';
+  const tagRe = new RegExp('<' + kind + '\\b[^>]*' + attr + '="https://' +
+    a.url.replace(/[.*+?^${}()|[\]\\]/g, '\\$&') + '"[^>]*>', 's');
   const m = html.match(tagRe);
   check(`${a.name}: index.html loads ${a.version} from the expected URL`, !!m, `no tag matching ${a.url}`);
   if (!m) continue;
@@ -138,8 +147,9 @@ const unpinned = crossOriginScripts.filter(s =>
 check('every cross-origin <script> in index.html is pinned with SRI',
   unpinned.length === 0,
   unpinned.map(s => s.url).join(', '));
-check('all four known libraries are still the only cross-origin scripts',
-  crossOriginScripts.length === ASSETS.length,
+const SCRIPT_ASSETS = ASSETS.filter(a => (a.tag || 'script') === 'script');
+check('the known libraries are still the only cross-origin scripts',
+  crossOriginScripts.length === SCRIPT_ASSETS.length,
   `found ${crossOriginScripts.length}: ` + crossOriginScripts.map(s => s.url).join(', '));
 
 // Same rule for stylesheets, with the two documented exceptions.
