@@ -24,6 +24,16 @@ const LIBS = {
   'jspdf.umd.min.js': 'jspdf/dist/jspdf.umd.min.js',
 };
 
+// Font Awesome's stylesheet, served with the correct media type so the browser parses it.
+// It used to fall through to the empty-body catch-all below, which was survivable while the tag
+// carried no integrity attribute. Now that it does, an empty body is a digest mismatch and the
+// browser drops the stylesheet -- so the suites would have been testing a page whose icons had
+// been refused, while reporting nothing. Serving the pinned npm copy (byte-identical to what
+// cdnjs sends) means a real browser verifies that digest on every browser-suite run.
+const CSS_LIBS = {
+  'font-awesome/6.4.0/css/all.min.css': '@fortawesome/fontawesome-free/css/all.min.css',
+};
+
 const FONT_DIR = path.join(NODE_MODULES, '@fontsource/sarabun/files');
 const FONT_CSS = ['thai', 'latin']
   .flatMap(sub => [400, 600, 700].map(wt =>
@@ -73,6 +83,13 @@ async function routeOffline(page) {
       headers: { 'Access-Control-Allow-Origin': '*' },
     });
 
+    const css = Object.keys(CSS_LIBS).find(k => url.includes(k));
+    if (css) return route.fulfill({
+      path: path.join(NODE_MODULES, CSS_LIBS[css]),
+      contentType: 'text/css',
+      headers: { 'Access-Control-Allow-Origin': '*' },
+    });
+
     if (url.includes('tailwindcss')) return route.fulfill({ body: shim, contentType: 'application/javascript' });
     if (url.includes('fonts.googleapis.com')) return route.fulfill({ body: FONT_CSS, contentType: 'text/css' });
 
@@ -94,4 +111,4 @@ async function openApp(page, file) {
   await page.waitForTimeout(1200);
 }
 
-module.exports = { routeOffline, openApp, fileUrl, LIBS, FONT_CSS, TAILWIND_CSS };
+module.exports = { routeOffline, openApp, fileUrl, LIBS, CSS_LIBS, FONT_CSS, TAILWIND_CSS };
