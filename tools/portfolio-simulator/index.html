@@ -3,11 +3,21 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Institutional Portfolio Simulator (Waterfall & Priority Engine)</title>
-    <script src="https://cdn.tailwindcss.com"></script>
+    <title>Money Director — Institutional Portfolio Simulator</title>
+    <!-- Tailwind is compiled ahead of time and inlined below instead of loading the Play
+         CDN (cdn.tailwindcss.com). The CDN script is unversioned, compiles CSS in the
+         visitor's browser on every page load, and its vendor states it is not for
+         production. Layout no longer depends on the network at all; the icon font and
+         Sarabun still come from their CDNs, so offline the page lays out correctly but
+         falls back on system fonts and loses the icons.
+         Regenerate after changing any class: npm run build:css:app  (see tests/README.md) -->
+    <style id="tw-build">*,:after,:before{--tw-border-spacing-x:0;--tw-border-spacing-y:0;--tw-translate-x:0;--tw-translate-y:0;--tw-rotate:0;--tw-skew-x:0;--tw-skew-y:0;--tw-scale-x:1;--tw-scale-y:1;--tw-pan-x: ;--tw-pan-y: ;--tw-pinch-zoom: ;--tw-scroll-snap-strictness:proximity;--tw-gradient-from-position: ;--tw-gradient-via-position: ;--tw-gradient-to-position: ;--tw-ordinal: ;--tw-slashed-zero: ;--tw-numeric-figure: ;--tw-numeric-spacing: ;--tw-numeric-fraction: ;--tw-ring-inset: ;--tw-ring-offset-width:0px;--tw-ring-offset-color:#fff;--tw-ring-color:rgba(59,130,246,.5);--tw-ring-offset-shadow:0 0 #0000;--tw-ring-shadow:0 0 #0000;--tw-shadow:0 0 #0000;--tw-shadow-colored:0 0 #0000;--tw-blur: ;--tw-brightness: ;--tw-contrast: ;--tw-grayscale: ;--tw-hue-rotate: ;--tw-invert: ;--tw-saturate: ;--tw-sepia: ;--tw-drop-shadow: ;--tw-backdrop-blur: ;--tw-backdrop-brightness: ;--tw-backdrop-contrast: ;--tw-backdrop-grayscale: ;--tw-backdrop-hue-rotate: ;--tw-backdrop-invert: ;--tw-backdrop-opacity: ;--tw-backdrop-saturate: ;--tw-backdrop-sepia: ;--tw-contain-size: ;--tw-contain-layout: ;--tw-contain-paint: ;--tw-contain-style: }::backdrop{--tw-border-spacing-x:0;--tw-border-spacing-y:0;--tw-translate-x:0;--tw-translate-y:0;--tw-rotate:0;--tw-skew-x:0;--tw-skew-y:0;--tw-scale-x:1;--tw-scale-y:1;--tw-pan-x: ;--tw-pan-y: ;--tw-pinch-zoom: ;--tw-scroll-snap-strictness:proximity;--tw-gradient-from-position: ;--tw-gradient-via-position: ;--tw-gradient-to-position: ;--tw-ordinal: ;--tw-slashed-zero: ;--tw-numeric-figure: ;--tw-numeric-spacing: ;--tw-numeric-fraction: ;--tw-ring-inset: ;--tw-ring-offset-width:0px;--tw-ring-offset-color:#fff;--tw-ring-color:rgba(59,130,246,.5);--tw-ring-offset-shadow:0 0 #0000;--tw-ring-shadow:0 0 #0000;--tw-shadow:0 0 #0000;--tw-shadow-colored:0 0 #0000;--tw-blur: ;--tw-brightness: ;--tw-contrast: ;--tw-grayscale: ;--tw-hue-rotate: ;--tw-invert: ;--tw-saturate: ;--tw-sepia: ;--tw-drop-shadow: ;--tw-backdrop-blur: ;--tw-backdrop-brightness: ;--tw-backdrop-contrast: ;--tw-backdrop-grayscale: ;--tw-backdrop-hue-rotate: ;--tw-backdrop-invert: ;--tw-backdrop-opacity: ;--tw-backdrop-saturate: ;--tw-backdrop-sepia: ;--tw-contain-size: ;--tw-contain-layout: ;--tw-contain-paint: ;--tw-contain-style: }/*! tailwindcss v3.4.19 | MIT License | https://tailwindcss.com*/*,:after,:before{box-sizing:border-box;border:0 solid #e5e7eb}:after,:before{--tw-content:""}:host,html{line-height:1.5;-webkit-text-size-adjust:100%;-moz-tab-size:4;-o-tab-size:4;tab-size:4;font-family:ui-sans-serif,system-ui,sans-serif,Apple Color Emoji,Segoe UI Emoji,Segoe UI Symbol,Noto Color Emoji;font-feature-settings:normal;font-variation-settings:normal;-webkit-tap-highlight-color:transparent}body{margin:0;line-height:inherit}hr{height:0;color:inherit;border-top-width:1px}abbr:where([title]){-webkit-text-decoration:underline dotted;text-decoration:underline dotted}h1,h2,h3,h4,h5,h6{font-size:inherit;font-weight:inherit}a{color:inherit;text-decoration:inherit}b,strong{font-weight:bolder}code,kbd,pre,samp{font-family:ui-monospace,SFMono-Regular,Menlo,Monaco,Consolas,Liberation Mono,Courier New,monospace;font-feature-settings:normal;font-variation-settings:normal;font-size:1em}small{font-size:80%}sub,sup{font-size:75%;line-height:0;position:relative;vertical-align:baseline}sub{bottom:-.25em}sup{top:-.5em}table{text-indent:0;border-color:inherit;border-collapse:collapse}button,input,optgroup,select,textarea{font-family:inherit;font-feature-settings:inherit;font-variation-settings:inherit;font-size:100%;font-weight:inherit;line-height:inherit;letter-spacing:inherit;color:inherit;margin:0;padding:0}button,select{text-transform:none}button,input:where([type=button]),input:where([type=reset]),input:where([type=submit]){-webkit-appearance:button;background-color:transparent;background-image:none}:-moz-focusring{outline:auto}:-moz-ui-invalid{box-shadow:none}progress{vertical-align:baseline}::-webkit-inner-spin-button,::-webkit-outer-spin-button{height:auto}[type=search]{-webkit-appearance:textfield;outline-offset:-2px}::-webkit-search-decoration{-webkit-appearance:none}::-webkit-file-upload-button{-webkit-appearance:button;font:inherit}summary{display:list-item}blockquote,dd,dl,figure,h1,h2,h3,h4,h5,h6,hr,p,pre{margin:0}fieldset{margin:0}fieldset,legend{padding:0}menu,ol,ul{list-style:none;margin:0;padding:0}dialog{padding:0}textarea{resize:vertical}input::-moz-placeholder,textarea::-moz-placeholder{opacity:1;color:#9ca3af}input::placeholder,textarea::placeholder{opacity:1;color:#9ca3af}[role=button],button{cursor:pointer}:disabled{cursor:default}audio,canvas,embed,iframe,img,object,svg,video{display:block;vertical-align:middle}img,video{max-width:100%;height:auto}[hidden]:where(:not([hidden=until-found])){display:none}.container{width:100%}@media (min-width:640px){.container{max-width:640px}}@media (min-width:768px){.container{max-width:768px}}@media (min-width:1024px){.container{max-width:1024px}}@media (min-width:1280px){.container{max-width:1280px}}@media (min-width:1536px){.container{max-width:1536px}}.invisible{visibility:hidden}.collapse{visibility:collapse}.static{position:static}.fixed{position:fixed}.absolute{position:absolute}.relative{position:relative}.inset-0{inset:0}.left-1\/2{left:50%}.top-1\/2{top:50%}.z-10{z-index:10}.z-50{z-index:50}.m-1{margin:.25rem}.mx-auto{margin-left:auto;margin-right:auto}.mb-0\.5{margin-bottom:.125rem}.mb-1{margin-bottom:.25rem}.mb-2{margin-bottom:.5rem}.mb-3{margin-bottom:.75rem}.mb-4{margin-bottom:1rem}.mb-6{margin-bottom:1.5rem}.ml-2{margin-left:.5rem}.mr-1{margin-right:.25rem}.mt-0\.5{margin-top:.125rem}.mt-1{margin-top:.25rem}.mt-1\.5{margin-top:.375rem}.mt-2{margin-top:.5rem}.mt-3{margin-top:.75rem}.mt-4{margin-top:1rem}.mt-6{margin-top:1.5rem}.block{display:block}.inline-block{display:inline-block}.flex{display:flex}.inline-flex{display:inline-flex}.table{display:table}.grid{display:grid}.contents{display:contents}.hidden{display:none}.h-2{height:.5rem}.h-5{height:1.25rem}.h-72{height:18rem}.h-auto{height:auto}.max-h-\[88vh\]{max-height:88vh}.min-h-screen{min-height:100vh}.w-1\/2{width:50%}.w-1\/3{width:33.333333%}.w-1\/4{width:25%}.w-11\/12{width:91.666667%}.w-12{width:3rem}.w-14{width:3.5rem}.w-16{width:4rem}.w-2{width:.5rem}.w-24{width:6rem}.w-5{width:1.25rem}.w-8{width:2rem}.w-full{width:100%}.w-max{width:-moz-max-content;width:max-content}.min-w-\[470px\]{min-width:470px}.min-w-\[520px\]{min-width:520px}.min-w-\[620px\]{min-width:620px}.max-w-full{max-width:100%}.max-w-md{max-width:28rem}.flex-1{flex:1 1 0%}.shrink{flex-shrink:1}.border-collapse{border-collapse:collapse}.-translate-x-1\/2{--tw-translate-x:-50%}.-translate-x-1\/2,.-translate-y-1\/2{transform:translate(var(--tw-translate-x),var(--tw-translate-y)) rotate(var(--tw-rotate)) skewX(var(--tw-skew-x)) skewY(var(--tw-skew-y)) scaleX(var(--tw-scale-x)) scaleY(var(--tw-scale-y))}.-translate-y-1\/2{--tw-translate-y:-50%}.transform{transform:translate(var(--tw-translate-x),var(--tw-translate-y)) rotate(var(--tw-rotate)) skewX(var(--tw-skew-x)) skewY(var(--tw-skew-y)) scaleX(var(--tw-scale-x)) scaleY(var(--tw-scale-y))}.cursor-pointer{cursor:pointer}.grid-cols-1{grid-template-columns:repeat(1,minmax(0,1fr))}.grid-cols-2{grid-template-columns:repeat(2,minmax(0,1fr))}.grid-cols-3{grid-template-columns:repeat(3,minmax(0,1fr))}.flex-col{flex-direction:column}.flex-wrap{flex-wrap:wrap}.items-start{align-items:flex-start}.items-end{align-items:flex-end}.items-center{align-items:center}.justify-end{justify-content:flex-end}.justify-center{justify-content:center}.justify-between{justify-content:space-between}.gap-1{gap:.25rem}.gap-1\.5{gap:.375rem}.gap-2{gap:.5rem}.gap-3{gap:.75rem}.gap-4{gap:1rem}.gap-6{gap:1.5rem}.gap-x-4{-moz-column-gap:1rem;column-gap:1rem}.gap-y-1{row-gap:.25rem}.space-y-1>:not([hidden])~:not([hidden]){--tw-space-y-reverse:0;margin-top:calc(.25rem*(1 - var(--tw-space-y-reverse)));margin-bottom:calc(.25rem*var(--tw-space-y-reverse))}.space-y-2>:not([hidden])~:not([hidden]){--tw-space-y-reverse:0;margin-top:calc(.5rem*(1 - var(--tw-space-y-reverse)));margin-bottom:calc(.5rem*var(--tw-space-y-reverse))}.space-y-3>:not([hidden])~:not([hidden]){--tw-space-y-reverse:0;margin-top:calc(.75rem*(1 - var(--tw-space-y-reverse)));margin-bottom:calc(.75rem*var(--tw-space-y-reverse))}.space-y-5>:not([hidden])~:not([hidden]){--tw-space-y-reverse:0;margin-top:calc(1.25rem*(1 - var(--tw-space-y-reverse)));margin-bottom:calc(1.25rem*var(--tw-space-y-reverse))}.space-y-6>:not([hidden])~:not([hidden]){--tw-space-y-reverse:0;margin-top:calc(1.5rem*(1 - var(--tw-space-y-reverse)));margin-bottom:calc(1.5rem*var(--tw-space-y-reverse))}.divide-y>:not([hidden])~:not([hidden]){--tw-divide-y-reverse:0;border-top-width:calc(1px*(1 - var(--tw-divide-y-reverse)));border-bottom-width:calc(1px*var(--tw-divide-y-reverse))}.divide-slate-800>:not([hidden])~:not([hidden]){--tw-divide-opacity:1;border-color:rgb(30 41 59/var(--tw-divide-opacity,1))}.overflow-x-auto{overflow-x:auto}.overflow-y-auto{overflow-y:auto}.whitespace-nowrap{white-space:nowrap}.rounded{border-radius:.25rem}.rounded-2xl{border-radius:1rem}.rounded-full{border-radius:9999px}.rounded-lg{border-radius:.5rem}.rounded-xl{border-radius:.75rem}.rounded-b-lg{border-bottom-right-radius:.5rem;border-bottom-left-radius:.5rem}.rounded-t-lg{border-top-left-radius:.5rem;border-top-right-radius:.5rem}.border{border-width:1px}.border-2{border-width:2px}.border-b{border-bottom-width:1px}.border-l{border-left-width:1px}.border-l-4{border-left-width:4px}.border-r{border-right-width:1px}.border-t{border-top-width:1px}.border-t-4{border-top-width:4px}.border-dashed{border-style:dashed}.border-amber-500{--tw-border-opacity:1;border-color:rgb(245 158 11/var(--tw-border-opacity,1))}.border-amber-700\/50{border-color:rgba(180,83,9,.5)}.border-cyan-500{--tw-border-opacity:1;border-color:rgb(6 182 212/var(--tw-border-opacity,1))}.border-emerald-500\/30{border-color:rgba(16,185,129,.3)}.border-orange-400\/30{border-color:rgba(251,146,60,.3)}.border-purple-500{--tw-border-opacity:1;border-color:rgb(168 85 247/var(--tw-border-opacity,1))}.border-purple-500\/30{border-color:rgba(168,85,247,.3)}.border-red-500\/30{border-color:rgba(239,68,68,.3)}.border-rose-500\/30{border-color:rgba(244,63,94,.3)}.border-sky-500\/30{border-color:rgba(14,165,233,.3)}.border-slate-500{--tw-border-opacity:1;border-color:rgb(100 116 139/var(--tw-border-opacity,1))}.border-slate-600{--tw-border-opacity:1;border-color:rgb(71 85 105/var(--tw-border-opacity,1))}.border-slate-700{--tw-border-opacity:1;border-color:rgb(51 65 85/var(--tw-border-opacity,1))}.border-slate-700\/50{border-color:rgba(51,65,85,.5)}.border-slate-800{--tw-border-opacity:1;border-color:rgb(30 41 59/var(--tw-border-opacity,1))}.border-slate-800\/50{border-color:rgba(30,41,59,.5)}.border-l-amber-500{--tw-border-opacity:1;border-left-color:rgb(245 158 11/var(--tw-border-opacity,1))}.border-l-cyan-500{--tw-border-opacity:1;border-left-color:rgb(6 182 212/var(--tw-border-opacity,1))}.border-t-purple-500{--tw-border-opacity:1;border-top-color:rgb(168 85 247/var(--tw-border-opacity,1))}.bg-amber-500\/20{background-color:rgba(245,158,11,.2)}.bg-amber-600{--tw-bg-opacity:1;background-color:rgb(217 119 6/var(--tw-bg-opacity,1))}.bg-amber-900\/40{background-color:rgba(120,53,15,.4)}.bg-cyan-500\/20{background-color:rgba(6,182,212,.2)}.bg-emerald-500\/20{background-color:rgba(16,185,129,.2)}.bg-emerald-600{--tw-bg-opacity:1;background-color:rgb(5 150 105/var(--tw-bg-opacity,1))}.bg-emerald-900\/40{background-color:rgba(6,78,59,.4)}.bg-green-500\/20{background-color:rgba(34,197,94,.2)}.bg-purple-500\/20{background-color:rgba(168,85,247,.2)}.bg-red-500\/20{background-color:rgba(239,68,68,.2)}.bg-red-900\/40{background-color:rgba(127,29,29,.4)}.bg-rose-600{--tw-bg-opacity:1;background-color:rgb(225 29 72/var(--tw-bg-opacity,1))}.bg-sky-900\/40{background-color:rgba(12,74,110,.4)}.bg-slate-800{--tw-bg-opacity:1;background-color:rgb(30 41 59/var(--tw-bg-opacity,1))}.bg-slate-800\/60{background-color:rgba(30,41,59,.6)}.bg-slate-900{--tw-bg-opacity:1;background-color:rgb(15 23 42/var(--tw-bg-opacity,1))}.bg-slate-900\/50{background-color:rgba(15,23,42,.5)}.bg-slate-900\/60{background-color:rgba(15,23,42,.6)}.bg-slate-900\/80{background-color:rgba(15,23,42,.8)}.bg-slate-950\/80{background-color:rgba(2,6,23,.8)}.bg-gradient-to-r{background-image:linear-gradient(to right,var(--tw-gradient-stops))}.from-amber-600{--tw-gradient-from:#d97706 var(--tw-gradient-from-position);--tw-gradient-to:rgba(217,119,6,0) var(--tw-gradient-to-position);--tw-gradient-stops:var(--tw-gradient-from),var(--tw-gradient-to)}.to-orange-500{--tw-gradient-to:#f97316 var(--tw-gradient-to-position)}.p-1{padding:.25rem}.p-2{padding:.5rem}.p-2\.5{padding:.625rem}.p-3{padding:.75rem}.p-4{padding:1rem}.p-5{padding:1.25rem}.p-8{padding:2rem}.px-1{padding-left:.25rem;padding-right:.25rem}.px-1\.5{padding-left:.375rem;padding-right:.375rem}.px-2{padding-left:.5rem;padding-right:.5rem}.px-3{padding-left:.75rem;padding-right:.75rem}.px-4{padding-left:1rem;padding-right:1rem}.px-5{padding-left:1.25rem;padding-right:1.25rem}.py-0\.5{padding-top:.125rem;padding-bottom:.125rem}.py-1{padding-top:.25rem;padding-bottom:.25rem}.py-1\.5{padding-top:.375rem;padding-bottom:.375rem}.py-2{padding-top:.5rem;padding-bottom:.5rem}.py-2\.5{padding-top:.625rem;padding-bottom:.625rem}.py-3{padding-top:.75rem;padding-bottom:.75rem}.py-8{padding-top:2rem;padding-bottom:2rem}.pb-0{padding-bottom:0}.pb-1{padding-bottom:.25rem}.pb-12{padding-bottom:3rem}.pb-2{padding-bottom:.5rem}.pb-4{padding-bottom:1rem}.pl-1{padding-left:.25rem}.pr-1{padding-right:.25rem}.pt-0{padding-top:0}.pt-1{padding-top:.25rem}.pt-3{padding-top:.75rem}.text-left{text-align:left}.text-center{text-align:center}.text-right{text-align:right}.text-2xl{font-size:1.5rem;line-height:2rem}.text-\[10px\]{font-size:10px}.text-\[11px\]{font-size:11px}.text-\[9px\]{font-size:9px}.text-base{font-size:1rem;line-height:1.5rem}.text-lg{font-size:1.125rem;line-height:1.75rem}.text-sm{font-size:.875rem;line-height:1.25rem}.text-xl{font-size:1.25rem;line-height:1.75rem}.text-xs{font-size:.75rem;line-height:1rem}.font-bold{font-weight:700}.font-medium{font-weight:500}.font-semibold{font-weight:600}.italic{font-style:italic}.leading-relaxed{line-height:1.625}.leading-tight{line-height:1.25}.text-amber-300{--tw-text-opacity:1;color:rgb(252 211 77/var(--tw-text-opacity,1))}.text-amber-400{--tw-text-opacity:1;color:rgb(251 191 36/var(--tw-text-opacity,1))}.text-amber-400\/80{color:rgba(251,191,36,.8)}.text-amber-500{--tw-text-opacity:1;color:rgb(245 158 11/var(--tw-text-opacity,1))}.text-blue-400{--tw-text-opacity:1;color:rgb(96 165 250/var(--tw-text-opacity,1))}.text-cyan-300{--tw-text-opacity:1;color:rgb(103 232 249/var(--tw-text-opacity,1))}.text-cyan-400{--tw-text-opacity:1;color:rgb(34 211 238/var(--tw-text-opacity,1))}.text-cyan-400\/70{color:rgba(34,211,238,.7)}.text-emerald-300{--tw-text-opacity:1;color:rgb(110 231 183/var(--tw-text-opacity,1))}.text-emerald-400{--tw-text-opacity:1;color:rgb(52 211 153/var(--tw-text-opacity,1))}.text-emerald-500{--tw-text-opacity:1;color:rgb(16 185 129/var(--tw-text-opacity,1))}.text-green-400{--tw-text-opacity:1;color:rgb(74 222 128/var(--tw-text-opacity,1))}.text-orange-300{--tw-text-opacity:1;color:rgb(253 186 116/var(--tw-text-opacity,1))}.text-purple-300{--tw-text-opacity:1;color:rgb(216 180 254/var(--tw-text-opacity,1))}.text-purple-400{--tw-text-opacity:1;color:rgb(192 132 252/var(--tw-text-opacity,1))}.text-red-400{--tw-text-opacity:1;color:rgb(248 113 113/var(--tw-text-opacity,1))}.text-rose-300{--tw-text-opacity:1;color:rgb(253 164 175/var(--tw-text-opacity,1))}.text-sky-300{--tw-text-opacity:1;color:rgb(125 211 252/var(--tw-text-opacity,1))}.text-slate-100{--tw-text-opacity:1;color:rgb(241 245 249/var(--tw-text-opacity,1))}.text-slate-200{--tw-text-opacity:1;color:rgb(226 232 240/var(--tw-text-opacity,1))}.text-slate-300{--tw-text-opacity:1;color:rgb(203 213 225/var(--tw-text-opacity,1))}.text-slate-400{--tw-text-opacity:1;color:rgb(148 163 184/var(--tw-text-opacity,1))}.text-slate-500{--tw-text-opacity:1;color:rgb(100 116 139/var(--tw-text-opacity,1))}.text-white{--tw-text-opacity:1;color:rgb(255 255 255/var(--tw-text-opacity,1))}.text-yellow-400{--tw-text-opacity:1;color:rgb(250 204 21/var(--tw-text-opacity,1))}.accent-amber-500{accent-color:#f59e0b}.accent-cyan-500{accent-color:#06b6d4}.accent-rose-500{accent-color:#f43f5e}.shadow-2xl{--tw-shadow:0 25px 50px -12px rgba(0,0,0,.25);--tw-shadow-colored:0 25px 50px -12px var(--tw-shadow-color)}.shadow-2xl,.shadow-lg{box-shadow:var(--tw-ring-offset-shadow,0 0 #0000),var(--tw-ring-shadow,0 0 #0000),var(--tw-shadow)}.shadow-lg{--tw-shadow:0 10px 15px -3px rgba(0,0,0,.1),0 4px 6px -4px rgba(0,0,0,.1);--tw-shadow-colored:0 10px 15px -3px var(--tw-shadow-color),0 4px 6px -4px var(--tw-shadow-color)}.shadow-xl{--tw-shadow:0 20px 25px -5px rgba(0,0,0,.1),0 8px 10px -6px rgba(0,0,0,.1);--tw-shadow-colored:0 20px 25px -5px var(--tw-shadow-color),0 8px 10px -6px var(--tw-shadow-color);box-shadow:var(--tw-ring-offset-shadow,0 0 #0000),var(--tw-ring-shadow,0 0 #0000),var(--tw-shadow)}.shadow-orange-900\/50{--tw-shadow-color:rgba(124,45,18,.5);--tw-shadow:var(--tw-shadow-colored)}.brightness-125{--tw-brightness:brightness(1.25)}.brightness-125,.filter{filter:var(--tw-blur) var(--tw-brightness) var(--tw-contrast) var(--tw-grayscale) var(--tw-hue-rotate) var(--tw-invert) var(--tw-saturate) var(--tw-sepia) var(--tw-drop-shadow)}.backdrop-blur-sm{--tw-backdrop-blur:blur(4px);-webkit-backdrop-filter:var(--tw-backdrop-blur) var(--tw-backdrop-brightness) var(--tw-backdrop-contrast) var(--tw-backdrop-grayscale) var(--tw-backdrop-hue-rotate) var(--tw-backdrop-invert) var(--tw-backdrop-opacity) var(--tw-backdrop-saturate) var(--tw-backdrop-sepia);backdrop-filter:var(--tw-backdrop-blur) var(--tw-backdrop-brightness) var(--tw-backdrop-contrast) var(--tw-backdrop-grayscale) var(--tw-backdrop-hue-rotate) var(--tw-backdrop-invert) var(--tw-backdrop-opacity) var(--tw-backdrop-saturate) var(--tw-backdrop-sepia)}.transition{transition-property:color,background-color,border-color,text-decoration-color,fill,stroke,opacity,box-shadow,transform,filter,-webkit-backdrop-filter;transition-property:color,background-color,border-color,text-decoration-color,fill,stroke,opacity,box-shadow,transform,filter,backdrop-filter;transition-property:color,background-color,border-color,text-decoration-color,fill,stroke,opacity,box-shadow,transform,filter,backdrop-filter,-webkit-backdrop-filter;transition-timing-function:cubic-bezier(.4,0,.2,1);transition-duration:.15s}.transition-all{transition-property:all;transition-timing-function:cubic-bezier(.4,0,.2,1);transition-duration:.15s}.duration-200{transition-duration:.2s}.placeholder\:font-normal::-moz-placeholder{font-weight:400}.placeholder\:font-normal::placeholder{font-weight:400}.placeholder\:text-slate-600::-moz-placeholder{--tw-text-opacity:1;color:rgb(71 85 105/var(--tw-text-opacity,1))}.placeholder\:text-slate-600::placeholder{--tw-text-opacity:1;color:rgb(71 85 105/var(--tw-text-opacity,1))}.hover\:border-amber-500\/50:hover{border-color:rgba(245,158,11,.5)}.hover\:border-cyan-500\/50:hover{border-color:rgba(6,182,212,.5)}.hover\:border-rose-500\/50:hover{border-color:rgba(244,63,94,.5)}.hover\:border-slate-400:hover{--tw-border-opacity:1;border-color:rgb(148 163 184/var(--tw-border-opacity,1))}.hover\:bg-amber-500:hover{--tw-bg-opacity:1;background-color:rgb(245 158 11/var(--tw-bg-opacity,1))}.hover\:bg-amber-900\/40:hover{background-color:rgba(120,53,15,.4)}.hover\:bg-cyan-900\/40:hover{background-color:rgba(22,78,99,.4)}.hover\:bg-emerald-500:hover{--tw-bg-opacity:1;background-color:rgb(16 185 129/var(--tw-bg-opacity,1))}.hover\:bg-rose-500:hover{--tw-bg-opacity:1;background-color:rgb(244 63 94/var(--tw-bg-opacity,1))}.hover\:bg-rose-900\/40:hover{background-color:rgba(136,19,55,.4)}.hover\:bg-slate-700:hover{--tw-bg-opacity:1;background-color:rgb(51 65 85/var(--tw-bg-opacity,1))}.hover\:bg-slate-800:hover{--tw-bg-opacity:1;background-color:rgb(30 41 59/var(--tw-bg-opacity,1))}.hover\:from-amber-500:hover{--tw-gradient-from:#f59e0b var(--tw-gradient-from-position);--tw-gradient-to:rgba(245,158,11,0) var(--tw-gradient-to-position);--tw-gradient-stops:var(--tw-gradient-from),var(--tw-gradient-to)}.hover\:to-orange-400:hover{--tw-gradient-to:#fb923c var(--tw-gradient-to-position)}.hover\:text-amber-300:hover{--tw-text-opacity:1;color:rgb(252 211 77/var(--tw-text-opacity,1))}.hover\:text-amber-400:hover{--tw-text-opacity:1;color:rgb(251 191 36/var(--tw-text-opacity,1))}.hover\:text-blue-300:hover{--tw-text-opacity:1;color:rgb(147 197 253/var(--tw-text-opacity,1))}.hover\:text-emerald-300:hover{--tw-text-opacity:1;color:rgb(110 231 183/var(--tw-text-opacity,1))}.hover\:text-red-400:hover{--tw-text-opacity:1;color:rgb(248 113 113/var(--tw-text-opacity,1))}.hover\:text-red-500:hover{--tw-text-opacity:1;color:rgb(239 68 68/var(--tw-text-opacity,1))}.hover\:text-slate-200:hover{--tw-text-opacity:1;color:rgb(226 232 240/var(--tw-text-opacity,1))}.hover\:text-white:hover{--tw-text-opacity:1;color:rgb(255 255 255/var(--tw-text-opacity,1))}.focus\:border-amber-500:focus{--tw-border-opacity:1;border-color:rgb(245 158 11/var(--tw-border-opacity,1))}.focus\:border-cyan-500:focus{--tw-border-opacity:1;border-color:rgb(6 182 212/var(--tw-border-opacity,1))}.focus\:border-emerald-500:focus{--tw-border-opacity:1;border-color:rgb(16 185 129/var(--tw-border-opacity,1))}.focus\:border-purple-500:focus{--tw-border-opacity:1;border-color:rgb(168 85 247/var(--tw-border-opacity,1))}.focus\:border-rose-500:focus{--tw-border-opacity:1;border-color:rgb(244 63 94/var(--tw-border-opacity,1))}.focus\:outline-none:focus{outline:2px solid transparent;outline-offset:2px}.disabled\:cursor-not-allowed:disabled{cursor:not-allowed}.disabled\:opacity-30:disabled{opacity:.3}.disabled\:opacity-40:disabled{opacity:.4}@media (min-width:640px){.sm\:absolute{position:absolute}.sm\:right-6{right:1.5rem}.sm\:top-\[-15px\]{top:-15px}.sm\:mb-0{margin-bottom:0}.sm\:mt-0{margin-top:0}.sm\:w-auto{width:auto}.sm\:w-max{width:-moz-max-content;width:max-content}.sm\:min-w-0{min-width:0}.sm\:flex-1{flex:1 1 0%}.sm\:grid-cols-2{grid-template-columns:repeat(2,minmax(0,1fr))}.sm\:grid-cols-3{grid-template-columns:repeat(3,minmax(0,1fr))}.sm\:flex-row{flex-direction:row}.sm\:items-center{align-items:center}.sm\:gap-2{gap:.5rem}.sm\:whitespace-nowrap{white-space:nowrap}.sm\:py-2{padding-top:.5rem;padding-bottom:.5rem}.sm\:py-2\.5{padding-top:.625rem;padding-bottom:.625rem}.sm\:text-3xl{font-size:1.875rem;line-height:2.25rem}.sm\:text-lg{font-size:1.125rem;line-height:1.75rem}.sm\:text-sm{font-size:.875rem;line-height:1.25rem}.sm\:text-xs{font-size:.75rem;line-height:1rem}}@media (min-width:768px){.md\:mt-0{margin-top:0}.md\:grid-cols-4{grid-template-columns:repeat(4,minmax(0,1fr))}.md\:flex-row{flex-direction:row}.md\:items-center{align-items:center}}@media (min-width:1280px){.xl\:col-span-5{grid-column:span 5/span 5}.xl\:col-span-7{grid-column:span 7/span 7}.xl\:w-64{width:16rem}.xl\:grid-cols-12{grid-template-columns:repeat(12,minmax(0,1fr))}.xl\:flex-row{flex-direction:row}.xl\:items-start{align-items:flex-start}.xl\:items-end{align-items:flex-end}}</style>
     <script src="https://cdn.jsdelivr.net/npm/chart.js@4.5.1/dist/chart.umd.min.js"></script>
-    <script src="https://cdn.jsdelivr.net/npm/marked@15.0.7/marked.min.js"></script>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
+    <!-- SheetJS 0.18.5 (cdnjs) is vulnerable to prototype pollution when PARSING a file
+         (CVE-2023-30533) and to a ReDoS (CVE-2024-22363). Both are reachable now that the
+         tool opens case files the user supplies. cdnjs is frozen at 0.18.5 because SheetJS
+         no longer publishes to npm, so the fixed build comes from their own CDN. -->
+    <script src="https://cdn.sheetjs.com/xlsx-0.20.3/package/dist/xlsx.full.min.js"></script>
     <!-- PDF report export: html2canvas renders each report page, jsPDF assembles them (A4 landscape). -->
     <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
@@ -32,12 +42,28 @@
         .custom-scrollbar::-webkit-scrollbar-track { background: #0f172a; }
         .custom-scrollbar::-webkit-scrollbar-thumb { background: #334155; border-radius: 4px; }
 
-        .ai-content h3 { font-size: 1.125rem; font-weight: 700; color: #fbbf24; margin-top: 1rem; margin-bottom: 0.5rem; }
-        .ai-content p { margin-bottom: 0.75rem; color: #cbd5e1; font-size: 0.875rem; line-height: 1.6; }
-        .ai-content ul { list-style-type: disc; padding-left: 1.5rem; margin-bottom: 0.75rem; color: #cbd5e1; font-size: 0.875rem; }
-        .ai-content li { margin-bottom: 0.25rem; line-height: 1.5; }
-        .ai-content strong { color: #f8fafc; font-weight: 600; }
-        .ai-content em { color: #a78bfa; font-style: italic; }
+
+        /* A canvas keeps its intrinsic 300x150 size until Chart.js takes over, which on a
+           narrow phone makes the page wider than the screen before the first Run. */
+        canvas { max-width: 100%; }
+
+        /* Mobile only: finger-sized controls. Desktop keeps the original compact sizing. */
+        @media (max-width: 640px) {
+            input[type="number"], input[type="text"], select { min-height: 34px; }
+            #fund-rows input[type="number"], #fund-rows input[type="text"] { min-height: 30px; }
+            input[type="checkbox"] { width: 18px; height: 18px; }
+            #priority-order-container button { min-width: 34px; min-height: 30px; }
+            #fund-rows .btn-delete { min-width: 34px; min-height: 30px; }
+            #start-p2, #start-p3, #start-p4 { min-height: 32px; }
+            /* toggle rows (phase tabs, sim method, chart view, withdrawal mode, heatmap timing) */
+            #tab-p1, #tab-p2, #tab-p3, #tab-p4,
+            #sim-mc-trad, #sim-mc-gbm, #sim-mc-volcluster,
+            #sim-hm-trad, #sim-hm-gbm, #sim-hm-volcluster,
+            #view-type-line, #view-type-bar, #tt-type-amt, #tt-type-pct,
+            #hm-wd-immediate, #hm-wd-planned,
+            #global-wd-mode-yield, #global-wd-mode-constant, #global-wd-mode-fixed { min-height: 36px; }
+            .optimizer-btn { min-height: 40px; }
+        }
 
         /* ===== PDF REPORT PAGES (A4 landscape = 1123 x 794 CSS px @96dpi) =====
            Self-contained styles (no Tailwind) so the printed report is light/print-friendly
@@ -109,10 +135,12 @@
         <header class="mb-6 border-b border-slate-800 pb-4">
             <div class="flex flex-col md:flex-row justify-between items-start md:items-center">
                 <div>
-                    <h1 class="text-3xl font-bold text-amber-500 flex items-center gap-3">
-                        <i class="fa-solid fa-server"></i> Institutional Portfolio Simulator
+                    <h1 class="text-2xl sm:text-3xl font-bold text-amber-500 flex items-center gap-3 leading-tight">
+                        <i class="fa-solid fa-server"></i> Money Director
                     </h1>
-                    <p class="text-slate-400 mt-2 text-sm">Global Waterfall Cashflow, Bucket Priority Liquidation & Auto-Rebalance Engine</p>
+                    <p class="text-slate-200 mt-1 text-base sm:text-lg font-semibold">Institutional Portfolio Simulator</p>
+                    <p class="text-slate-400 mt-1 text-xs sm:text-sm">Global Waterfall Cashflow, Bucket Priority Liquidation &amp; Auto-Rebalance Engine</p>
+                    <a href="https://www.facebook.com/themoneydirector" target="_blank" rel="noopener" class="text-[11px] text-amber-400/80 hover:text-amber-300 mt-1 inline-block">facebook.com/themoneydirector</a>
                 </div>
                 <div class="mt-4 md:mt-0 flex flex-col items-end gap-3">
                     <div class="bg-slate-800 p-2 rounded-lg border border-slate-700 text-right w-max">
@@ -129,12 +157,6 @@
                         <input type="file" id="case-file-input" accept=".xlsx,.xls" class="hidden">
                         <button id="btn-export-pdf" class="bg-slate-800 hover:bg-slate-700 text-rose-300 px-3 py-2 rounded-lg text-sm font-bold shadow-lg transition-all flex items-center gap-2 border border-rose-500/30">
                             <i class="fa-solid fa-file-pdf"></i> โหลด PDF
-                        </button>
-                        <!-- Hidden until the AI Advisor is ready to ship: apiKey is still empty (see script below),
-                             so every click would currently fail against the Gemini API. Remove `hidden` to re-enable
-                             once a real key (and ideally a backend proxy instead of a client-side key) is in place. -->
-                        <button id="btn-ai-advisor" class="hidden bg-gradient-to-r from-purple-600 to-indigo-600 hover:from-purple-500 hover:to-indigo-500 text-white px-4 py-2 rounded-lg text-sm font-bold shadow-lg shadow-purple-900/50 transition-all flex items-center gap-2 border border-purple-400/30">
-                            ✨ วิเคราะห์ด้วย AI
                         </button>
                     </div>
                 </div>
@@ -187,7 +209,7 @@
                         <span class="px-2 py-0.5 rounded text-[10px] font-bold bg-amber-500/20 text-amber-300">Waterfall Priority</span>
                     </div>
                     <p class="text-xs text-slate-400 mb-4 leading-relaxed">
-                        ระบบจะรวม **Yield ทั้งหมด** จากทุกพอร์ตย่อยมาจ่ายก่อน หากไม่พอจ่ายจึงจะดึงส่วนขาดจากเงินต้นตาม **ลำดับความสำคัญ (Bucket Priority)**
+                        ระบบจะรวม <b class="text-slate-200">Yield ทั้งหมด</b> จากทุกพอร์ตย่อยมาจ่ายก่อน หากไม่พอจ่ายจึงจะดึงส่วนขาดจากเงินต้นตาม <b class="text-slate-200">ลำดับความสำคัญ (Bucket Priority)</b>
                     </p>
 
                     <!-- Withdrawal Mode Toggles -->
@@ -351,11 +373,11 @@
                                 <div class="text-[10px] text-purple-400 font-bold border-b border-slate-700 pb-1 flex items-center gap-1.5">
                                     <i class="fa-solid fa-scale-balanced"></i> เริ่มเข้าสู่รอบ Rebalance ตั้งแต่
                                 </div>
-                                <div class="flex items-center gap-2">
+                                <div class="flex flex-wrap items-center gap-2">
                                     <label class="text-[9px] text-slate-400 whitespace-nowrap">ปีที่ / เดือนที่</label>
                                     <input type="number" id="port-rebalance-start-y" min="1" class="w-16 bg-slate-800 border border-slate-600 rounded px-2 py-1 text-xs text-center text-purple-300 font-bold">
                                     <input type="number" id="port-rebalance-start-m" min="1" max="12" class="w-16 bg-slate-800 border border-slate-600 rounded px-2 py-1 text-xs text-center text-purple-300 font-bold">
-                                    <span class="text-[9px] text-slate-500 flex-1">*ตั้งไกลๆ (เช่นปีที่ 99) หากไม่ต้องการให้พอร์ตนี้ถูก Rebalance เลย</span>
+                                    <span class="text-[9px] text-slate-500 w-full sm:flex-1">*ตั้งไกลๆ (เช่นปีที่ 99) หากไม่ต้องการให้พอร์ตนี้ถูก Rebalance เลย</span>
                                 </div>
                             </div>
 
@@ -373,14 +395,14 @@
                                     <span id="current-phase-label" class="text-xs font-bold text-amber-300">แก้ไขสัดส่วน: เฟส 1</span>
                                     <span id="total-weight-badge" class="px-2 py-0.5 rounded text-[10px] font-bold bg-green-500/20 text-green-400">กองทุน 100%</span>
                                 </div>
-                                <table class="w-full text-left text-[11px] text-slate-300">
+                                <table class="w-full min-w-[470px] sm:min-w-0 text-left text-[11px] text-slate-300">
                                     <thead>
                                         <tr class="border-b border-slate-700 text-slate-400">
                                             <th class="py-1 pr-1 w-1/3">ชื่อกองทุน</th>
-                                            <th class="py-1 w-12 text-center">สัดส่วน%</th>
-                                            <th class="py-1 w-12 text-center">Yield%</th>
-                                            <th class="py-1 w-12 text-center">Growth%</th>
-                                            <th class="py-1 w-12 text-center">S.D.%</th>
+                                            <th class="py-1 w-14 text-center">สัดส่วน%</th>
+                                            <th class="py-1 w-14 text-center">Yield%</th>
+                                            <th class="py-1 w-14 text-center">Growth%</th>
+                                            <th class="py-1 w-14 text-center">S.D.%</th>
                                             <th class="py-1 w-8 text-center"><i class="fa-solid fa-cog"></i></th>
                                         </tr>
                                     </thead>
@@ -418,7 +440,7 @@
                                 </div>
                                 <!-- Optional constraints. Leaving a box empty keeps that preset's
                                      original (unconstrained) definition exactly as before. -->
-                                <div class="grid grid-cols-2 gap-2 pt-1 border-t border-slate-800 mt-1">
+                                <div class="grid grid-cols-1 sm:grid-cols-2 gap-2 pt-1 border-t border-slate-800 mt-1">
                                     <div>
                                         <label class="block text-[9px] text-cyan-300 mb-0.5">Conservative: ผลตอบแทนขั้นต่ำ (%)</label>
                                         <input type="number" step="0.1" min="0" id="opt-conservative-min-return" placeholder="ไม่ระบุ" class="w-full bg-slate-800 border border-slate-600 rounded px-2 py-1 text-[10px] text-cyan-300 font-bold placeholder:text-slate-600 placeholder:font-normal focus:outline-none focus:border-cyan-500">
@@ -463,7 +485,7 @@
                         </div>
 
                         <div class="overflow-x-auto">
-                            <table class="w-full text-left text-xs text-slate-200">
+                            <table class="w-full min-w-[620px] sm:min-w-0 text-left text-xs text-slate-200">
                                 <thead>
                                     <tr class="text-slate-400 border-b border-slate-700/50">
                                         <th class="pb-1 font-medium">พอร์ต</th>
@@ -484,8 +506,8 @@
                     <!-- Main Chart -->
                     <div class="bg-slate-800 p-5 rounded-2xl border border-slate-700 shadow-xl relative">
                         <!-- Run Button Layer -->
-                        <div class="absolute top-[-15px] right-6 z-10">
-                            <button id="btn-run-mc" class="bg-gradient-to-r from-amber-600 to-orange-500 hover:from-amber-500 hover:to-orange-400 text-white px-5 py-2.5 rounded-xl text-sm font-bold shadow-lg shadow-orange-900/50 transition-all flex items-center gap-2 border border-orange-400/30">
+                        <div class="relative mb-3 sm:mb-0 sm:absolute sm:top-[-15px] sm:right-6 z-10">
+                            <button id="btn-run-mc" class="w-full sm:w-auto justify-center bg-gradient-to-r from-amber-600 to-orange-500 hover:from-amber-500 hover:to-orange-400 text-white px-5 py-3 sm:py-2.5 rounded-xl text-sm font-bold shadow-lg shadow-orange-900/50 transition-all flex items-center gap-2 border border-orange-400/30">
                                 <i class="fa-solid fa-play"></i> ประมวลผลกราฟ (Run Simulation)
                             </button>
                         </div>
@@ -655,17 +677,17 @@
                             <p class="text-xs text-slate-400 mt-2 leading-relaxed">
                                 ทดสอบ Stress Test: หากบังคับถอนยอดนี้ผ่านกลไก Global Waterfall ทันทีตั้งแต่ปีแรก ภายใต้แผน DCA และ Rebalance ปัจจุบัน โอกาสรอดคือเท่าใด (พร้อมเทียบกับกรณีเงินก้อนเดียวกันฝากอัตราคงที่แทนการลงทุน)
                             </p>
-                            <div class="mt-3 flex items-center gap-2">
-                                <label class="text-xs text-slate-300 whitespace-nowrap">อัตราถอนเป้าหมาย (% หรือ บาท/เดือน):</label>
+                            <div class="mt-3 flex flex-col items-start gap-1 sm:flex-row sm:items-center sm:gap-2">
+                                <label class="text-xs text-slate-300 sm:whitespace-nowrap">อัตราถอนเป้าหมาย (% หรือ บาท/เดือน):</label>
                                 <input type="text" id="heatmap-rates" value="3%, 4%, 50000, 100000" class="bg-slate-900 border border-slate-700 rounded px-2 py-1.5 text-xs text-amber-300 w-full xl:w-64 focus:outline-none focus:border-amber-500 font-bold">
                             </div>
-                            <div class="mt-2 flex items-center gap-2">
-                                <label class="text-xs text-slate-300 whitespace-nowrap">เทียบกับเงินฝากอัตราคงที่ (Fixed Deposit % ต่อปี):</label>
+                            <div class="mt-2 flex flex-col items-start gap-1 sm:flex-row sm:items-center sm:gap-2">
+                                <label class="text-xs text-slate-300 sm:whitespace-nowrap">เทียบกับเงินฝากอัตราคงที่ (Fixed Deposit % ต่อปี):</label>
                                 <input type="number" step="0.1" id="heatmap-benchmark-rate" value="1.5" class="bg-slate-900 border border-slate-700 rounded px-2 py-1.5 text-xs text-cyan-300 w-24 focus:outline-none focus:border-cyan-500 font-bold">
                             </div>
                             <div class="mt-3">
                                 <label class="text-[10px] text-slate-400 block mb-1">จังหวะเริ่มถอนที่ใช้ทดสอบ</label>
-                                <div class="flex items-center gap-1 bg-slate-900 p-1 rounded-lg border border-slate-700 w-max">
+                                <div class="flex flex-wrap items-center gap-1 bg-slate-900 p-1 rounded-lg border border-slate-700 max-w-full sm:w-max">
                                     <button id="hm-wd-immediate" class="px-2 py-1 text-[10px] rounded bg-amber-500/20 text-amber-300 font-bold transition">⚡ Stress ทันที (เดือนที่ 1)</button>
                                     <button id="hm-wd-planned" class="px-2 py-1 text-[10px] rounded text-slate-400 hover:text-slate-200 transition">📅 ตามแผนจริง (Global Waterfall)</button>
                                 </div>
@@ -681,14 +703,17 @@
                                 <button id="sim-hm-gbm" class="px-2 py-1 text-[10px] rounded text-slate-400 hover:text-slate-200 transition">GBM</button>
                                 <button id="sim-hm-volcluster" class="px-2 py-1 text-[10px] rounded text-slate-400 hover:text-slate-200 transition">Vol. Cluster</button>
                             </div>
-                            <button id="btn-run-heatmap" class="bg-amber-600 hover:bg-amber-500 text-white px-4 py-2 rounded-lg text-xs font-bold transition w-max">
+                            <button id="btn-run-heatmap" class="bg-amber-600 hover:bg-amber-500 text-white px-4 py-2.5 sm:py-2 rounded-lg text-xs font-bold transition w-full sm:w-max">
                                 <i class="fa-solid fa-play"></i> Run Analysis
                             </button>
+                            <div id="heatmap-status-badge" class="text-[10px] bg-slate-900 py-1 px-2 rounded text-slate-400 font-medium w-max">
+                                รอการกด Run Analysis...
+                            </div>
                         </div>
                     </div>
 
                     <div class="overflow-x-auto mt-6">
-                        <table class="w-full text-center text-sm border-collapse border border-slate-700">
+                        <table class="w-full min-w-[520px] sm:min-w-0 text-center text-sm border-collapse border border-slate-700">
                             <thead>
                                 <tr class="bg-slate-900">
                                     <th class="border border-slate-700 p-3 text-slate-300 font-semibold w-1/4">อัตรา/ยอดถอน (ต่อปี/เดือน)</th>
@@ -712,7 +737,7 @@
     <!-- Save-case Modal: name the case, then write the .xlsx (all inputs + results if available). -->
     <div id="case-modal" class="fixed inset-0 z-50 hidden">
         <div class="absolute inset-0 bg-slate-950/80 backdrop-blur-sm" id="case-modal-bg"></div>
-        <div class="absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 w-11/12 max-w-md bg-slate-900 border border-emerald-500/30 rounded-2xl shadow-2xl flex flex-col">
+        <div class="absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 w-11/12 max-w-md max-h-[88vh] overflow-y-auto bg-slate-900 border border-emerald-500/30 rounded-2xl shadow-2xl flex flex-col">
             <div class="flex items-center justify-between p-4 border-b border-slate-800">
                 <h3 class="text-base font-bold text-emerald-300 flex items-center gap-2">
                     <i class="fa-solid fa-file-excel"></i> บันทึกเคสเป็นไฟล์ Excel
@@ -732,7 +757,7 @@
                     <div id="case-results-status" class="text-[11px] pt-1"></div>
                 </div>
                 <p class="text-[10px] text-slate-500 leading-relaxed">ไฟล์ถูกสร้างในเบราว์เซอร์และดาวน์โหลดลงเครื่องของคุณโดยตรง เครื่องมือนี้ไม่มีเซิร์ฟเวอร์เก็บข้อมูล จึงไม่มีการส่งข้อมูลออกไปที่ใด</p>
-                <div class="flex justify-end gap-2 pt-1">
+                <div class="flex flex-wrap justify-end gap-2 pt-1">
                     <button id="btn-cancel-case" class="px-3 py-2 rounded-lg text-xs text-slate-300 bg-slate-800 border border-slate-700 hover:bg-slate-700">ยกเลิก</button>
                     <button id="btn-save-case" class="px-4 py-2 rounded-lg text-xs font-bold text-white bg-emerald-600 hover:bg-emerald-500">
                         <i class="fa-solid fa-download"></i> บันทึกไฟล์
@@ -745,7 +770,7 @@
     <!-- PDF Export Modal: pick optional sections, then generate. -->
     <div id="pdf-modal" class="fixed inset-0 z-50 hidden">
         <div class="absolute inset-0 bg-slate-950/80 backdrop-blur-sm" id="pdf-modal-bg"></div>
-        <div class="absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 w-11/12 max-w-md bg-slate-900 border border-rose-500/30 rounded-2xl shadow-2xl flex flex-col">
+        <div class="absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 w-11/12 max-w-md max-h-[88vh] overflow-y-auto bg-slate-900 border border-rose-500/30 rounded-2xl shadow-2xl flex flex-col">
             <div class="flex items-center justify-between p-4 border-b border-slate-800">
                 <h3 class="text-base font-bold text-rose-300 flex items-center gap-2">
                     <i class="fa-solid fa-file-pdf"></i> Export รายงาน PDF (แนวนอน)
@@ -778,39 +803,12 @@
                     </label>
                 </div>
                 <p id="pdf-progress" class="hidden text-[11px] text-amber-300 font-semibold"></p>
-                <div class="flex justify-end gap-2 pt-1">
+                <div class="flex flex-wrap justify-end gap-2 pt-1">
                     <button id="btn-cancel-pdf" class="px-3 py-2 rounded-lg text-xs text-slate-300 bg-slate-800 border border-slate-700 hover:bg-slate-700">ยกเลิก</button>
                     <button id="btn-generate-pdf" class="px-4 py-2 rounded-lg text-xs font-bold text-white bg-rose-600 hover:bg-rose-500 disabled:opacity-40 disabled:cursor-not-allowed">
                         <i class="fa-solid fa-download"></i> สร้าง PDF
                     </button>
                 </div>
-            </div>
-        </div>
-    </div>
-
-    <!-- AI Advisor Modal -->
-    <div id="ai-modal" class="fixed inset-0 z-50 hidden">
-        <div class="absolute inset-0 bg-slate-950/80 backdrop-blur-sm" id="ai-modal-bg"></div>
-        <div class="absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 w-11/12 max-w-3xl max-h-[85vh] bg-slate-900 border border-purple-500/30 rounded-2xl shadow-2xl shadow-purple-900/20 flex flex-col">
-            <div class="flex items-center justify-between p-4 border-b border-slate-800">
-                <h3 class="text-lg font-bold text-transparent bg-clip-text bg-gradient-to-r from-purple-400 to-indigo-400 flex items-center gap-2">
-                    <i class="fa-solid fa-robot"></i> ผู้ช่วย AI วิเคราะห์แผนเกษียณ (Global Waterfall)
-                </h3>
-                <button id="btn-close-ai" class="text-slate-400 hover:text-white transition px-2 py-1">
-                    <i class="fa-solid fa-times text-xl"></i>
-                </button>
-            </div>
-
-            <div class="p-6 overflow-y-auto custom-scrollbar flex-1 relative">
-                <div id="ai-loading" class="flex flex-col items-center justify-center py-12 hidden">
-                    <i class="fa-solid fa-circle-notch fa-spin text-4xl text-purple-500 mb-4"></i>
-                    <p class="text-purple-300 font-semibold animate-pulse">กำลังส่งข้อมูลพอร์ตและ Waterfall Policy ให้ Gemini ประมวลผล...</p>
-                </div>
-                <div id="ai-error" class="bg-red-900/20 border border-red-500/30 rounded-xl p-4 text-center hidden">
-                    <i class="fa-solid fa-triangle-exclamation text-red-400 text-3xl mb-2"></i>
-                    <p class="text-red-300 text-sm" id="ai-error-text">เกิดข้อผิดพลาดในการเชื่อมต่อ API</p>
-                </div>
-                <div id="ai-response-content" class="ai-content hidden"></div>
             </div>
         </div>
     </div>
@@ -1277,6 +1275,7 @@
             renderChartPortOptions();
             syncActivePortUI();
             updatePhaseStatsTable();
+            updateHeatmapStatusBadge();
         });
 
         function updatePhaseStatsTable() {
@@ -1348,6 +1347,35 @@
             hideOptimizerSection(); // any input change can invalidate the last Optimizer result -- force a re-click instead of showing stale data
             simResultsStale = true;
             if (lastHeatmapResult) lastHeatmapResult.stale = true;
+            updateHeatmapStatusBadge();
+        }
+
+        // Heatmap has its own Run button, so it needs its own "results no longer match the
+        // inputs" badge -- the main chart's badge says nothing about the Heatmap.
+        function updateHeatmapStatusBadge(state) {
+            const badge = document.getElementById('heatmap-status-badge');
+            if (!badge) return;
+            const base = 'text-[10px] py-1 px-2 rounded font-medium w-max ';
+            if (state === 'running') {
+                badge.innerHTML = '⏳ กำลังประมวลผล...';
+                badge.className = base + 'bg-slate-900 text-slate-400';
+            } else if (!lastHeatmapResult) {
+                badge.innerHTML = 'รอการกด Run Analysis...';
+                badge.className = base + 'bg-slate-900 text-slate-400';
+            } else if (lastHeatmapResult.stale) {
+                badge.innerHTML = '⚠️ ค่าเปลี่ยนแปลง กรุณากด Run Analysis ใหม่';
+                badge.className = base + 'bg-red-900/40 text-red-400 font-bold border border-red-500/30';
+            } else {
+                badge.innerHTML = '✅ ข้อมูลอัปเดตล่าสุด';
+                badge.className = base + 'bg-emerald-900/40 text-emerald-400 font-bold border border-emerald-500/30';
+            }
+        }
+
+        // Inputs that only the Heatmap uses (they never call markDirty, because they do not
+        // affect the main simulation) still make an existing Heatmap result out of date.
+        function markHeatmapDirty() {
+            if (lastHeatmapResult) lastHeatmapResult.stale = true;
+            updateHeatmapStatusBadge();
         }
 
         function renderPriorityOrderUI() {
@@ -1601,6 +1629,8 @@
 
             document.getElementById('btn-run-heatmap').addEventListener('click', runHeatmap);
             document.getElementById('heatmap-rates').addEventListener('change', runHeatmap);
+            document.getElementById('heatmap-rates').addEventListener('input', markHeatmapDirty);
+            document.getElementById('heatmap-benchmark-rate').addEventListener('input', markHeatmapDirty);
 
             // Save / open a case (Excel)
             document.getElementById('btn-export-excel').addEventListener('click', openCaseModal);
@@ -1616,9 +1646,6 @@
             });
 
             // AI
-            document.getElementById('btn-ai-advisor').addEventListener('click', openAIModal);
-            document.getElementById('btn-close-ai').addEventListener('click', closeAIModal);
-            document.getElementById('ai-modal-bg').addEventListener('click', closeAIModal);
 
             // PDF report export
             document.getElementById('btn-export-pdf').addEventListener('click', openPdfModal);
@@ -1829,10 +1856,10 @@
                 tr.className = "border-b border-slate-800/50 hover:bg-slate-800 transition";
                 tr.innerHTML = `
                     <td class="py-1 pr-1"><input type="text" data-id="${fund.id}" data-field="name" value="${escapeHtml(fund.name)}" class="w-full bg-slate-800 border border-slate-600 rounded px-1.5 py-0.5 text-slate-200 focus:outline-none focus:border-amber-500 font-medium text-[10px]"></td>
-                    <td class="py-1 text-center"><input type="number" data-id="${fund.id}" data-field="weight" value="${fund.weight}" class="w-10 bg-slate-800 border border-slate-600 text-center rounded text-amber-400 font-semibold focus:outline-none focus:border-amber-500 py-0.5 text-[10px]"></td>
-                    <td class="py-1 text-center"><input type="number" step="0.1" data-id="${fund.id}" data-field="yield" value="${fund.yield}" class="w-10 bg-slate-800 border border-slate-600 text-center rounded text-slate-300 focus:outline-none focus:border-amber-500 py-0.5 text-[10px]"></td>
-                    <td class="py-1 text-center"><input type="number" step="0.1" data-id="${fund.id}" data-field="capGain" value="${fund.capGain}" class="w-10 bg-slate-800 border border-slate-600 text-center rounded text-slate-300 focus:outline-none focus:border-amber-500 py-0.5 text-[10px]"></td>
-                    <td class="py-1 text-center"><input type="number" step="0.1" data-id="${fund.id}" data-field="sd" value="${fund.sd}" class="w-10 bg-slate-800 border border-slate-600 text-center rounded text-slate-300 focus:outline-none focus:border-amber-500 py-0.5 text-[10px]"></td>
+                    <td class="py-1 text-center"><input type="number" data-id="${fund.id}" data-field="weight" value="${fund.weight}" class="w-12 bg-slate-800 border border-slate-600 text-center rounded text-amber-400 font-semibold focus:outline-none focus:border-amber-500 py-0.5 text-[10px]"></td>
+                    <td class="py-1 text-center"><input type="number" step="0.1" data-id="${fund.id}" data-field="yield" value="${fund.yield}" class="w-12 bg-slate-800 border border-slate-600 text-center rounded text-slate-300 focus:outline-none focus:border-amber-500 py-0.5 text-[10px]"></td>
+                    <td class="py-1 text-center"><input type="number" step="0.1" data-id="${fund.id}" data-field="capGain" value="${fund.capGain}" class="w-12 bg-slate-800 border border-slate-600 text-center rounded text-slate-300 focus:outline-none focus:border-amber-500 py-0.5 text-[10px]"></td>
+                    <td class="py-1 text-center"><input type="number" step="0.1" data-id="${fund.id}" data-field="sd" value="${fund.sd}" class="w-12 bg-slate-800 border border-slate-600 text-center rounded text-slate-300 focus:outline-none focus:border-amber-500 py-0.5 text-[10px]"></td>
                     <td class="py-1 text-center"><button class="btn-delete text-red-400 hover:text-red-500 transition px-1" data-id="${fund.id}"><i class="fa-solid fa-times"></i></button></td>
                 `;
                 tbody.appendChild(tr);
@@ -3166,6 +3193,13 @@
             }
             return -1;
         }
+        // Column headers and setting keys come from a file the user chose, and they are used
+        // directly as property names. "__proto__", "constructor" and "prototype" are special on
+        // a plain object -- assigning to them can change an object's prototype instead of adding
+        // a field. Case-insensitive because Excel round-trips can change letter case.
+        const CASE_FORBIDDEN_KEYS = new Set(['__proto__', 'constructor', 'prototype']);
+        const caseSafeKey = (k) => !CASE_FORBIDDEN_KEYS.has(String(k).toLowerCase());
+
         function caseRowsByKey(aoa, requiredKey) {
             const h = caseFindKeyRow(aoa, requiredKey);
             if (h < 0) return null;
@@ -3173,16 +3207,16 @@
             return aoa.slice(h + 1)
                 .filter(r => r.some(c => String(c).trim() !== ''))
                 .map(r => {
-                    const o = {};
-                    keys.forEach((k, i) => { if (k) o[k] = (r[i] === undefined ? '' : r[i]); });
+                    const o = Object.create(null); // no prototype to pollute in the first place
+                    keys.forEach((k, i) => { if (k && caseSafeKey(k)) o[k] = (r[i] === undefined ? '' : r[i]); });
                     return o;
                 });
         }
         function caseKeyValues(aoa) {
-            const o = {};
+            const o = Object.create(null);
             (aoa || []).forEach(r => {
                 const k = String(r[0] || '').trim();
-                if (k && k !== 'คีย์ (ห้ามแก้)') o[k] = r[r.length - 1];
+                if (k && k !== 'คีย์ (ห้ามแก้)' && caseSafeKey(k)) o[k] = r[r.length - 1];
             });
             return o;
         }
@@ -3383,6 +3417,7 @@
             document.getElementById('heatmap-body').innerHTML = '<tr><td colspan="4" class="p-8 text-slate-500 text-xs text-center">คลิกปุ่ม "Run Analysis" หรือแก้ไขตัวเลขเพื่อประมวลผลใหม่</td></tr>';
 
             caseSyncModeButtons();
+            updateHeatmapStatusBadge();
             renderPortTabs();
             renderPriorityOrderUI();
             renderChartPortOptions();
@@ -3443,6 +3478,7 @@
             const btn = document.getElementById('btn-run-heatmap');
             btn.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i> Processing Waterfall...';
             if (lastHeatmapResult) lastHeatmapResult.stale = true; // superseded until this run finishes
+            updateHeatmapStatusBadge('running');
 
             setTimeout(() => {
                 const initPrincipal = parseFloat(document.getElementById("init-investment").value) || 10000000;
@@ -3668,6 +3704,7 @@
                     rows: reportRows,
                     stale: false
                 };
+                updateHeatmapStatusBadge();
                 btn.innerHTML = '<i class="fa-solid fa-play"></i> Run Analysis';
             }, 50);
         }
@@ -4265,86 +4302,6 @@
                 window.scrollTo(savedScroll.x, savedScroll.y);
                 pdfExportInProgress = false;
                 genBtn.disabled = !getPdfAvailability().main;
-            }
-        }
-
-        // --- AI INTEGRATION ---
-        const apiKey = "";
-
-        function openAIModal() {
-            document.getElementById('ai-modal').classList.remove('hidden');
-            document.getElementById('ai-loading').classList.remove('hidden');
-            document.getElementById('ai-error').classList.add('hidden');
-            document.getElementById('ai-response-content').classList.add('hidden');
-            document.getElementById('ai-response-content').innerHTML = '';
-            generateAIAnalysis();
-        }
-
-        function closeAIModal() {
-            document.getElementById('ai-modal').classList.add('hidden');
-        }
-
-        function getPortfolioContext() {
-            const initPrincipal = document.getElementById("init-investment").value;
-            const survivalRate = document.getElementById("metric-survival-rate").innerText;
-            const rebalanceSetting = document.getElementById('global-rebalance').options[document.getElementById('global-rebalance').selectedIndex].text;
-            
-            let portContexts = "";
-            portfolios.forEach(pt => {
-                portContexts += `\n** ${pt.name} (น้ำหนัก ${pt.allocWeight}%) **\n`;
-                portContexts += `- DCA: ${pt.topup.amount} บาท/ครั้ง\n`;
-            });
-
-            return `
-ข้อมูลแผนการลงทุน (Global Waterfall & Bucket Priority):
-- เงินต้นรวม: ${initPrincipal} บาท
-- การปรับสมดุลพอร์ต (Rebalance): ${rebalanceSetting}
-- นโยบายถอนเงิน (Global Waterfall): ${globalWithdrawal.mode} (ถอน ${globalWithdrawal.fixedAmt} บาท/เดือน)
-- ลำดับพอร์ตสำหรับขายหน่วยลงทุน (Priority Order): ${globalWithdrawal.priorityOrder.map(id => portfolios.find(p=>p.id===id)?.name).join(' -> ')}
-- โอกาสรอด 30 ปีรวมทุกพอร์ต: ${survivalRate}
-- รายละเอียดแต่ละพอร์ต:
-${portContexts}
-
-คำสั่ง: คุณคือ Institutional Financial Advisor
-วิเคราะห์ประโยชน์ของสถาปัตยกรรม Global Waterfall & Priority Bucket Liquidation นี้ในแง่การบริหาร Sequence of Returns Risk และการคุ้มครองสินทรัพย์เติบโตสูง (Markdown format, ภาษาไทย)
-            `;
-        }
-
-        async function fetchGeminiWithRetry(promptText) {
-            const url = `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash-preview-09-2025:generateContent?key=${apiKey}`;
-            const payload = { contents: [{ parts: [{ text: promptText }] }] };
-            const retries = 5;
-            const delays = [1000, 2000, 4000, 8000, 16000];
-
-            for (let i = 0; i < retries; i++) {
-                try {
-                    const response = await fetch(url, { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify(payload) });
-                    if (!response.ok) throw new Error(`API Error: ${response.status}`);
-                    const data = await response.json();
-                    return data.candidates?.[0]?.content?.parts?.[0]?.text;
-                } catch (error) {
-                    if (i === retries - 1) throw error;
-                    await new Promise(res => setTimeout(res, delays[i]));
-                }
-            }
-            throw new Error("ไม่สามารถเชื่อมต่อ AI ได้");
-        }
-
-        async function generateAIAnalysis() {
-            try {
-                const prompt = getPortfolioContext();
-                const aiResponseText = await fetchGeminiWithRetry(prompt);
-                document.getElementById('ai-loading').classList.add('hidden');
-                
-                if (aiResponseText) {
-                    const contentDiv = document.getElementById('ai-response-content');
-                    contentDiv.innerHTML = marked.parse(aiResponseText);
-                    contentDiv.classList.remove('hidden');
-                } else { throw new Error("No response"); }
-            } catch (err) {
-                document.getElementById('ai-loading').classList.add('hidden');
-                document.getElementById('ai-error').classList.remove('hidden');
-                document.getElementById('ai-error-text').innerText = err.message;
             }
         }
     </script>
