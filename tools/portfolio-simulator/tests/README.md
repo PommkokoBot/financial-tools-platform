@@ -48,11 +48,14 @@ another on the old logic.
 | `unit/escaping.test.js` | Portfolio and fund names cannot inject markup — asserted on the parsed DOM, by checking a hostile name produces the same elements and attributes as a harmless one. Guards the fix from 2026-09-07. |
 | `unit/sheetjs-provenance.test.js` | The SheetJS the tests run is byte-identical to the 0.20.3 build `index.html` loads from cdn.sheetjs.com — size, sha384, md5, the version the library reports at runtime, and that the abandoned npm `xlsx@0.18.5` has not crept back into `node_modules`. Without this, the case-file suites could pass against somebody else's copy and read as confidence. |
 | `unit/cdn-provenance.test.js` | Subresource Integrity: every cross-origin `<script>` carries a digest and `crossorigin="anonymous"`, each digest is **recomputed** from the pinned npm package rather than compared to itself, the version in the URL matches `package.json`, and no new CDN script has slipped in unpinned. The failure it exists to prevent is bumping a CDN version without the digest — the browser then refuses the script and the tool loads to a dead page, which looks fine in the diff. |
+| `unit/csp.test.js` | The Content-Security-Policy: the SHA-256 pinning the inline program is **recomputed from the file** and must match the tag, the whole tag must match what `make-csp.js` would generate, the directives that would gut the policy (`'unsafe-inline'`/`'unsafe-eval'` in `script-src`, an opened `connect-src`) are absent, every host in `script-src` corresponds to a script the page really loads and vice versa, and no inline event handler exists in the markup or in the HTML the app builds at runtime. The failure it exists for: edit one character of the app's JS, forget `npm run csp -- --write`, and the browser refuses the entire program — the page renders perfectly and does nothing. |
+| `unit/jspdf-api-lock.test.js` | The list of jsPDF methods the tool may call. jsPDF 2.5.1 carries 12 advisories (2 critical) plus 16 against its bundled DOMPurify, and **every one of them lives in a feature this tool does not use** — the export path is html2canvas → JPEG data URL → `addImage`, so no user text ever reaches jsPDF. That is safety by coincidence, and this suite is what turns it into safety somebody is watching. A new call turns it red with the reason and the two ways forward. |
 | `unit/optimizer-sanity.test.js` | The frontier maths: the conservative pick really is minimum-risk, the Sharpe pick really is maximum Sharpe, the aggressive pick sits on the frontier, and no run mutates `pt.fundsData`. |
 | `unit/fund-defaults.test.js` | The shipped default fund set: the generic example funds, their exact weights and numbers, the blended statistics they produce, and — the part that is easy to break silently — that S.D. 18 / 4 keeps them on opposite sides of `classifyAsset()` so the default view actually shows a diversification benefit. A bond at S.D. 6 lands in "Mixed" and the blend becomes *worse* than the naive average; this suite catches that. Also asserts no real fund ticker ships as a page default. |
 | `unit/app-chrome.test.js` | The version string (header, footer, case-file `_meta`, PDF cover) and the disclaimer. The disclaimer wording lives in one constant shared by the page footer and every PDF page, so this suite compares both rendered outputs against that constant — editing one side alone turns it red. It also asserts the visible strip exists and has no dismiss button, because deleting it would break nothing else and look fine on screen. |
 | `unit/heatmap-async.test.js` | The heatmap's `setTimeout` half completes and fills the table. |
 | `browser/sri-load.js` | A real Chromium loads the page with the real `integrity` attributes and all four libraries must execute. Includes a negative control: one digest is deliberately corrupted and the browser must refuse that script. Runs first in `test:browser`, because if the libraries do not load, every suite after it is measuring a broken page. |
+| `browser/csp-load.js` | Drives the whole tool in a real Chromium under the real **enforcing** policy — run, heatmap, optimizer, the two converted click handlers, saving a case to `.xlsx`, exporting the PDF — and fails on one violation, one error dialog, or one uncaught error. Includes a negative control: an un-hashed inline script must be refused. This suite exists because the usual safe rollout (Report-Only first) is impossible here; see below. |
 | `browser/desktop-diff.js` | Box geometry of every element with an `id` at 1440×900, current build vs baseline. A mobile-only change that moves anything on desktop shows up here. |
 | `browser/mobile-audit.js` | At 360 and 390 px: no horizontal page scroll, the three wide tables scroll instead of squeezing, tap-target census, screenshots. |
 | `browser/heatmap-badge.js` | The heatmap staleness badge across its four states in a real browser. |
@@ -105,6 +108,51 @@ If that suite ever goes red, do not "fix" it by re-pinning the digest. Fetch the
 official file again and compare — a mirror that moved is the thing the check
 exists to catch.
 
+## Content-Security-Policy — enforcing, and why there was no Report-Only step
+
+The page carries an enforcing CSP in a `<meta>` tag. `default-src` is `'none'`, so any directive
+nobody thought about denies by default. The inline program is allowed by the SHA-256 of its exact
+bytes; `script-src` carries no `'unsafe-inline'` and no `'unsafe-eval'`, and the app uses neither
+`eval` nor `new Function`.
+
+The directive worth understanding is **`connect-src 'none'`**. The tool makes no network requests
+of its own — no `fetch`, no `XMLHttpRequest`, no beacon, nothing — so the browser is told it may
+make none. That turns the sentence in the disclaimer, *"ข้อมูลทั้งหมดที่ท่านกรอกถูกประมวลผลในเครื่อง
+ของท่านเอง ไม่มีการส่งออก"*, from a promise the code makes into one the browser enforces. Even code
+injected through some future hole could not send what the user typed anywhere.
+
+`style-src` keeps `'unsafe-inline'`. That is a deliberate trade, not an oversight: the page has 23
+`style=""` attributes and two inline `<style>` blocks, CSS cannot execute script, and locking it
+down means rewriting all of them into classes and re-measuring the layout — a large change for a
+small gain. The strictness goes where script execution is.
+
+**There was no Report-Only step, because there cannot be one.** The safe rollout for CSP is
+normally: ship `Content-Security-Policy-Report-Only`, read what it *would* have blocked, fix,
+then enforce. That header can only arrive over HTTP, and GitHub Pages does not let us set headers,
+so `<meta>` is the only channel — and Report-Only is ignored in a `<meta>` tag. Measured, not
+assumed: Chromium answers a Report-Only meta tag with *"the report-only Content Security Policy
+… was delivered via a `<meta>` element"* and drops the whole policy, while the same policy in
+enforcing mode blocks correctly. Shipping Report-Only here would have produced a commit that looks
+like protection and provides none, which is worse than a known gap.
+
+The verification therefore happens **before** the commit instead of after, in
+`browser/csp-load.js`, which exercises every feature that could trip the policy in a real browser.
+
+**`frame-ancestors` is deliberately absent.** It is ignored in a `<meta>` tag, so including it
+would imply clickjacking is handled when it is not. On GitHub Pages that gap cannot be closed at
+all; moving to a host that sets HTTP headers is the only fix, and it is in the backlog. The unit
+suite asserts the directive stays out, so nobody adds it later and feels safer for no reason.
+
+### After editing index.html
+
+```bash
+npm run csp            # print the tag and the new hash
+npm run csp -- --write # rewrite the meta tag in place
+```
+
+Forgetting this is the one mistake that ships a page which renders correctly and does nothing.
+`unit/csp.test.js` catches it, but only once it has run — so run it before you push.
+
 ## Subresource Integrity — applied, and what still has to be checked by hand
 
 All four cross-origin `<script>` tags in `index.html` now carry an `integrity`
@@ -134,12 +182,17 @@ response for a `file://` page — measured, not assumed). **After any change to 
 URL or host, open the deployed page in a real browser and confirm all four
 libraries load.**
 
-Two subresources are deliberately **not** pinned, and `cdn-provenance.test.js`
-lists them with the reason so they stay visible rather than being forgotten:
-Font Awesome's stylesheet (nobody has downloaded the bytes yet; a tampered
-stylesheet cannot execute script, so it is a smaller hole than an unpinned
-`<script>` — but it is still open) and Google Fonts (its CSS varies by browser, so
-a fixed digest would break the page on some of them).
+All five cross-origin subresources are pinned: Chart.js, SheetJS, html2canvas, jsPDF
+and Font Awesome's stylesheet. Exactly one is deliberately **not**, and
+`cdn-provenance.test.js` lists it with the reason so it stays visible rather than
+being forgotten: Google Fonts, whose CSS varies by requesting browser, so a fixed
+digest would break the page on some of them. It cannot be pinned, only removed.
+
+Font Awesome is also the reason `browser-env.js` now serves that stylesheet from
+`node_modules` instead of letting it fall through to the empty-body catch-all. An
+empty body is a digest mismatch, so the browser would drop the stylesheet and the
+suites would have been measuring a page whose icons had been refused, while
+reporting nothing.
 
 To change a version or host:
 
