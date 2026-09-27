@@ -35,7 +35,12 @@ const DIRECTIVES = [
   // makes no network requests of its own, so the browser is told it may make none. Even code
   // injected through some future hole could not send what the user typed anywhere.
   ["connect-src", ["'none'"]],
-  ["form-action", ["'none'"]],   // there are no forms; a injected one could not post out
+  // NOTE: with DevTools open this also blocks two source-map fetches (chart.umd.min.js.map,
+  // jspdf.umd.min.js.map) and logs them as errors. That is DevTools asking, not the page -- with
+  // DevTools closed the page makes no .map request at all. Do NOT add the CDN hosts here to
+  // quieten it: that re-opens the outbound route this directive exists to close, in exchange for
+  // console noise nobody but a developer ever sees. See tests/README.md.
+  ["form-action", ["'none'"]],   // there are no forms; an injected one could not post out
   ["base-uri", ["'none'"]],      // stops an injected <base> from re-pointing every relative URL
   ["object-src", ["'none'"]],    // no <object>/<embed>/<applet>
   ["frame-src", ["'none'"]],     // the page embeds nothing
