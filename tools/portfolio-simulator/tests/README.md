@@ -143,6 +143,32 @@ would imply clickjacking is handled when it is not. On GitHub Pages that gap can
 all; moving to a host that sets HTTP headers is the only fix, and it is in the backlog. The unit
 suite asserts the directive stays out, so nobody adds it later and feels safer for no reason.
 
+### The two CSP errors you will see with DevTools open
+
+Opening DevTools on the live page logs two blocked requests:
+
+```
+Connecting to 'https://cdn.jsdelivr.net/.../chart.umd.min.js.map' violates ... "connect-src 'none'"
+Connecting to 'https://cdnjs.cloudflare.com/.../jspdf.umd.min.js.map' violates ... "connect-src 'none'"
+```
+
+**This is the policy working, not a defect, and it must not be "fixed".**
+
+Those are source maps, and *DevTools* requests them, not the page. Measured: exactly two of the
+loaded libraries carry a `sourceMappingURL` comment (Chart.js and jsPDF; html2canvas does not),
+which is why there are exactly two errors — and with DevTools closed the page issues 15 requests,
+of which zero are `.map`. Nobody who is not debugging will ever see this.
+
+The only way to silence it is to add `cdn.jsdelivr.net` and `cdnjs.cloudflare.com` to
+`connect-src`. That re-opens the outbound route the directive exists to close — data can be
+carried out in a URL, not just in a request body — in exchange for two lines of console noise
+visible only while debugging. Do not make that trade.
+
+Worth noting where this was found: `browser/csp-load.js` reported zero violations, because
+headless Chromium has no DevTools and therefore never asks for a source map. The errors turned
+up when a person opened the deployed page and pressed F12. That is the part of the process the
+automated suites do not replace.
+
 ### After editing index.html
 
 ```bash
