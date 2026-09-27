@@ -51,7 +51,27 @@ async function routeOffline(page) {
     if (url.startsWith('file://')) return route.continue();
 
     const lib = Object.keys(LIBS).find(k => url.endsWith(k));
-    if (lib) return route.fulfill({ path: path.join(NODE_MODULES, LIBS[lib]), contentType: 'application/javascript' });
+    // index.html carries crossorigin="anonymous" on these tags, which Subresource Integrity
+    // requires: the request becomes a CORS request, and a CDN that answers without
+    // Access-Control-Allow-Origin makes the browser drop the script before it even checks the
+    // hash. The real CDNs all send it, so the stub sends it too -- the point of this harness is
+    // to behave like the CDN, not merely to hand over bytes.
+    //
+    // Measured, so nobody has to guess: removing this header does NOT currently break the
+    // suites. Chromium does not enforce CORS on a response Playwright fulfils for a page loaded
+    // from file://. So this header is faithfulness and future-proofing, not a load-bearing fix,
+    // and the browser suites CANNOT catch a CDN that stops sending it. Only opening the
+    // deployed page in a real browser can.
+    //
+    // What the suites DO verify, because these are the same bytes the digests in index.html
+    // were taken from: a real browser runs its genuine integrity check on every run. A wrong
+    // digest leaves the library undefined and the suites fail. tests/browser/sri-load.js proves
+    // that with a deliberately corrupted digest as a negative control.
+    if (lib) return route.fulfill({
+      path: path.join(NODE_MODULES, LIBS[lib]),
+      contentType: 'application/javascript',
+      headers: { 'Access-Control-Allow-Origin': '*' },
+    });
 
     if (url.includes('tailwindcss')) return route.fulfill({ body: shim, contentType: 'application/javascript' });
     if (url.includes('fonts.googleapis.com')) return route.fulfill({ body: FONT_CSS, contentType: 'text/css' });
