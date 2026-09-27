@@ -46,6 +46,7 @@ another on the old logic.
 | `unit/case-excel.test.js` | Save/open a case: a real `.xlsx` round trip through actual file bytes, blank fields staying blank (not becoming 0), names containing `" & < >`, tolerance of columns being reordered or headers retyped in Excel, 9 kinds of bad file being rejected without touching what is on screen, and the run-results sheet only being written when the results still match the inputs. |
 | `unit/pdf-report.test.js` | Export gating (not run yet / results stale / heatmap stale / optimizer cleared), page count and order for every checkbox combination, the disclaimer and watermark on every page, and the figures in the report matching the ones on screen. |
 | `unit/escaping.test.js` | Portfolio and fund names cannot inject markup — asserted on the parsed DOM, by checking a hostile name produces the same elements and attributes as a harmless one. Guards the fix from 2026-09-07. |
+| `unit/sheetjs-provenance.test.js` | The SheetJS the tests run is byte-identical to the 0.20.3 build `index.html` loads from cdn.sheetjs.com — size, sha384, md5, the version the library reports at runtime, and that the abandoned npm `xlsx@0.18.5` has not crept back into `node_modules`. Without this, the case-file suites could pass against somebody else's copy and read as confidence. |
 | `unit/optimizer-sanity.test.js` | The frontier maths: the conservative pick really is minimum-risk, the Sharpe pick really is maximum Sharpe, the aggressive pick sits on the frontier, and no run mutates `pt.fundsData`. |
 | `unit/fund-defaults.test.js` | The shipped default fund set, and that blank Expected fields stay blank and never produce `NaN` anywhere downstream. |
 | `unit/heatmap-async.test.js` | The heatmap's `setTimeout` half completes and fills the table. |
@@ -88,7 +89,38 @@ someone edits `index.html`. That is the intended behaviour, not a broken test.
 
 **The dependency versions here mirror the CDN versions in `index.html`.** If you
 change one, change the other, or the browser suites stop testing what users get.
-`xlsx` is currently pinned at `0.18.5` to match; both are due to move to a newer
-SheetJS release served from `cdn.sheetjs.com`, because 0.18.5 has a known
-prototype-pollution issue that is reachable now that the tool parses files the
-user supplies.
+SheetJS is the awkward one: `index.html` loads **0.20.3** from `cdn.sheetjs.com`,
+but npm's own `xlsx` package was abandoned at 0.18.5, which carries
+CVE-2023-30533 (prototype pollution, reachable the moment the tool parses a file
+the user supplies) and CVE-2024-22363 (ReDoS). The tests therefore install
+`@e965/xlsx`, a third-party republish of the same 0.20.3 release, and
+`unit/sheetjs-provenance.test.js` checks on every run that the republish is
+byte-identical to the official file. It was verified against a browser download
+from `cdn.sheetjs.com` on 2026-09-26 and matched exactly.
+
+If that suite ever goes red, do not "fix" it by re-pinning the digest. Fetch the
+official file again and compare — a mirror that moved is the thing the check
+exists to catch.
+
+## Subresource Integrity, when you get round to it
+
+The digest pinned in `unit/sheetjs-provenance.test.js` is also the SRI value for
+the SheetJS `<script>` tag:
+
+```
+integrity="sha384-EnyY0/GSHQGSxSgMwaIPzSESbqoOLSexfnSMN2AP+39Ckmn92stwABZynq1JyzdT"
+```
+
+It is deliberately **not** applied yet. SRI needs `crossorigin="anonymous"`, and
+if the CDN does not answer with the matching CORS header the browser refuses the
+script outright — the tool dies on load, with nothing on screen to say why. That
+has to be confirmed in a real browser first, and this sandbox has no route to any
+of these CDNs.
+
+`tests/tools/make-sri.js` computes the other three (Chart.js, html2canvas, jsPDF)
+from a machine that can reach them:
+
+```bash
+npm run sri            # print the tags
+npm run sri -- --write # rewrite index.html, then OPEN IT and check the tool loads
+```
