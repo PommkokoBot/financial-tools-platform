@@ -8,6 +8,12 @@
 // not from a local npm copy that merely ought to match. Run this from a machine
 // that can reach the CDNs, check the tool still loads, then commit.
 //
+// As of round C2 the four <script> tags already carry their digests, and
+// tests/unit/cdn-provenance.test.js re-derives each one from the pinned npm package on
+// every run. So this script is for CHANGING a version or host, not for initial setup --
+// and after running it, update the constants in that suite to match, or CI will tell you
+// the page and the recorded bytes disagree. That red is the check working, not a nuisance.
+//
 //   node tests/tools/make-sri.js            print tags for what index.html loads now
 //   node tests/tools/make-sri.js --write    also rewrite index.html in place
 const fs = require('fs');
