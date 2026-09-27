@@ -5,7 +5,7 @@
   "description": "Test harness for the Institutional Portfolio Simulator (tools/portfolio-simulator/index.html). The tool itself is a single static HTML file with no build step -- nothing here is shipped to users.",
   "scripts": {
     "test": "node tests/run-unit.js",
-    "test:browser": "npm run build:css && node tests/browser/desktop-diff.js && node tests/browser/mobile-audit.js && node tests/browser/heatmap-badge.js && node tests/browser/case-roundtrip.js && node tests/browser/pdf-export.js",
+    "test:browser": "npm run build:css && node tests/browser/sri-load.js && node tests/browser/desktop-diff.js && node tests/browser/mobile-audit.js && node tests/browser/heatmap-badge.js && node tests/browser/case-roundtrip.js && node tests/browser/pdf-export.js",
     "build:css": "tailwindcss -i tests/lib/tailwind-input.css -o tests/.out/tailwind.css --content index.html --content tests/baseline/portfolio-simulator.baseline.html --minify",
     "baseline:update": "node tests/tools/update-baseline.js",
     "make:template": "node tests/tools/make-template.js",
@@ -30,6 +30,6 @@
     "test:browser": "Needs a Chromium build (npx playwright install chromium). Not run in CI: slow, and it needs a browser download.",
     "build:css:app": "Recompiles the Tailwind CSS that is inlined in index.html and writes it back into the <style id=\"tw-build\"> block. Run it after adding or changing any Tailwind class, then re-run the browser suites.",
     "build:css": "Builds the CSS the BROWSER SUITES inject for the baseline build, which still loads the Tailwind Play CDN. Different from build:css:app.",
-    "sri": "Prints <script>/<link> tags with Subresource Integrity hashes for the CDN assets. Must be run from a machine that can reach the CDNs -- the hash has to come from the bytes the CDN serves, not from a local npm copy. Not yet applied; see tests/README.md."
+    "sri": "Prints <script>/<link> tags with Subresource Integrity hashes for the CDN assets. Must be run from a machine that can reach the CDNs -- the hash has to come from the bytes the CDN serves, not from a local npm copy. SRI is now APPLIED to all four scripts (round C2); use this only when changing a CDN version or host, and re-read tests/unit/cdn-provenance.test.js before re-pinning anything."
   }
 }
