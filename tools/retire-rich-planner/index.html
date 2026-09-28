@@ -87,27 +87,6 @@
                             <label class="block text-xs font-semibold text-slate-600 mb-1">ชื่อ-นามสกุล</label>
                             <input type="text" id="inp-name" placeholder="กรอกชื่อ-นามสกุล" class="w-full bg-slate-50 border border-slate-300 rounded-lg px-3 py-2 text-slate-700 focus:outline-none focus:border-indigo-500 transition">
                         </div>
-                        <div>
-                            <label class="block text-xs font-semibold text-slate-600 mb-1">เบอร์โทรศัพท์</label>
-                            <input type="text" id="inp-phone" placeholder="08X-XXX-XXXX" class="w-full bg-slate-50 border border-slate-300 rounded-lg px-3 py-2 text-slate-700 focus:outline-none focus:border-indigo-500 transition">
-                        </div>
-                        
-                        <!-- การขอความยินยอม (Consent) -->
-                        <div class="border-t border-slate-200 pt-4 mt-2">
-                            <p class="text-[11px] text-slate-600 mb-2 leading-relaxed">
-                                บริษัทขอใช้ข้อมูลที่ระบุไว้ข้างต้น สำหรับติดต่อเพื่อให้ข้อมูลและบริการของบริษัทแก่ท่าน ทั้งนี้ บริษัทขอติดต่อท่าน เพื่อนำเสนอผลิตภัณฑ์ด้านการลงทุนแก่ท่าน
-                            </p>
-                            <div class="flex gap-5">
-                                <label class="flex items-center gap-2 text-xs font-bold text-slate-700 cursor-pointer hover:text-indigo-600 transition">
-                                    <input type="radio" name="marketingConsent" value="ยินยอม" class="w-4 h-4 text-indigo-600 focus:ring-indigo-500" checked>
-                                    ยินยอม
-                                </label>
-                                <label class="flex items-center gap-2 text-xs font-bold text-slate-700 cursor-pointer hover:text-red-600 transition">
-                                    <input type="radio" name="marketingConsent" value="ไม่ยินยอม" class="w-4 h-4 text-indigo-600 focus:ring-indigo-500">
-                                    ไม่ยินยอม
-                                </label>
-                            </div>
-                        </div>
                     </div>
                 </div>
                 
@@ -343,14 +322,10 @@
             </div>
         </div>
 
-        <!-- Disclaimer & Consent Footer -->
-        <footer class="mt-12 pt-6 border-t border-slate-300 text-[10px] text-slate-500 leading-relaxed max-w-5xl mx-auto">
-            <h5 class="font-bold text-slate-600 mb-2">คำเตือนและความยินยอมในการใช้งาน</h5>
-            <p class="mb-2"><strong class="text-slate-600">คำเตือนเรื่องความเสี่ยงและการลงทุน (ตามหลัก ก.ล.ต.):</strong> ผลการจำลองการลงทุน ผลตอบแทนในอดีต หรือการประมวลผลด้วยแบบจำลอง Monte Carlo มิได้เป็นสิ่งยืนยันถึงผลตอบแทนในอนาคต เครื่องมือนี้เป็นเพียงแบบจำลองเพื่อช่วยในการวางแผนและประเมินความเป็นไปได้เบื้องต้นเท่านั้น มิใช่คำแนะนำทางการเงิน การลงทุน หรือการเชิญชวนให้ซื้อขายผลิตภัณฑ์ทางการเงินใดๆ ผู้ลงทุนควรทำความเข้าใจลักษณะสินค้า เงื่อนไขผลตอบแทน และความเสี่ยง ก่อนตัดสินใจลงทุน</p>
-            <!-- TODO (ก่อนใช้กับลูกค้าจริง): ข้อความ PDPA ด้านล่างเป็นฉบับร่างทั่วไป เขียนขึ้นใหม่ให้เป็นกลาง
-                 ไม่ผูกกับบริษัทใด — ยังไม่ผ่านการตรวจสอบทางกฎหมาย ควรให้ผู้เชี่ยวชาญ/ที่ปรึกษากฎหมายพิจารณา
-                 และใส่ลิงก์ privacy policy ของตัวเองแทนก่อนนำไปใช้เก็บข้อมูลลูกค้าจริง -->
-            <p><strong class="text-slate-600">ข้อตกลงเรื่องการเก็บ รวบรวม ใช้ และเปิดเผยข้อมูลส่วนบุคคล (PDPA):</strong> ข้อมูลที่ท่านกรอกในระบบ (เช่น ชื่อ เบอร์ติดต่อ อายุ เงินออม ผลตอบแทนที่คาดหวัง) จะถูกใช้เพื่อการวางแผนและติดตามผลลัพธ์ของท่านเท่านั้น จะไม่ถูกนำไปเปิดเผยต่อบุคคลภายนอกโดยไม่ได้รับความยินยอม ท่านสามารถขอตรวจสอบ แก้ไข หรือลบข้อมูลของท่านได้ทุกเมื่อโดยติดต่อผู้ดูแลเครื่องมือนี้โดยตรง</p>
+        <!-- Disclaimer Footer -->
+        <footer class=”mt-12 pt-6 border-t border-slate-300 text-[10px] text-slate-500 leading-relaxed max-w-5xl mx-auto”>
+            <h5 class=”font-bold text-slate-600 mb-2”>คำเตือนสำคัญ</h5>
+            <p>ผลการจำลองการลงทุน ผลตอบแทนในอดีต หรือการประมวลผลด้วยแบบจำลอง Monte Carlo มิได้เป็นสิ่งยืนยันถึงผลตอบแทนในอนาคต เครื่องมือนี้จัดทำขึ้นเพื่อการศึกษาและช่วยในการวางแผนเกษียณเบื้องต้นเท่านั้น มิใช่คำแนะนำทางการเงิน การลงทุน หรือการชักชวนให้ซื้อขายผลิตภัณฑ์ทางการเงินใดๆ ผู้ใช้ควรศึกษาข้อมูลเพิ่มเติมและปรึกษาผู้เชี่ยวชาญก่อนตัดสินใจลงทุน</p>
         </footer>
     </div>
 
@@ -361,10 +336,6 @@
             3: { name: 'Aggressive', return: 0.08, sd: 0.12, label: 'เสี่ยงสูง' }
         };
         const SIM_PATHS = 1000; // จำนวนเส้นทางจำลอง ใช้ค่าเดียวกันทั้งการ์ดหลักและตาราง What-If เพื่อให้ตัวเลขสอดคล้องกัน
-
-        // ตั้งค่า endpoint สำหรับเก็บ Lead ของคุณเองที่นี่ (Apps Script Web App URL หรือ Supabase endpoint)
-        // ปล่อยว่างไว้ได้ — ถ้าว่าง ระบบจะข้ามการบันทึก Lead ไปเฉยๆ ไม่กระทบการสร้าง PDF แต่อย่างใด
-        const LEAD_CAPTURE_URL = '';
 
         let chartInstance = null;
         let debounceTimer;
@@ -792,59 +763,12 @@
             debounceTimer = setTimeout(updateUIAndChart, 300);
         }
 
-        // --- Google Sheets & Export PDF Logic ---
-function submitToGoogleSheet() {
-            // ยังไม่ได้ตั้งค่า LEAD_CAPTURE_URL ของตัวเอง (ดูค่าคงที่ด้านบนไฟล์) — ข้ามการบันทึก Lead ไปก่อน
-            // PDF ยังสร้างและ export ได้ตามปกติ ไม่ถูกกระทบจากการข้ามขั้นตอนนี้
-            if (!LEAD_CAPTURE_URL) {
-                console.log('LEAD_CAPTURE_URL ยังไม่ได้ตั้งค่า — ข้ามการบันทึก Lead ในรอบนี้');
-                return;
-            }
-            const scriptURL = LEAD_CAPTURE_URL;
-
-            let riskProfileLabel = '-';
-            document.querySelectorAll('input[name="riskProfile"]').forEach(r => { 
-                if(r.checked) riskProfileLabel = RISK_PROFILES[r.value].name; 
-            });
-
-            // 1. ดึงค่า Marketing Consent ที่ลูกค้าเลือก
-            const consentEl = document.querySelector('input[name="marketingConsent"]:checked');
-            const consentVal = consentEl ? consentEl.value : 'ไม่ระบุ';
-
-            const formData = new FormData();
-            formData.append('Timestamp', new Date().toLocaleString('th-TH'));
-            formData.append('Name', document.getElementById('inp-name').value || 'ไม่ระบุ');
-            formData.append('Phone', document.getElementById('inp-phone').value || 'ไม่ระบุ');
-            
-            // 2. ส่งค่า Consent พ่วงไปกับ Form
-            formData.append('MarketingConsent', consentVal); 
-            
-            formData.append('CurrentAge', getNumberFromInput('inp-current-age'));
-            formData.append('RetireAge', getNumberFromInput('inp-retire-age'));
-            formData.append('EndAge', document.getElementById('inp-end-age').value);
-            formData.append('ExpenseRetire', getNumberFromInput('inp-expense'));
-            formData.append('Inflation', getNumberFromInput('inp-inflation') + '%');
-            formData.append('CurrentWealth', getNumberFromInput('inp-init-inv'));
-            formData.append('MonthlyDCA', getNumberFromInput('inp-dca'));
-            formData.append('OtherIncome', getNumberFromInput('inp-other-income'));
-            formData.append('RiskProfile', riskProfileLabel);
-            formData.append('ProbSuccess', appState.probSuccess ? appState.probSuccess.toFixed(2) + '%' : '0%');
-            formData.append('TargetWealth', appState.targetWealth ? appState.targetWealth.toFixed(2) : 0);
-            formData.append('ProjectedWealth', appState.projectedWealthAtRetire ? appState.projectedWealthAtRetire.toFixed(2) : 0);
-
-            fetch(scriptURL, { 
-                method: 'POST', 
-                mode: 'no-cors',
-                body: formData 
-            })
-            .then(() => console.log('บันทึก Lead สำเร็จ'))
-            .catch(error => console.error('บันทึก Lead ผิดพลาด:', error));
-        }
-
+        // --- Export PDF Logic ---
         function buildPdfSummary() {
             const el = document.getElementById('pdf-summary');
-            const name = document.getElementById('inp-name').value || '-';
-            const phone = document.getElementById('inp-phone').value || '-';
+            // A4: escape name ก่อนใส่ HTML (A4: security - prevent XSS)
+            const rawName = document.getElementById('inp-name').value || '-';
+            const name = rawName.replace(/[<>"&]/g, c => ({'<':'&lt;','>':'&gt;','"':'&quot;','&':'&amp;'}[c]));
             const currentAge = getNumberFromInput('inp-current-age');
             const retireAge = getNumberFromInput('inp-retire-age');
             const endAge = document.getElementById('inp-end-age').value;
@@ -864,100 +788,152 @@ function submitToGoogleSheet() {
             const canvas = document.getElementById('portfolioChart');
             if (canvas) {
                 const imgData = canvas.toDataURL('image/png', 1.0);
-                // แก้ไขข้อ 3: บีบความสูงรูปกราฟลงเล็กน้อยเพื่อความปลอดภัยบนหน้าจอมือถือ (max-width จาก 680 เป็น 650)
-                chartImgHtml = `<img src="${imgData}" style="width:100%; max-width:650px; height:auto; display:block; margin: 0 auto; border: 1px solid #e2e8f0; border-radius: 8px; padding: 4px;">`;
+                chartImgHtml = `<img src="${imgData}" style="width:100%; height:auto; display:block; margin: 0 auto; border: 1px solid #e2e8f0; border-radius: 6px; padding: 4px;">`;
             }
 
-            const logoHtml = `<img src="logo.svg" style="height: 34px; max-width: 150px; width: auto; object-fit: contain; display: block;" alt="Logo" />`;
+            const logoHtml = `<img src="logo.svg" style="height: 28px; max-width: 120px; width: auto; object-fit: contain; display: block;" alt="Money Director Logo" />`;
 
-            // แก้ไขข้อ 3: ปรับระยะ Margin/Padding ให้กะทัดรัดขึ้น บังคับความสูงคงที่สำหรับเรนเดอร์ PDF ให้พอดี 1 หน้า
+            // B2: ลายน้ำ diagonal — "Money Director" + URL เอียงกลางหน้า เหมือน Port SIM
+            const watermarkHtml = `
+                <div style="
+                    position: absolute;
+                    top: 50%; left: 50%;
+                    transform: translate(-50%, -50%) rotate(-35deg);
+                    pointer-events: none;
+                    user-select: none;
+                    text-align: center;
+                    opacity: 0.07;
+                    white-space: nowrap;
+                    z-index: 0;
+                ">
+                    <div style="font-size: 52px; font-weight: 900; color: #334155; letter-spacing: 2px; line-height: 1.1; font-family: 'Sarabun', sans-serif;">Money Director</div>
+                    <div style="font-size: 18px; font-weight: 600; color: #334155; letter-spacing: 1px; font-family: 'Sarabun', sans-serif;">facebook.com/themoneydirector</div>
+                </div>`;
+
+            const todayStr = new Date().toLocaleDateString('th-TH', {year:'numeric', month:'long', day:'numeric'});
+
+            // B1: width=794px (A4 landscape: 595.28pt ÷ 0.75 ≈ 793.7px ≈ 794px)
+            // B2: watermark, B3: header bar, B4: footer footnote
             el.innerHTML = `
-                <div id="pdf-render-target" style="width: 730px; padding: 18px 20px; font-family: 'Sarabun', sans-serif; background: #ffffff; color: #111827; box-sizing: border-box; overflow: hidden;">
-                    
-                    <div style="border-bottom: 2px solid #4338ca; padding-bottom: 6px; margin-bottom: 10px; display: flex; justify-content: space-between; align-items: center;">
-                        <div style="min-width: 0;">
-                            <h1 style="font-size:20px; margin:0 0 2px 0; color:#4338ca; font-weight: bold;">Retire Rich Planner</h1>
-                            <p style="font-size:10px; color:#64748b; margin:0;">รายงานสรุปแผนเกษียณและการลงทุนส่วนบุคคล</p>
-                        </div>
-                        <div style="flex-shrink: 0;">
+                <div id="pdf-render-target" style="
+                    width: 794px;
+                    padding: 0;
+                    font-family: 'Sarabun', sans-serif;
+                    background: #ffffff;
+                    color: #111827;
+                    box-sizing: border-box;
+                    overflow: hidden;
+                    position: relative;
+                ">
+                    ${watermarkHtml}
+
+                    <!-- B3: Header bar -->
+                    <div style="
+                        background: #4338ca;
+                        padding: 8px 20px;
+                        display: flex;
+                        justify-content: space-between;
+                        align-items: center;
+                        position: relative;
+                        z-index: 1;
+                    ">
+                        <div style="display: flex; align-items: center; gap: 10px;">
                             ${logoHtml}
+                            <div>
+                                <div style="font-size: 14px; font-weight: 700; color: #ffffff;">Retire Rich Planner</div>
+                                <div style="font-size: 9px; color: #c7d2fe;">รายงานสรุปแผนเกษียณ | Money Director</div>
+                            </div>
+                        </div>
+                        <div style="text-align: right;">
+                            <div style="font-size: 10px; color: #e0e7ff; font-weight: 600;">รายงานสรุปแผนเกษียณและการลงทุนส่วนบุคคล</div>
+                            <div style="font-size: 9px; color: #c7d2fe;">${todayStr}</div>
                         </div>
                     </div>
 
-                    <table style="width:100%; margin-bottom:8px; font-size:10px; border-collapse:collapse; background:#f8fafc; border:1px solid #e2e8f0; border-radius:6px;">
-                        <tr>
-                            <td style="padding:6px 10px; border-bottom:1px solid #e2e8f0; width:50%;">
-                                <span style="color:#64748b;">ชื่อ-นามสกุล:</span> <strong style="color:#1e293b;">${name}</strong>
-                            </td>
-                            <td style="padding:6px 10px; border-bottom:1px solid #e2e8f0; width:50%;">
-                                <span style="color:#64748b;">เบอร์โทรศัพท์:</span> <strong style="color:#1e293b;">${phone}</strong>
-                            </td>
-                        </tr>
-                        <tr>
-                            <td style="padding:6px 10px; border-bottom:1px solid #e2e8f0;">
-                                <span style="color:#64748b;">อายุปัจจุบัน / อายุเกษียณ:</span> <strong style="color:#1e293b;">${currentAge} ปี / ${retireAge} ปี</strong> (ออมอีก ${retireAge - currentAge} ปี)
-                            </td>
-                            <td style="padding:6px 10px; border-bottom:1px solid #e2e8f0;">
-                                <span style="color:#64748b;">อายุคาดการณ์ถึง:</span> <strong style="color:#1e293b;">${endAge} ปี</strong>
-                            </td>
-                        </tr>
-                        <tr>
-                            <td style="padding:6px 10px; border-bottom:1px solid #e2e8f0;">
-                                <span style="color:#64748b;">ค่าใช้จ่ายหลังเกษียณ (ณ ปัจจุบัน):</span> <strong style="color:#059669;">฿${expense} บาท/เดือน</strong>
-                            </td>
-                            <td style="padding:6px 10px; border-bottom:1px solid #e2e8f0;">
-                                <span style="color:#64748b;">อัตราเงินเฟ้อที่ใช้คำนวณ:</span> <strong style="color:#1e293b;">${inflation}% ต่อปี</strong>
-                            </td>
-                        </tr>
-                    </table>
+                    <!-- Main content -->
+                    <div style="padding: 12px 18px 10px 18px; position: relative; z-index: 1;">
 
-                    <table style="width:100%; margin-bottom:10px; font-size:10px; border-collapse:collapse; background:#ffffff; border:1px solid #e2e8f0; border-radius:6px;">
-                        <tr style="background:#f1f5f9;">
-                            <td style="padding:4px 10px; font-weight:bold; color:#334155;" colspan="2">สถานะการเงิน & ระดับความเสี่ยงพอร์ต</td>
-                        </tr>
-                        <tr>
-                            <td style="padding:6px 10px; border-bottom:1px solid #f1f5f9; width:50%;">
-                                <span style="color:#64748b;">เงินลงทุนตั้งต้น:</span> <strong style="color:#1e293b;">฿${initInv} บาท</strong>
-                            </td>
-                            <td style="padding:6px 10px; border-bottom:1px solid #f1f5f9; width:50%;">
-                                <span style="color:#64748b;">เงินลงทุนเพิ่มรายเดือน (DCA):</span> <strong style="color:#4f46e5;">฿${dca} บาท/เดือน</strong>
-                            </td>
-                        </tr>
-                        <tr>
-                            <td style="padding:6px 10px;">
-                                <span style="color:#64748b;">รายได้ประจำอื่นๆ หลังเกษียณ:</span> <strong style="color:#7c3aed;">฿${otherIncome} บาท/เดือน</strong>
-                            </td>
-                            <td style="padding:6px 10px;">
-                                <span style="color:#64748b;">ระดับความเสี่ยงพอร์ตที่เลือก:</span> <strong style="color:#d97706;">${riskProfileLabel}</strong>
-                            </td>
-                        </tr>
-                    </table>
+                        <!-- Info row: 4 columns -->
+                        <table style="width:100%; margin-bottom:8px; font-size:9.5px; border-collapse:collapse; background:#f8fafc; border:1px solid #e2e8f0;">
+                            <tr>
+                                <td style="padding:5px 10px; border-bottom:1px solid #e2e8f0; width:25%; border-right:1px solid #e2e8f0;">
+                                    <span style="color:#64748b;">ชื่อ-นามสกุล:</span> <strong style="color:#1e293b;">${name}</strong>
+                                </td>
+                                <td style="padding:5px 10px; border-bottom:1px solid #e2e8f0; width:25%; border-right:1px solid #e2e8f0;">
+                                    <span style="color:#64748b;">อายุปัจจุบัน / เกษียณ:</span> <strong style="color:#1e293b;">${currentAge} / ${retireAge} ปี</strong> (ออมอีก ${retireAge - currentAge} ปี)
+                                </td>
+                                <td style="padding:5px 10px; border-bottom:1px solid #e2e8f0; width:25%; border-right:1px solid #e2e8f0;">
+                                    <span style="color:#64748b;">อายุคาดการณ์ถึง:</span> <strong style="color:#1e293b;">${endAge} ปี</strong>
+                                </td>
+                                <td style="padding:5px 10px; border-bottom:1px solid #e2e8f0; width:25%;">
+                                    <span style="color:#64748b;">ค่าใช้จ่าย/เดือน (ปัจจุบัน):</span> <strong style="color:#059669;">฿${expense}</strong>
+                                </td>
+                            </tr>
+                            <tr>
+                                <td style="padding:5px 10px; border-right:1px solid #e2e8f0;">
+                                    <span style="color:#64748b;">เงินตั้งต้น:</span> <strong style="color:#1e293b;">฿${initInv}</strong>
+                                </td>
+                                <td style="padding:5px 10px; border-right:1px solid #e2e8f0;">
+                                    <span style="color:#64748b;">DCA/เดือน:</span> <strong style="color:#4f46e5;">฿${dca}</strong>
+                                </td>
+                                <td style="padding:5px 10px; border-right:1px solid #e2e8f0;">
+                                    <span style="color:#64748b;">รายได้อื่นๆ หลังเกษียณ:</span> <strong style="color:#7c3aed;">฿${otherIncome}/เดือน</strong>
+                                </td>
+                                <td style="padding:5px 10px;">
+                                    <span style="color:#64748b;">เงินเฟ้อ / ระดับความเสี่ยง:</span> <strong style="color:#d97706;">${inflation}% / ${riskProfileLabel}</strong>
+                                </td>
+                            </tr>
+                        </table>
 
-                    <h3 style="font-size:11px; color:#1e293b; margin:0 0 4px 0; font-weight: bold;">สรุปผลการประเมิน (Simulation Results)</h3>
-                    <table style="width:100%; border-collapse:separate; border-spacing:4px 0; margin-bottom:10px;">
-                        <tr>
-                            <td style="width:33%; border:1px solid #e2e8f0; border-radius:6px; padding:8px; text-align:center; background:#f8fafc;">
-                                <div style="font-size:9px; color:#64748b; margin-bottom:2px;">โอกาสสำเร็จ</div>
-                                <div style="font-size:20px; font-weight:700; color:${appState.probSuccess >= 85 ? '#059669' : (appState.probSuccess >= 60 ? '#d97706' : '#dc2626')};">${appState.probSuccess ? appState.probSuccess.toFixed(0) : 0}%</div>
-                            </td>
-                            <td style="width:33%; border:1px solid #e2e8f0; border-radius:6px; padding:8px; text-align:center; background:#f8fafc;">
-                                <div style="font-size:9px; color:#64748b; margin-bottom:2px;">เงินก้อนเป้าหมาย</div>
-                                <div style="font-size:16px; font-weight:700; color:#ea580c;">${appState.targetWealth ? (appState.targetWealth/1e6).toFixed(2) : 0} ล้านบาท</div>
-                            </td>
-                            <td style="width:33%; border:1px solid #e2e8f0; border-radius:6px; padding:8px; text-align:center; background:#f8fafc;">
-                                <div style="font-size:9px; color:#64748b; margin-bottom:2px;">เงินคาดการณ์ ณ วันเกษียณ</div>
-                                <div style="font-size:16px; font-weight:700; color:#047857;">${appState.projectedWealthAtRetire ? (appState.projectedWealthAtRetire/1e6).toFixed(2) : 0} ล้านบาท</div>
-                            </td>
-                        </tr>
-                    </table>
+                        <!-- KPIs + Chart: side by side -->
+                        <div style="display:flex; gap:10px; margin-bottom:8px; align-items:flex-start;">
 
-                    <h3 style="font-size:11px; color:#1e293b; margin:0 0 4px 0; font-weight: bold;">วิถีความมั่งคั่งตลอดชีพ (Wealth Trajectory)</h3>
-                    <div style="margin-bottom:8px; text-align:center;">
-                        ${chartImgHtml}
+                            <!-- KPI column -->
+                            <div style="width:200px; flex-shrink:0; display:flex; flex-direction:column; gap:6px;">
+                                <div style="background:#f8fafc; border:1px solid #e2e8f0; border-radius:6px; padding:10px; text-align:center;">
+                                    <div style="font-size:8.5px; color:#64748b; margin-bottom:3px;">โอกาสสำเร็จ</div>
+                                    <div style="font-size:34px; font-weight:800; color:${appState.probSuccess >= 85 ? '#059669' : (appState.probSuccess >= 60 ? '#d97706' : '#dc2626')}; line-height:1;">${appState.probSuccess ? appState.probSuccess.toFixed(0) : 0}%</div>
+                                    <div style="font-size:7.5px; color:#94a3b8; margin-top:2px;">จาก 1,000 สถานการณ์จำลอง</div>
+                                </div>
+                                <div style="background:#fff7ed; border:1px solid #fed7aa; border-radius:6px; padding:8px; text-align:center;">
+                                    <div style="font-size:8.5px; color:#64748b; margin-bottom:2px;">เงินก้อนเป้าหมาย</div>
+                                    <div style="font-size:22px; font-weight:700; color:#ea580c; line-height:1.1;">${appState.targetWealth ? (appState.targetWealth/1e6).toFixed(2) : 0}</div>
+                                    <div style="font-size:8.5px; color:#64748b;">ล้านบาท</div>
+                                </div>
+                                <div style="background:#f0fdf4; border:1px solid #bbf7d0; border-radius:6px; padding:8px; text-align:center;">
+                                    <div style="font-size:8.5px; color:#64748b; margin-bottom:2px;">เงินคาดการณ์ ณ วันเกษียณ</div>
+                                    <div style="font-size:22px; font-weight:700; color:#047857; line-height:1.1;">${appState.projectedWealthAtRetire ? (appState.projectedWealthAtRetire/1e6).toFixed(2) : 0}</div>
+                                    <div style="font-size:8.5px; color:#64748b;">ล้านบาท (มัธยฐาน)</div>
+                                </div>
+                                <div style="background:#f8fafc; border:1px solid #e2e8f0; border-radius:6px; padding:7px; font-size:8.5px;">
+                                    <div style="color:#475569; line-height:1.6;">
+                                        <div>จำนวนสถานการณ์: <strong>1,000 paths</strong></div>
+                                        <div>เกณฑ์สำเร็จ: <strong>เงินเหลือ ≥ 0 ถึงอายุ ${endAge} ปี</strong></div>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <!-- Chart -->
+                            <div style="flex:1; min-width:0;">
+                                <div style="font-size:9.5px; color:#1e293b; font-weight:700; margin-bottom:4px;">วิถีความมั่งคั่งตลอดชีพ (Wealth Trajectory)</div>
+                                ${chartImgHtml}
+                            </div>
+                        </div>
+
                     </div>
 
-                    <div style="border-top:1px solid #e2e8f0; padding-top:6px; font-size:8px; color:#94a3b8; line-height:1.2;">
-                        <strong>คำเตือน:</strong> ผลการจำลองการลงทุน ผลตอบแทนในอดีต หรือการประมวลผลด้วยแบบจำลอง Monte Carlo มิได้เป็นสิ่งยืนยันถึงผลตอบแทนในอนาคต เครื่องมือนี้เป็นเพียงแบบจำลองเพื่อช่วยในการวางแผนและประเมินความเป็นไปได้เบื้องต้นเท่านั้น
+                    <!-- B4: Footer footnote disclaimer -->
+                    <div style="
+                        background: #f8fafc;
+                        border-top: 1px solid #e2e8f0;
+                        padding: 5px 18px;
+                        font-size: 7.5px;
+                        color: #94a3b8;
+                        line-height: 1.4;
+                        position: relative;
+                        z-index: 1;
+                    ">
+                        <strong style="color:#64748b;">คำเตือน:</strong> ผลการจำลองการลงทุนด้วยแบบจำลอง Monte Carlo มิได้เป็นสิ่งยืนยันถึงผลตอบแทนในอนาคต เครื่องมือนี้จัดทำเพื่อการศึกษาและวางแผนเกษียณเบื้องต้นเท่านั้น มิใช่คำแนะนำทางการเงินหรือการลงทุน ผู้ใช้ควรศึกษาข้อมูลเพิ่มเติมและปรึกษาผู้เชี่ยวชาญก่อนตัดสินใจลงทุน | Money Director — facebook.com/themoneydirector
                     </div>
                 </div>
             `;
@@ -989,24 +965,23 @@ async function exportToPDF() {
             exportBtn.disabled = true;
 
             try {
-                // 1. ส่งข้อมูลเข้า Google Sheet ตามปกติ
-                submitToGoogleSheet();
-
-                // 2. เอา updateUIAndChart() ออก ป้องกันปัญหากราฟหายตอนแคปหน้าจอ
                 buildPdfSummary();
 
                 const contentSource = document.getElementById('pdf-summary').firstElementChild;
                 const name = document.getElementById('inp-name').value.trim() || 'Plan';
 
-                // ความกว้างเนื้อหารู้แน่นอนตายตัวอยู่แล้ว (buildPdfSummary กำหนด width:730px ไว้เสมอ)
-                const CONTENT_WIDTH_PX = 730;
+                // B1: A4 landscape width: 595.28pt ÷ 0.75 = 793.7px → 794px
+                // pdf-render-target ใช้ width:794px สอดคล้องกับ A4 height (595.28pt) ในแนวนอน
+                const CONTENT_WIDTH_PX = 794;
                 // สำคัญมาก: จากการทดสอบจริงพบว่า jsPDF มีบั๊กเฉพาะตอนใช้ unit:'px' ร่วมกับ custom array format —
                 // ค่าที่ API รายงาน (getWidth()) ถูกต้อง แต่ไฟล์ PDF จริงที่เซฟออกมากลับถูกคูณเพิ่มอีก 4/3 เงียบๆ
                 // (พิสูจน์แล้ว: format:[730,1000] ด้วย unit:'px' ได้ไฟล์จริงขนาด 973.33 x 1333.33pt แทนที่จะเป็น 730x1000)
                 // ใช้ unit:'pt' แทนตลอด (พิสูจน์แล้วว่าค่าที่ส่งเข้าตรงกับไฟล์จริงเป๊ะ ไม่มี factor แปลกปลอม)
                 // ส่วน html2canvas ยังคงใช้หน่วย px ตามปกติ (คนละระบบหน่วยกับ jsPDF ไม่เกี่ยวข้องกัน)
                 const PX_TO_PT = 0.75; // 96 CSS px/นิ้ว, 1 นิ้ว = 72pt -> 1px = 0.75pt
-                const pageWidthPt = CONTENT_WIDTH_PX * PX_TO_PT;
+                // A4 landscape: กว้าง 841.89pt, สูง 595.28pt → เราใช้ความสูง A4 เป็น "ความกว้าง" ของ landscape
+                // (เพราะ content วางในทิศ portrait แต่กระดาษหมุน 90°: width=595.28pt, height=auto)
+                const pageWidthPt = 595.28; // A4 landscape width fixed
 
                 const opt = {
                     margin: 0,
@@ -1044,25 +1019,28 @@ async function exportToPDF() {
                 let worker = html2pdf().set(opt).from(contentSource);
                 worker = worker.toContainer();
 
+                // fix #6: html2pdf.js วาง container ด้วย CSS left:0;right:0;margin:auto
+                // บนจอ PC กว้างๆ (เช่น 1900px) container 730px จะถูกจัดกึ่งกลางที่ x≈587px
+                // แต่ html2canvas ใช้ windowWidth:730 จำลอง viewport แคบ → พิกัดสองระบบไม่ตรงกัน
+                // แคปภาพได้แค่เศษเสี้ยวซ้ายสุดที่ทับซ้อนกัน → เนื้อหาเหลือแค่ ~17% ชิดซ้าย
+                // แก้: pin container ที่ x=0 ทันทีหลัง toContainer() resolve ตัดปัญหา centering ทิ้งเลย
+                worker = worker.then(function () {
+                    const c = this.prop.container;
+                    c.style.left   = '0px';
+                    c.style.right  = 'auto';
+                    c.style.margin = '0';
+                });
+
                 worker = worker.then(function () {
                     // `this` คือ Worker instance, `this.prop.container` คือ element ตัวจริงที่กำลังจะถูกแคป
-                    //
-                    // FIX (PDF Export หน้าจอกว้าง/PC): html2pdf.js วาง container นี้ด้วย CSS ของมันเอง
-                    // (position:absolute; left:0; right:0; margin:auto) อยู่ภายใน overlay ที่ position:fixed
-                    // คลุมเต็มหน้าจอจริง ทำให้ container ถูก "จัดกึ่งกลาง" ตามความกว้างหน้าจอจริง
-                    // (เช่นจอ PC กว้าง 1900px+ container 730px จะขยับไปอยู่ที่ x ≈ 587px)
-                    // แต่ html2canvas ด้านล่างถูกสั่งให้จำลอง viewport แคบแค่ 730px (windowWidth: CONTENT_WIDTH_PX)
-                    // จึงคำนวณพื้นที่แคปภาพโดยอิงตำแหน่ง container จริงที่ขยับไปแล้ว -> พิกัดไม่ตรงกัน
-                    // ผลคือแคปได้แค่เศษเสี้ยวที่ทับซ้อนกันจริงๆ (เนื้อหาส่วนใหญ่ว่างเปล่า/ถูกตัด)
-                    // บนมือถือบั๊กนี้ไม่ค่อยแสดงเพราะความกว้างจอใกล้เคียง 730px อยู่แล้ว ระยะเลื่อนจึงน้อยมาก
-                    // แก้โดย pin container ไว้ที่ x=0 เสมอ ไม่ให้พึ่งพาการจัดกึ่งกลางตามความกว้างจอจริง
-                    this.prop.container.style.left = '0px';
-                    this.prop.container.style.right = 'auto';
-                    this.prop.container.style.margin = '0';
                     return waitForRenderReady(this.prop.container);
                 }).then(function () {
                     // เผื่อ 2 เฟรมให้ paint เนื้อหาที่เพิ่งโหลดเสร็จให้เรียบร้อยก่อนวัดขนาด/แคปภาพ
-                    return new Promise(resolve => requestAnimationFrame(() => requestAnimationFrame(resolve)));
+                    // ใช้ Promise.race กับ setTimeout 6 วินาที เพื่อกัน rAF ค้างตลอดไปในกรณีที่ผู้ใช้สลับแท็บระหว่างรอ
+                    // (browser throttle rAF หนักมากเมื่อ tab ไม่ visible — บางกรณีไม่ fire เลยแม้รอ 30+ วินาที)
+                    const rafPromise = new Promise(resolve => requestAnimationFrame(() => requestAnimationFrame(resolve)));
+                    const timeoutPromise = new Promise(resolve => setTimeout(resolve, 6000));
+                    return Promise.race([rafPromise, timeoutPromise]);
                 }).then(function () {
                     // วัดความสูงจริงของ container หลังโหลดรูป/ฟอนต์ครบแล้ว แล้วปรับขนาดหน้า PDF ให้พอดีเป๊ะ
                     let realHeightPx = this.prop.container.offsetHeight;
@@ -1088,7 +1066,7 @@ async function exportToPDF() {
                     this.prop.pdf.setProperties({
                         title: `Retire Rich Planner - ${name}`,
                         subject: 'รายงานสรุปแผนเกษียณและการลงทุนส่วนบุคคล',
-                        creator: 'Retire Rich Planner'
+                        creator: 'Money Director'
                     });
                 });
 
