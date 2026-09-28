@@ -65,6 +65,9 @@
                 </div>
                 <div class="mt-4 md:mt-0 flex flex-col items-end gap-3">
                     <div class="flex gap-2">
+                        <a href="https://pommkokobot.github.io/financial-tools-platform/" class="bg-white hover:bg-slate-100 text-slate-700 px-4 py-2.5 rounded-xl text-sm font-bold shadow-sm border border-slate-300 transition-all flex items-center gap-2">
+                            <i class="fa-solid fa-house"></i> หน้าหลัก
+                        </a>
                         <button id="btn-export-pdf" class="bg-indigo-600 hover:bg-indigo-700 text-white px-5 py-2.5 rounded-xl text-sm font-bold shadow-lg transition-all flex items-center gap-2">
                             <i class="fa-solid fa-file-pdf"></i> บันทึกและ Export PDF
                         </button>
@@ -125,12 +128,43 @@
                         </div>
 
                         <div class="mt-4">
-                            <label class="block text-xs font-semibold text-slate-600 mb-1">ค่าใช้จ่ายต่อเดือนหลังเกษียณ (ณ ปัจจุบัน)</label>
+                            <div class="flex justify-between items-center mb-1">
+                                <label class="text-xs font-semibold text-slate-600">ค่าใช้จ่ายต่อเดือนหลังเกษียณ (ณ ปัจจุบัน)</label>
+                                <button type="button" id="btn-toggle-exp" class="text-[10px] font-bold text-indigo-600 hover:text-indigo-800 flex items-center gap-1 transition">
+                                    แยกหมวด <i class="fa-solid fa-chevron-down text-[8px] transition-transform" id="ico-toggle-exp"></i>
+                                </button>
+                            </div>
                             <div class="relative">
                                 <span class="absolute left-3 top-2 text-slate-500">฿</span>
                                 <input type="text" id="inp-expense" value="50,000" class="w-full bg-slate-50 border border-slate-300 rounded-lg pl-8 pr-3 py-2 text-emerald-600 font-bold focus:outline-none focus:border-emerald-500 transition num-input">
                             </div>
                             <p class="text-[10px] text-slate-500 mt-1">* ระบบจะนำไปคำนวณทบต้นด้วยเงินเฟ้อที่ระบุด้านบนโดยอัตโนมัติ</p>
+
+                            <div id="box-exp-cats" class="hidden mt-3 bg-slate-50 rounded-lg p-3 border border-slate-200 space-y-2">
+                                <div class="flex items-center gap-2 text-[9px] font-bold text-slate-400 uppercase">
+                                    <span class="flex-1">หมวด</span>
+                                    <span class="w-[86px] text-center">บาท/เดือน</span>
+                                    <span class="w-[62px] text-center">เงินเฟ้อ %</span>
+                                </div>
+                                <div class="flex items-center gap-2">
+                                    <span class="flex-1 text-[11px] text-slate-700 leading-tight">จำเป็นพื้นฐาน<br><span class="text-[9px] text-slate-400">อาหาร ของใช้ สาธารณูปโภค ที่พัก</span></span>
+                                    <input type="text" id="inp-exp-basic" value="30,000" class="w-[86px] bg-white border border-slate-300 rounded px-2 py-1 text-[11px] text-right text-emerald-700 font-bold focus:outline-none focus:border-emerald-500 num-input exp-cat-amt">
+                                    <input type="number" id="inp-exp-basic-infl" value="2.5" step="0.1" min="0" max="20" class="w-[62px] bg-white border border-slate-300 rounded px-2 py-1 text-[11px] text-center text-slate-700 focus:outline-none focus:border-emerald-500 cat-infl" data-mult="1">
+                                </div>
+                                <div class="flex items-center gap-2">
+                                    <span class="flex-1 text-[11px] text-slate-700 leading-tight">ด้านสุขภาพ<br><span class="text-[9px] text-slate-400">ค่ารักษา ประกันสุขภาพ ค่ายา</span></span>
+                                    <input type="text" id="inp-exp-health" value="10,000" class="w-[86px] bg-white border border-slate-300 rounded px-2 py-1 text-[11px] text-right text-emerald-700 font-bold focus:outline-none focus:border-emerald-500 num-input exp-cat-amt">
+                                    <input type="number" id="inp-exp-health-infl" value="3.75" step="0.1" min="0" max="20" class="w-[62px] bg-amber-50 border border-amber-300 rounded px-2 py-1 text-[11px] text-center text-amber-700 font-bold focus:outline-none focus:border-amber-500 cat-infl" data-mult="1.5">
+                                </div>
+                                <div class="flex items-center gap-2">
+                                    <span class="flex-1 text-[11px] text-slate-700 leading-tight">ไม่จำเป็น / เพื่อความสุข<br><span class="text-[9px] text-slate-400">ท่องเที่ยว งานอดิเรก เข้าสังคม</span></span>
+                                    <input type="text" id="inp-exp-leisure" value="10,000" class="w-[86px] bg-white border border-slate-300 rounded px-2 py-1 text-[11px] text-right text-emerald-700 font-bold focus:outline-none focus:border-emerald-500 num-input exp-cat-amt">
+                                    <input type="number" id="inp-exp-leisure-infl" value="2.5" step="0.1" min="0" max="20" class="w-[62px] bg-white border border-slate-300 rounded px-2 py-1 text-[11px] text-center text-slate-700 focus:outline-none focus:border-emerald-500 cat-infl" data-mult="1">
+                                </div>
+                                <p class="text-[9px] text-amber-700 bg-amber-50 border border-amber-200 rounded p-2 leading-relaxed">
+                                    <strong>* อัตราเงินเฟ้อปรับแยกรายหมวดได้</strong> ค่าเริ่มต้นผูกกับเงินเฟ้อฐานด้านบน ยกเว้น<strong>หมวดสุขภาพที่ตั้งไว้ 1.5 เท่า</strong> เพราะค่ารักษาพยาบาลมักเพิ่มเร็วกว่าเงินเฟ้อทั่วไป — หากแก้ช่องใดเอง ช่องนั้นจะหยุดผูกกับเงินเฟ้อฐาน
+                                </p>
+                            </div>
                         </div>
                     </div>
                 </div>
@@ -151,12 +185,43 @@
                             <input type="text" id="inp-dca" value="10,000" class="w-full bg-emerald-50 border border-emerald-300 rounded-lg px-3 py-2 text-emerald-700 font-bold focus:outline-none focus:border-emerald-500 transition num-input">
                         </div>
                         <div class="border-t border-slate-200 pt-3">
-                            <label class="block text-xs font-semibold text-slate-600 mb-1 text-purple-600"><i class="fa-solid fa-hand-holding-dollar"></i> รายได้ประจำอื่นๆ หลังเกษียณ (บาท/เดือน)</label>
+                            <div class="flex justify-between items-center mb-1">
+                                <label class="text-xs font-semibold text-purple-600"><i class="fa-solid fa-hand-holding-dollar"></i> รายได้ประจำอื่นๆ หลังเกษียณ (บาท/เดือน)</label>
+                                <button type="button" id="btn-toggle-inc" class="text-[10px] font-bold text-purple-600 hover:text-purple-800 flex items-center gap-1 transition">
+                                    แยกหมวด <i class="fa-solid fa-chevron-down text-[8px] transition-transform" id="ico-toggle-inc"></i>
+                                </button>
+                            </div>
                             <div class="relative">
                                 <span class="absolute left-3 top-2 text-slate-500">฿</span>
                                 <input type="text" id="inp-other-income" value="0" class="w-full bg-purple-50 border border-purple-300 rounded-lg pl-8 pr-3 py-2 text-purple-700 font-bold focus:outline-none focus:border-purple-500 transition num-input">
                             </div>
                             <p class="text-[10px] text-slate-500 mt-1">* เช่น บำนาญ, ค่าเช่าที่ดิน (ช่วยลดภาระการดึงเงินพอร์ต)</p>
+
+                            <div id="box-inc-cats" class="hidden mt-3 bg-purple-50/50 rounded-lg p-3 border border-purple-200 space-y-2">
+                                <div class="flex items-center gap-2 text-[9px] font-bold text-slate-400 uppercase">
+                                    <span class="flex-1">หมวด</span>
+                                    <span class="w-[86px] text-center">บาท/เดือน</span>
+                                    <span class="w-[62px] text-center">เงินเฟ้อ %</span>
+                                </div>
+                                <div class="flex items-center gap-2">
+                                    <span class="flex-1 text-[11px] text-slate-700 leading-tight">สวัสดิการรัฐและนายจ้าง<br><span class="text-[9px] text-slate-400">ประกันสังคม บำเหน็จบำนาญ กองทุนสำรองฯ</span></span>
+                                    <input type="text" id="inp-inc-welfare" value="0" class="w-[86px] bg-white border border-purple-300 rounded px-2 py-1 text-[11px] text-right text-purple-700 font-bold focus:outline-none focus:border-purple-500 num-input inc-cat-amt">
+                                    <input type="number" id="inp-inc-welfare-infl" value="0" step="0.1" min="0" max="20" class="w-[62px] bg-white border border-purple-300 rounded px-2 py-1 text-[11px] text-center text-slate-700 focus:outline-none focus:border-purple-500">
+                                </div>
+                                <div class="flex items-center gap-2">
+                                    <span class="flex-1 text-[11px] text-slate-700 leading-tight">รายได้จากการลงทุนอื่น<br><span class="text-[9px] text-slate-400">ค่าเช่า ดอกเบี้ย ปันผลนอกพอร์ตนี้</span></span>
+                                    <input type="text" id="inp-inc-invest" value="0" class="w-[86px] bg-white border border-purple-300 rounded px-2 py-1 text-[11px] text-right text-purple-700 font-bold focus:outline-none focus:border-purple-500 num-input inc-cat-amt">
+                                    <input type="number" id="inp-inc-invest-infl" value="0" step="0.1" min="0" max="20" class="w-[62px] bg-white border border-purple-300 rounded px-2 py-1 text-[11px] text-center text-slate-700 focus:outline-none focus:border-purple-500">
+                                </div>
+                                <div class="flex items-center gap-2">
+                                    <span class="flex-1 text-[11px] text-slate-700 leading-tight">รายได้อื่นๆ<br><span class="text-[9px] text-slate-400">รายได้ประจำที่ไม่เข้าหมวดข้างต้น</span></span>
+                                    <input type="text" id="inp-inc-other" value="0" class="w-[86px] bg-white border border-purple-300 rounded px-2 py-1 text-[11px] text-right text-purple-700 font-bold focus:outline-none focus:border-purple-500 num-input inc-cat-amt">
+                                    <input type="number" id="inp-inc-other-infl" value="0" step="0.1" min="0" max="20" class="w-[62px] bg-white border border-purple-300 rounded px-2 py-1 text-[11px] text-center text-slate-700 focus:outline-none focus:border-purple-500">
+                                </div>
+                                <p class="text-[9px] text-purple-800 bg-purple-100/60 border border-purple-200 rounded p-2 leading-relaxed">
+                                    <strong>* ค่าเริ่มต้นตั้งไว้ 0% ทุกหมวด</strong> เพราะสวัสดิการรัฐและบำนาญส่วนใหญ่ไม่ผูกกับดัชนีเงินเฟ้อ — หากรายได้ของคุณปรับขึ้นตามเงินเฟ้อ (เช่น ค่าเช่า) ให้ใส่อัตราเอง
+                                </p>
+                            </div>
                         </div>
                     </div>
                 </div>
@@ -175,7 +240,7 @@
                                     <span class="font-bold text-sm text-emerald-600">เสี่ยงต่ำ (Conservative)</span>
                                     <span class="text-[10px] bg-white px-2 py-0.5 rounded border border-slate-200 text-slate-600">ผลตอบแทน ~4%</span>
                                 </div>
-                                <p class="text-[10px] text-slate-500 mt-1">เน้นตราสารหนี้เป็นหลัก ปกป้องเงินต้น (ความผันผวน 5%)</p>
+                                <p class="text-[10px] text-slate-500 mt-1">เน้นตราสารหนี้เป็นหลัก ปกป้องเงินต้น (ความผันผวน 6%)</p>
                             </div>
                         </label>
 
@@ -186,7 +251,7 @@
                                     <span class="font-bold text-sm text-amber-600">เสี่ยงกลาง (Balance)</span>
                                     <span class="text-[10px] bg-white px-2 py-0.5 rounded border border-slate-200 text-slate-600">ผลตอบแทน ~6%</span>
                                 </div>
-                                <p class="text-[10px] text-slate-500 mt-1">กระจายตราสารหนี้และหุ้นสัดส่วนพอๆ กัน (ความผันผวน 8%)</p>
+                                <p class="text-[10px] text-slate-500 mt-1">กระจายตราสารหนี้และหุ้นสัดส่วนพอๆ กัน (ความผันผวน 10%)</p>
                             </div>
                         </label>
 
@@ -197,7 +262,7 @@
                                     <span class="font-bold text-sm text-red-600">เสี่ยงสูง (Aggressive)</span>
                                     <span class="text-[10px] bg-white px-2 py-0.5 rounded border border-slate-200 text-slate-600">ผลตอบแทน ~8%</span>
                                 </div>
-                                <p class="text-[10px] text-slate-500 mt-1">เน้นหุ้นเป็นหลัก โอกาสเติบโตสูง (ความผันผวน 12%)</p>
+                                <p class="text-[10px] text-slate-500 mt-1">เน้นหุ้นเป็นหลัก โอกาสเติบโตสูง (ความผันผวน 14%)</p>
                             </div>
                         </label>
                     </div>
@@ -216,14 +281,47 @@
                                 <span class="text-slate-600 text-sm mb-2 font-medium">โอกาสมีเงินใช้ถึงอายุคาดการณ์</span>
                             </div>
                             
-                            <div class="mt-4 bg-white/50 p-3 rounded-lg border border-slate-200">
-                                <div class="flex justify-between text-xs mb-1">
-                                    <span class="text-slate-600 font-semibold">เงินก้อนที่ควรมี ณ วันเกษียณ</span>
+                            <!-- ระดับความเชื่อมั่นที่ใช้กำหนดเงินก้อนเป้าหมาย -->
+                            <div class="mt-4">
+                                <label class="block text-[10px] font-bold text-slate-500 uppercase tracking-wide mb-1">ระดับความเชื่อมั่นที่ใช้ตั้งเป้าหมาย</label>
+                                <div class="grid grid-cols-3 gap-1.5">
+                                    <label class="relative cursor-pointer">
+                                        <input type="radio" name="confidenceLevel" value="75" class="peer sr-only">
+                                        <div class="text-center py-1.5 px-1 rounded-lg border border-slate-300 bg-white/70 peer-checked:border-indigo-500 peer-checked:bg-indigo-50 peer-checked:shadow-sm transition-all">
+                                            <div class="text-sm font-black text-slate-700">75%</div>
+                                            <div class="text-[8px] text-slate-500 leading-tight">ยอมรับความเสี่ยงได้</div>
+                                        </div>
+                                    </label>
+                                    <label class="relative cursor-pointer">
+                                        <input type="radio" name="confidenceLevel" value="85" class="peer sr-only" checked>
+                                        <div class="text-center py-1.5 px-1 rounded-lg border border-slate-300 bg-white/70 peer-checked:border-indigo-500 peer-checked:bg-indigo-50 peer-checked:shadow-sm transition-all">
+                                            <div class="text-sm font-black text-slate-700">85%</div>
+                                            <div class="text-[8px] text-slate-500 leading-tight">มาตรฐาน</div>
+                                        </div>
+                                    </label>
+                                    <label class="relative cursor-pointer">
+                                        <input type="radio" name="confidenceLevel" value="95" class="peer sr-only">
+                                        <div class="text-center py-1.5 px-1 rounded-lg border border-slate-300 bg-white/70 peer-checked:border-indigo-500 peer-checked:bg-indigo-50 peer-checked:shadow-sm transition-all">
+                                            <div class="text-sm font-black text-slate-700">95%</div>
+                                            <div class="text-[8px] text-slate-500 leading-tight">อนุรักษ์นิยม</div>
+                                        </div>
+                                    </label>
+                                </div>
+                                <p id="conf-desc" class="text-[9px] text-slate-500 mt-1 leading-snug">ระดับที่นักวางแผนการเงินส่วนใหญ่ใช้</p>
+                            </div>
+
+                            <div class="mt-3 bg-white/50 p-3 rounded-lg border border-slate-200 space-y-1">
+                                <div class="flex justify-between text-xs">
+                                    <span class="text-slate-600 font-semibold" id="out-target-label">เงินก้อนที่ต้องมี ณ วันเกษียณ (สำเร็จ 85%)</span>
                                     <span id="out-target-wealth" class="font-bold text-slate-800">-- ล้านบาท</span>
                                 </div>
                                 <div class="flex justify-between text-xs">
                                     <span class="text-slate-600 font-semibold">คาดการณ์เงินพอร์ต (กรณีปกติ)</span>
                                     <span id="out-projected-wealth" class="font-bold text-indigo-700">-- ล้านบาท</span>
+                                </div>
+                                <div class="flex justify-between text-xs border-t border-slate-200 pt-1 mt-1">
+                                    <span class="text-slate-600 font-semibold">ส่วนต่าง</span>
+                                    <span id="out-gap" class="font-bold text-slate-800">-- ล้านบาท</span>
                                 </div>
                             </div>
                         </div>
@@ -238,6 +336,72 @@
                                 </p>
                             </div>
                         </div>
+                    </div>
+                </div>
+
+                <!-- Safe Withdrawal Rate + Sequence of Returns Risk -->
+                <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
+
+                    <!-- SWR -->
+                    <div class="bg-white p-5 rounded-2xl border border-slate-200 shadow-sm border-l-4 border-l-teal-500">
+                        <h2 class="text-base font-bold text-teal-700 mb-1 flex items-center gap-2">
+                            <i class="fa-solid fa-faucet-drip"></i> อัตราถอนปลอดภัย (ปีแรกที่เกษียณ)
+                        </h2>
+                        <p class="text-[10px] text-slate-500 mb-3 leading-snug">คิดจากเงินก้อน ณ วันเกษียณ ว่า<strong>ปีแรกที่เกษียณ</strong>ถอนจากพอร์ตได้เท่าไหร่ โดยเงินยังมีโอกาสใช้ถึงอายุคาดการณ์ตามระดับความเชื่อมั่นที่เลือก</p>
+
+                        <div class="flex items-end gap-2 mb-3">
+                            <span id="out-swr-pct" class="text-4xl font-black text-teal-600">--%</span>
+                            <span class="text-xs text-slate-500 mb-1.5 font-medium">ต่อปี</span>
+                        </div>
+
+                        <div class="bg-teal-50/60 border border-teal-200 rounded-lg p-3 space-y-2">
+                            <div class="flex justify-between items-baseline text-xs">
+                                <span class="text-slate-600 font-semibold">ถอนได้ต่อเดือน <span class="text-slate-400 font-normal">(ค่าเงินวันนี้)</span></span>
+                                <span id="out-swr-today" class="font-bold text-teal-700 text-sm">-- บาท</span>
+                            </div>
+                            <div class="flex justify-between items-baseline text-xs">
+                                <span class="text-slate-600 font-semibold">ถอนได้ต่อเดือน <span class="text-slate-400 font-normal">(ณ วันเกษียณ หลังปรับเงินเฟ้อ)</span></span>
+                                <span id="out-swr-retire" class="font-bold text-teal-700 text-sm">-- บาท</span>
+                            </div>
+                        </div>
+                        <p class="text-[9px] text-slate-500 mt-2 leading-relaxed">
+                            * ตัวเลข % เป็นอัตราของ<strong>ปีแรกที่เกษียณ</strong>ตามนิยามมาตรฐาน (ถอนจำนวนบาทเท่าเดิมปรับด้วยเงินเฟ้อในปีถัดๆ ไป ไม่ใช่ % ของยอดคงเหลือ) อัตราถอนเทียบยอดคงเหลือจริงจะค่อยๆ สูงขึ้นตามอายุ — ตัวเลข % ไม่ขึ้นกับเงินออม/เงินตั้งต้น แต่จำนวนบาทขึ้นกับ
+                        </p>
+                    </div>
+
+                    <!-- Sequence of Returns Risk -->
+                    <div class="bg-white p-5 rounded-2xl border border-slate-200 shadow-sm border-l-4 border-l-rose-500">
+                        <h2 class="text-base font-bold text-rose-700 mb-1 flex items-center gap-2">
+                            <i class="fa-solid fa-wave-square"></i> ความเสี่ยงจากจังหวะตลาด
+                        </h2>
+                        <p class="text-[10px] text-slate-500 mb-3 leading-snug">
+                            เงินที่ต้องมี ณ วันเกษียณ ขึ้นกับว่าเจอตลาดแบบไหนในช่วงต้น <span id="seq-paths" class="font-semibold">(จากการจำลอง 1,000 สถานการณ์)</span>
+                        </p>
+
+                        <div class="space-y-1.5">
+                            <div class="flex justify-between items-center text-xs bg-emerald-50 border border-emerald-200 rounded-lg px-3 py-2">
+                                <span class="text-slate-700"><strong>ตลาดเป็นใจ</strong> <span class="text-[9px] text-slate-500">ดีกว่าค่ากลาง</span></span>
+                                <span id="out-seq-p10" class="font-bold text-emerald-700">-- ลบ.</span>
+                            </div>
+                            <div class="flex justify-between items-center text-xs bg-slate-50 border border-slate-200 rounded-lg px-3 py-2">
+                                <span class="text-slate-700"><strong>ตลาดปกติ</strong> <span class="text-[9px] text-slate-500">กรณีกลาง</span></span>
+                                <span id="out-seq-p50" class="font-bold text-slate-700">-- ลบ.</span>
+                            </div>
+                            <div class="flex justify-between items-center text-xs bg-indigo-50 border-2 border-indigo-400 rounded-lg px-3 py-2">
+                                <span class="text-slate-700"><strong>เป้าหมายที่แนะนำ</strong> <span class="text-[9px] text-indigo-600" id="out-seq-conf">ความเชื่อมั่น 85%</span></span>
+                                <span id="out-seq-target" class="font-bold text-indigo-700">-- ลบ.</span>
+                            </div>
+                            <div class="flex justify-between items-center text-xs bg-rose-50 border border-rose-200 rounded-lg px-3 py-2">
+                                <span class="text-slate-700"><strong>ตลาดแย่ช่วงต้น</strong> <span class="text-[9px] text-slate-500">แย่กว่าค่ากลางมาก</span></span>
+                                <span id="out-seq-p95" class="font-bold text-rose-700">-- ลบ.</span>
+                            </div>
+                        </div>
+
+                        <p class="text-[10px] text-slate-600 mt-3 bg-amber-50 border border-amber-200 rounded-lg p-2 leading-relaxed">
+                            <i class="fa-solid fa-circle-info text-amber-600"></i>
+                            ส่วนต่างระหว่าง <strong>ตลาดปกติ</strong> กับ <strong>เป้าหมายที่แนะนำ</strong> = <span id="out-seq-buffer" class="font-bold text-amber-800">--</span>
+                            คือส่วนเผื่อสำหรับความเสี่ยงที่ตลาดจะไม่เป็นใจในช่วงต้นของการเกษียณ ซึ่งการคำนวณด้วยผลตอบแทนคงที่แบบง่ายจะมองข้ามไป
+                        </p>
                     </div>
                 </div>
 
@@ -308,34 +472,53 @@
                                     <th class="p-3 rounded-tl-lg font-bold">สถานการณ์ (Scenario)</th>
                                     <th class="p-3 text-center font-bold">การเปลี่ยนแปลง</th>
                                     <th class="p-3 text-center font-bold">โอกาสสำเร็จ</th>
+                                    <th class="p-3 text-center font-bold">ส่วนต่างจากเป้าหมาย</th>
                                     <th class="p-3 text-center font-bold">ระดับความเสี่ยง</th>
                                     <th class="p-3 text-center rounded-tr-lg font-bold">Action</th>
                                 </tr>
                             </thead>
                             <tbody id="whatif-table-body" class="divide-y divide-slate-100">
-                                <tr><td colspan="5" class="p-4 text-center text-slate-500">กำลังคำนวณทางเลือก...</td></tr>
+                                <tr><td colspan="6" class="p-4 text-center text-slate-500">กำลังคำนวณทางเลือก...</td></tr>
                             </tbody>
                         </table>
                     </div>
+
+                    <p class="text-[10px] text-slate-500 mt-3 leading-relaxed bg-slate-50 border border-slate-200 rounded-lg p-3">
+                        <strong class="text-slate-600">*</strong> แบบจำลองนี้กำหนดให้เงินลงทุนรายเดือนคงที่ตลอดช่วงสะสม ในความเป็นจริงคุณสามารถทยอยเพิ่มเงินลงทุนตามรายได้ที่เติบโตขึ้นได้ ซึ่งจะช่วยเพิ่มโอกาสสำเร็จให้สูงกว่าที่แสดงไว้
+                    </p>
                 </div>
 
             </div>
         </div>
 
         <!-- Disclaimer Footer -->
-        <footer class=”mt-12 pt-6 border-t border-slate-300 text-[10px] text-slate-500 leading-relaxed max-w-5xl mx-auto”>
-            <h5 class=”font-bold text-slate-600 mb-2”>คำเตือนสำคัญ</h5>
+        <footer class="mt-12 pt-6 border-t border-slate-300 text-[10px] text-slate-500 leading-relaxed max-w-5xl mx-auto">
+            <h5 class="font-bold text-slate-600 mb-2">คำเตือนสำคัญ</h5>
             <p>ผลการจำลองการลงทุน ผลตอบแทนในอดีต หรือการประมวลผลด้วยแบบจำลอง Monte Carlo มิได้เป็นสิ่งยืนยันถึงผลตอบแทนในอนาคต เครื่องมือนี้จัดทำขึ้นเพื่อการศึกษาและช่วยในการวางแผนเกษียณเบื้องต้นเท่านั้น มิใช่คำแนะนำทางการเงิน การลงทุน หรือการชักชวนให้ซื้อขายผลิตภัณฑ์ทางการเงินใดๆ ผู้ใช้ควรศึกษาข้อมูลเพิ่มเติมและปรึกษาผู้เชี่ยวชาญก่อนตัดสินใจลงทุน</p>
         </footer>
     </div>
 
     <script>
+        // ค่าความผันผวน (sd) ทบทวนเมื่อ 28 ก.ย. 2026 — ของเดิม (5/8/12%) ลงโทษความผันผวนน้อยเกินจริง
+        // ทำให้พอร์ตเสี่ยงสูงชนะทุกสถานการณ์ในแบบจำลอง ซึ่งไม่สะท้อนความเป็นจริง
         const RISK_PROFILES = {
-            1: { name: 'Conservative', return: 0.04, sd: 0.05, label: 'เสี่ยงต่ำ' },
-            2: { name: 'Balance', return: 0.06, sd: 0.08, label: 'เสี่ยงกลาง' },
-            3: { name: 'Aggressive', return: 0.08, sd: 0.12, label: 'เสี่ยงสูง' }
+            1: { name: 'Conservative', return: 0.04, sd: 0.06, label: 'เสี่ยงต่ำ' },
+            2: { name: 'Balance', return: 0.06, sd: 0.10, label: 'เสี่ยงกลาง' },
+            3: { name: 'Aggressive', return: 0.08, sd: 0.14, label: 'เสี่ยงสูง' }
         };
         const SIM_PATHS = 1000; // จำนวนเส้นทางจำลอง ใช้ค่าเดียวกันทั้งการ์ดหลักและตาราง What-If เพื่อให้ตัวเลขสอดคล้องกัน
+
+        // ระดับความเชื่อมั่นที่ใช้กำหนด "เงินก้อนที่ต้องมี ณ วันเกษียณ"
+        // 85% เป็นค่ามาตรฐานที่นักวางแผนการเงินส่วนใหญ่ใช้
+        const DEFAULT_CONFIDENCE = 85;
+        // ค่าเริ่มต้นอัตราเงินเฟ้อของหมวด "รายจ่ายด้านสุขภาพ" = 1.5 เท่าของเงินเฟ้อฐาน
+        // เพราะเงินเฟ้อค่ารักษาพยาบาลสูงกว่าเงินเฟ้อทั่วไปอย่างมีนัยสำคัญ (ผู้ใช้ปรับเองได้)
+        const HEALTH_INFL_MULT = 1.5;
+        const CONFIDENCE_LEVELS = {
+            75: { label: 'ยอมรับความเสี่ยงได้', desc: 'ปรับค่าใช้จ่ายได้ถ้าจำเป็น' },
+            85: { label: 'มาตรฐาน',            desc: 'ระดับที่นักวางแผนการเงินส่วนใหญ่ใช้' },
+            95: { label: 'อนุรักษ์นิยม',        desc: 'เน้นความมั่นคงสูงสุด' }
+        };
 
         let chartInstance = null;
         let debounceTimer;
@@ -384,7 +567,33 @@
         // --- Math Engine ---
         // Box-Muller transform สร้างเลขสุ่ม Normal ทีละ "คู่" (z0, z1) แต่โค้ดเดิมคำนวณครบแต่ทิ้ง z1 ไปครึ่งหนึ่ง
         // เก็บ z1 ไว้ใช้ในการเรียกครั้งถัดไป ลดการคำนวณ Math.random()/sqrt/log ลงครึ่งหนึ่ง (เพิ่มความเร็วให้ simulation)
+        // ตัวสุ่มแบบกำหนด seed ได้ (mulberry32) แทน Math.random()
+        //
+        // เหตุผล: เดิมทุกครั้งที่คำนวณใหม่จะได้ชุดตัวเลขสุ่มชุดใหม่ ทำให้โอกาสสำเร็จแกว่ง ±3 จุด
+        // แม้พารามิเตอร์ไม่เปลี่ยนเลย ผู้ใช้จึงเห็นตัวเลขขยับตอนกดสิ่งที่ไม่ควรกระทบ
+        // (เช่น เปลี่ยนระดับความเชื่อมั่น ซึ่งตามหลักไม่กระทบโอกาสสำเร็จเลย) แล้วเข้าใจผิดว่ามีความสัมพันธ์กัน
+        //
+        // ใช้ seed คงที่ + รีเซ็ตทุกครั้งที่เริ่มคำนวณ ได้ประโยชน์ 2 อย่าง:
+        //   1. พารามิเตอร์เดิม -> ผลลัพธ์เดิมเป๊ะทุกครั้ง (เลื่อน slider ไปแล้วเลื่อนกลับ ได้เลขเดิม)
+        //   2. ทุก scenario ในตาราง What-If เจอชุดผลตอบแทนเดียวกัน (common random numbers)
+        //      ทำให้การเปรียบเทียบสะท้อน "ผลของการเปลี่ยนแผน" ล้วนๆ ไม่ปนกับความบังเอิญของการสุ่ม
+        const RNG_SEED = 20260928;
+        let _rngState = RNG_SEED;
         let _spareNormal = null;
+
+        function resetRandom() {
+            _rngState = RNG_SEED;
+            _spareNormal = null; // สำคัญ: ล้างค่าค้างจาก Box-Muller ไม่งั้นผลจากรอบก่อนรั่วเข้ามา
+        }
+
+        function nextRandom() {
+            _rngState = (_rngState + 0x6D2B79F5) | 0;
+            let t = _rngState;
+            t = Math.imul(t ^ (t >>> 15), t | 1);
+            t ^= t + Math.imul(t ^ (t >>> 7), t | 61);
+            return ((t ^ (t >>> 14)) >>> 0) / 4294967296;
+        }
+
         function randomNormal(mean = 0, stdDev = 1) {
             if (_spareNormal !== null) {
                 const z = _spareNormal;
@@ -392,8 +601,8 @@
                 return z * stdDev + mean;
             }
             let u = 0, v = 0;
-            while(u === 0) u = Math.random();
-            while(v === 0) v = Math.random();
+            while(u === 0) u = nextRandom();
+            while(v === 0) v = nextRandom();
             const mag = Math.sqrt(-2.0 * Math.log(u));
             const theta = 2.0 * Math.PI * v;
             _spareNormal = mag * Math.sin(theta);
@@ -418,58 +627,110 @@
         }
 
         // --- Core Simulation Engine ---
-        // trackTrajectory=false ข้ามการเก็บ/เรียงข้อมูลรายปีและ median ที่วันเกษียณ (ใช้กับตาราง What-If ที่อ่านแค่ probSuccess
-        // ไม่ต้องใช้กราฟ trajectory) ช่วยลดภาระการคำนวณโดยไม่กระทบความแม่นยำของ probSuccess/targetWealth เลย
+
+        // สร้างตารางกระแสเงินสดรายเดือน "หลังเกษียณ" จากหมวดรายจ่าย/รายได้
+        // แต่ละหมวดโตด้วยอัตราเงินเฟ้อของตัวเอง ทบต้นจาก "วันนี้" ถึงเดือนนั้นๆ
+        //
+        // จุดสำคัญเรื่องความเข้ากันได้ย้อนหลัง: ถ้าทุกหมวดใช้อัตราเดียวกัน
+        // ผลรวม Σ(amt_c × (1+g)^n) = (Σamt_c) × (1+g)^n ซึ่งเท่ากับสูตรเดิม
+        // (ยอดรวมก้อนเดียว × (1+g)^n) เป๊ะ จึงให้ผลลัพธ์เดิมทุกประการ
+        //
+        // การรับเป็น array แบบนี้ทำให้อนาคตเพิ่ม 3-phase (ค่าใช้จ่ายต่างกันตามช่วงอายุ)
+        // ได้โดยแตะแค่ชั้น UI ไม่ต้องรื้อ engine
+        function buildCashflowSchedule(params) {
+            const currentAge  = parseInt(params.currentAge);
+            const retireAge   = parseInt(params.retireAge);
+            const endAge      = parseInt(params.endAge);
+            const retireMonth = (retireAge - currentAge) * 12;
+            const totalMonths = (endAge - currentAge) * 12;
+            const nRetire     = totalMonths - retireMonth;
+
+            const toMonthly = annualPct => Math.pow(1 + (parseFloat(annualPct) || 0) / 100, 1 / 12) - 1;
+
+            const expCats = params.expCats || [];
+            const incCats = params.incCats || [];
+            const expG = expCats.map(c => toMonthly(c.infl));
+            const incG = incCats.map(c => toMonthly(c.infl));
+
+            const netWd   = new Float64Array(Math.max(nRetire, 0));
+            const expOnly = new Float64Array(Math.max(nRetire, 0));
+
+            for (let k = 1; k <= nRetire; k++) {
+                let e = 0, i = 0;
+                for (let c = 0; c < expCats.length; c++) {
+                    e += (parseFloat(expCats[c].amt) || 0) * Math.pow(1 + expG[c], retireMonth + k);
+                }
+                for (let c = 0; c < incCats.length; c++) {
+                    i += (parseFloat(incCats[c].amt) || 0) * Math.pow(1 + incG[c], retireMonth + k);
+                }
+                expOnly[k - 1] = e;
+                netWd[k - 1]   = e - i;
+            }
+            return { netWd, expOnly, nRetire, retireMonth, totalMonths };
+        }
+
+        // หา "เงินที่ต้องมี ณ วันเกษียณ" ด้วยการเดินถอยหลังจากปลายทาง
+        //   W(k-1) = ( W(k) + กระแสเงินสดสุทธิเดือนนั้น ) / (1 + ผลตอบแทนเดือนนั้น)
+        // เริ่มจาก W(เดือนสุดท้าย) = 0 (เงินหมดพอดี) -> ได้เงินขั้นต่ำที่ path นั้นต้องการ
+        // ทำครบทุก path แล้วเรียงลำดับ -> percentile ที่ X คือเงินที่ต้องมีเพื่อให้สำเร็จ X%
+        //
+        // ข้อดีเทียบกับการ binary search: ผ่านเดียวจบ และได้ "ทุก" ระดับความเชื่อมั่น
+        // จากการ sort ครั้งเดียว (เปลี่ยนความเชื่อมั่น = อ่านคนละ index ไม่ต้องคำนวณใหม่)
+        //
+        // หมายเหตุ: ต้อง clamp ไม่ให้ติดลบระหว่างทาง เพราะ "เงินที่ต้องมี" ติดลบไม่ได้
+        // (แปลว่ากู้เงินจากรายได้ในอนาคตมาใช้ก่อน ซึ่งทำไม่ได้จริง) — ถ้าไม่ clamp
+        // จะได้คำตอบต่ำกว่าความจริงในกรณีที่มีช่วงรายได้เกินรายจ่ายคั่นกลาง
+        function requiredWealthDistribution(netWd, expReturnMonthly, sdMonthly, numPaths) {
+            const n = netWd.length;
+            const out = new Float64Array(numPaths);
+            for (let p = 0; p < numPaths; p++) {
+                let w = 0;
+                for (let k = n - 1; k >= 0; k--) {
+                    const r = expReturnMonthly + randomNormal(0, 1) * sdMonthly;
+                    w = (w + netWd[k]) / (1 + r);
+                    if (w < 0) w = 0;
+                }
+                out[p] = w;
+            }
+            out.sort(); // TypedArray.sort() เรียงเชิงตัวเลขอยู่แล้ว (ต่างจาก Array ที่เรียงแบบ string)
+            return out;
+        }
+
+        // trackTrajectory=false ข้ามการเก็บ/เรียงข้อมูลรายปี (ใช้กับตาราง What-If ที่ไม่ต้องวาดกราฟ)
+        // แต่ "ยังคง" คำนวณ median ที่วันเกษียณเสมอ เพราะตาราง What-If ต้องใช้แสดงคอลัมน์ Gap
+        // (เดิมค่านี้ถูกคำนวณเฉพาะตอน trackTrajectory=true ทำให้ What-If ได้ 0 เสมอ)
         function runMonteCarlo(params, numPaths = 1000, trackTrajectory = true) {
+            resetRandom(); // พารามิเตอร์เดิม -> ผลลัพธ์เดิมเป๊ะ และทุก scenario เทียบกันบนชุดสุ่มเดียวกัน
             const currentAge = parseInt(params.currentAge);
-            const retireAge = parseInt(params.retireAge);
-            const endAge = parseInt(params.endAge);
-            const expenseCurr = parseFloat(params.expense);
-            const inflation = parseFloat(params.inflation) / 100;
-            const initInv = parseFloat(params.initInv);
-            const dca = parseFloat(params.dca);
-            const riskLevel = parseInt(params.riskLevel);
-            const otherIncome = parseFloat(params.otherIncome);
+            const retireAge  = parseInt(params.retireAge);
+            const endAge     = parseInt(params.endAge);
+            const inflation  = parseFloat(params.inflation) / 100;
+            const initInv    = parseFloat(params.initInv);
+            const dca        = parseFloat(params.dca);
+            const riskLevel  = parseInt(params.riskLevel);
+            const confidence = parseFloat(params.confidence) || DEFAULT_CONFIDENCE;
 
             const profile = RISK_PROFILES[riskLevel];
-            const expReturnMonthly = Math.pow(1 + profile.return, 1/12) - 1;
+            const expReturnMonthly = Math.pow(1 + profile.return, 1 / 12) - 1;
             const sdMonthly = profile.sd / Math.sqrt(12);
-            const infMonthly = Math.pow(1 + inflation, 1/12) - 1;
+            const infMonthly = Math.pow(1 + inflation, 1 / 12) - 1;
 
-            const totalMonths = (endAge - currentAge) * 12;
-            const retireMonth = (retireAge - currentAge) * 12;
+            const cf = buildCashflowSchedule(params);
+            const netWd = cf.netWd;
+            const nRetire = cf.nRetire;
+            const retireMonth = cf.retireMonth;
+            const totalMonths = cf.totalMonths;
 
-            // แก้ไขสมการเงินเฟ้อ: ทบต้นให้ถึงวันเกษียณ เพื่อหาเป้าหมาย
-            let expAtRetire = expenseCurr * Math.pow(1 + infMonthly, retireMonth);
-            const retireMonths = totalMonths - retireMonth; // จำนวนเดือนหลังเกษียณ
-
-            // เงินก้อนเป้าหมาย = PV ของค่าใช้จ่ายที่โตตามเงินเฟ้อ (growing annuity)
-            // หักด้วย PV ของรายได้ประจำอื่นๆ ที่คงที่ (level annuity)
-            // ทั้งคู่คิดลดด้วยผลตอบแทนคาดหวังของพอร์ต (r) ให้สอดคล้องกับตรรกะเดียวกับที่ใช้ใน simulation loop ด้านล่าง
-            const r = expReturnMonthly;
-            const g = infMonthly;
-
-            let pvExpense;
-            if (Math.abs(r - g) < 1e-9) {
-                pvExpense = expAtRetire * retireMonths;
-            } else {
-                pvExpense = expAtRetire * (1 - Math.pow((1 + g) / (1 + r), retireMonths)) / (r - g);
-            }
-
-            let pvOtherIncome;
-            if (retireMonths <= 0) {
-                pvOtherIncome = 0;
-            } else if (Math.abs(r) < 1e-9) {
-                pvOtherIncome = otherIncome * retireMonths;
-            } else {
-                pvOtherIncome = otherIncome * (1 - Math.pow(1 + r, -retireMonths)) / r;
-            }
-
-            const targetWealthLumpSum = Math.max(0, pvExpense - pvOtherIncome);
+            // ---- เงินที่ต้องมี ณ วันเกษียณ (แทนที่สูตร PV เดิมที่คิดลดด้วยผลตอบแทนคาดหวังตรงๆ) ----
+            // สูตร PV เดิมสมมติว่าได้ผลตอบแทนเป๊ะตามคาดทุกปีไม่มีความผันผวน ซึ่งทำให้ได้เป้าหมาย
+            // ที่ต่ำกว่าความจริงมาก (ทดสอบแล้วพบว่าเป้าเดิมให้โอกาสสำเร็จเพียง ~39%)
+            const reqDist = requiredWealthDistribution(netWd, expReturnMonthly, sdMonthly, numPaths);
+            const pctAt = p => reqDist[Math.min(Math.max(Math.floor(numPaths * p / 100), 0), numPaths - 1)];
+            const targetWealth = pctAt(confidence);
 
             let pathsByYear = trackTrajectory ? Array.from({length: (endAge - currentAge) + 1}, () => []) : null;
             let successfulPaths = 0;
-            let wealthAtRetirePaths = trackTrajectory ? [] : null;
+            const wealthAtRetirePaths = [];
 
             for (let p = 0; p < numPaths; p++) {
                 let wealth = initInv;
@@ -477,55 +738,82 @@
 
                 for (let m = 1; m <= totalMonths; m++) {
                     if (wealth > 0) {
-                        let z = randomNormal(0, 1);
-                        let mReturn = expReturnMonthly + z * sdMonthly;
-                        wealth *= (1 + mReturn);
+                        const z = randomNormal(0, 1);
+                        wealth *= (1 + expReturnMonthly + z * sdMonthly);
                     }
 
                     if (m <= retireMonth) {
                         wealth += dca; // สะสม
                     } else {
-                        // เกษียณแล้ว: เริ่มคำนวณเงินเฟ้อต่อจากวันเกษียณ
-                        const monthsAfterRetire = m - retireMonth;
-                        let currentWd = expAtRetire * Math.pow(1 + infMonthly, monthsAfterRetire);
-                        let netWd = currentWd - otherIncome;
-                        
-                        if (netWd > 0) {
-                            if(wealth >= netWd) wealth -= netWd;
-                            else wealth = 0;
+                        const n = netWd[m - retireMonth - 1];
+                        if (n > 0) {
+                            if (wealth >= n) wealth -= n; else wealth = 0;
                         } else {
-                            wealth += Math.abs(netWd); // รายได้อื่นพอใช้ เหลือทบเข้าพอร์ต
+                            wealth += Math.abs(n); // รายได้อื่นพอใช้ เหลือทบเข้าพอร์ต
                         }
                     }
 
-                    if (trackTrajectory && m % 12 === 0) {
-                        let y = m / 12;
-                        pathsByYear[y].push(wealth);
-                        if (m === retireMonth) wealthAtRetirePaths.push(wealth);
-                    }
+                    // เก็บเสมอ ไม่ผูกกับ trackTrajectory (retireMonth เป็นพหุคูณของ 12 และ >= 12 เพราะ validateParams บังคับไว้)
+                    if (m === retireMonth) wealthAtRetirePaths.push(wealth);
+                    if (trackTrajectory && m % 12 === 0) pathsByYear[m / 12].push(wealth);
                 }
                 if (wealth > 0) successfulPaths++;
             }
 
+            wealthAtRetirePaths.sort((a, b) => a - b);
+            const medianWealthAtRetire = wealthAtRetirePaths[Math.floor(numPaths * 0.5)] || 0;
+
+            // สัดส่วนของสถานการณ์ที่ "มาถึงวันเกษียณด้วยเงินน้อยกว่าเป้าหมาย"
+            // ตัวเลขนี้อธิบายกรณีที่ดูขัดกัน: เงินคาดการณ์ (มัธยฐาน) สูงกว่าเป้าหมาย
+            // แต่โอกาสสำเร็จรวมยังต่ำกว่าเกณฑ์ — เพราะมัธยฐานซ่อนความไม่แน่นอนของช่วงสะสมไว้ครึ่งหนึ่ง
+            // ได้มาฟรีเพราะ array เรียงแล้ว ใช้ binary search หาตำแหน่งแรกที่ >= targetWealth
+            let bLo = 0, bHi = wealthAtRetirePaths.length;
+            while (bLo < bHi) {
+                const mid = (bLo + bHi) >> 1;
+                if (wealthAtRetirePaths[mid] < targetWealth) bLo = mid + 1; else bHi = mid;
+            }
+            const belowTargetPct = wealthAtRetirePaths.length ? (bLo / wealthAtRetirePaths.length) * 100 : 0;
+
             let percentiles = [];
-            let medianWealthAtRetire = 0;
             if (trackTrajectory) {
                 for (let y = 0; y <= (endAge - currentAge); y++) {
-                    pathsByYear[y].sort((a,b) => a-b);
+                    pathsByYear[y].sort((a, b) => a - b);
                     percentiles.push({
-                        worst: pathsByYear[y][Math.floor(numPaths * 0.1)] || 0,
+                        worst:  pathsByYear[y][Math.floor(numPaths * 0.1)] || 0,
                         median: pathsByYear[y][Math.floor(numPaths * 0.5)] || 0,
-                        best: pathsByYear[y][Math.floor(numPaths * 0.9)] || 0
+                        best:   pathsByYear[y][Math.floor(numPaths * 0.9)] || 0
                     });
                 }
-                wealthAtRetirePaths.sort((a,b) => a-b);
-                medianWealthAtRetire = wealthAtRetirePaths[Math.floor(numPaths * 0.5)] || 0;
             }
+
+            // ---- Safe Withdrawal Rate ----
+            // นิยามแบบ Bengen: ถอน X% ของเงินก้อน "ในปีแรก" จากนั้นถอนจำนวนบาทเท่าเดิม
+            // ปรับด้วยเงินเฟ้อทุกปี (ไม่ใช่ X% ของยอดคงเหลือ ณ ปีนั้น) -> ตัวเลข % จึงผูกกับปีแรก
+            let firstYearWd = 0;
+            for (let k = 0; k < Math.min(12, nRetire); k++) firstYearWd += netWd[k];
+            const swrPct = targetWealth > 0 ? (firstYearWd / targetWealth) * 100 : 0;
+
+            // เงินที่ถอนได้จริงต่อเดือน = สัดส่วนของเงินที่คาดว่าจะมี เทียบกับเงินที่ต้องมี
+            // (พิสูจน์แล้วว่า "เงินที่ต้องมี" เป็นเส้นตรงกับระดับค่าใช้จ่ายเป๊ะ จึงหารได้ตรงๆ ไม่ต้องรันซ้ำ)
+            const affordRatio = targetWealth > 0 ? medianWealthAtRetire / targetWealth : 0;
+            const swrMonthlyAtRetire = (firstYearWd / 12) * affordRatio;
+            const swrMonthlyToday = swrMonthlyAtRetire / Math.pow(1 + infMonthly, retireMonth);
 
             return {
                 probSuccess: (successfulPaths / numPaths) * 100,
-                targetWealth: targetWealthLumpSum,
+                targetWealth: targetWealth,
                 projectedWealthAtRetire: medianWealthAtRetire,
+                // gap > 0 = เกินเป้า, gap < 0 = ขาด (ไม่ clamp แล้ว ต่างจากเดิมที่ Math.max(0,...) ทำให้ขึ้น "ขาด 0.0 ลบ.")
+                gap: medianWealthAtRetire - targetWealth,
+                belowTargetPct: belowTargetPct,
+                confidence: confidence,
+                swrPct: swrPct,
+                swrMonthlyAtRetire: swrMonthlyAtRetire,
+                swrMonthlyToday: swrMonthlyToday,
+                // สำหรับแผง Sequence-of-Returns Risk — percentile ของการแจกแจงต่อเนื่อง จึงนิ่งกว่า
+                // การใช้ conditional success rate มาก (ทดสอบแล้ว: แกว่ง 3-5% เทียบกับ 15 จุด)
+                reqPercentiles: { p10: pctAt(10), p50: pctAt(50), p95: pctAt(95) },
+                numPaths: numPaths,
                 trajectory: percentiles,
                 labels: Array.from({length: percentiles.length}, (_, i) => currentAge + i),
                 retireIdx: retireAge - currentAge
@@ -533,19 +821,64 @@
         }
 
         // --- Input Getters ---
+        // อ่านค่าจากช่องหมวดย่อย ถ้าช่องนั้นยังไม่มีในหน้า (หรือถูกซ่อน) จะคืนค่า fallback
+        // ทำให้ทั้งโหมด "ช่องเดียว" เดิม และโหมด "แยกหมวด" ใหม่ ใช้ getUIParams ตัวเดียวกันได้
+        function readCat(amtId, inflId, fallbackAmt, fallbackInfl) {
+            const amtEl  = document.getElementById(amtId);
+            const inflEl = document.getElementById(inflId);
+            return {
+                amt:  amtEl  ? getNumberFromInput(amtId) : fallbackAmt,
+                infl: inflEl ? (parseFloat(inflEl.value) || 0) : fallbackInfl
+            };
+        }
+
         function getUIParams() {
             let riskVal = 2;
             document.querySelectorAll('input[name="riskProfile"]').forEach(r => { if(r.checked) riskVal = r.value; });
+
+            const baseInfl = getNumberFromInput('inp-inflation');
+
+            // รายจ่าย 3 หมวด — ถ้ายังไม่มีช่องแยกในหน้า จะยุบเหลือหมวดเดียวจาก inp-expense
+            // (ผลลัพธ์เท่ากันเป๊ะเมื่ออัตราเงินเฟ้อเท่ากัน เพราะ Σ(amt×(1+g)^n) = (Σamt)×(1+g)^n)
+            const hasExpCats = !!document.getElementById('inp-exp-basic');
+            const expCats = hasExpCats ? [
+                readCat('inp-exp-basic',  'inp-exp-basic-infl',  0, baseInfl),
+                readCat('inp-exp-health', 'inp-exp-health-infl', 0, baseInfl * HEALTH_INFL_MULT),
+                readCat('inp-exp-leisure','inp-exp-leisure-infl', 0, baseInfl)
+            ] : [
+                { amt: getNumberFromInput('inp-expense'), infl: baseInfl }
+            ];
+
+            // รายได้ 3 หมวด — default อัตราเงินเฟ้อ 0% ทั้งหมด ตรงกับพฤติกรรมเดิมที่รายได้ไม่ปรับเงินเฟ้อ
+            const hasIncCats = !!document.getElementById('inp-inc-welfare');
+            const incCats = hasIncCats ? [
+                readCat('inp-inc-welfare', 'inp-inc-welfare-infl', 0, 0),
+                readCat('inp-inc-invest',  'inp-inc-invest-infl',  0, 0),
+                readCat('inp-inc-other',   'inp-inc-other-infl',   0, 0)
+            ] : [
+                { amt: getNumberFromInput('inp-other-income'), infl: 0 }
+            ];
+
+            const expenseTotal = expCats.reduce((s, c) => s + c.amt, 0);
+            const incomeTotal  = incCats.reduce((s, c) => s + c.amt, 0);
+
+            let conf = DEFAULT_CONFIDENCE;
+            document.querySelectorAll('input[name="confidenceLevel"]').forEach(r => { if(r.checked) conf = parseFloat(r.value); });
+
             return {
                 currentAge: getNumberFromInput('inp-current-age'),
                 retireAge: getNumberFromInput('inp-retire-age'),
                 endAge: document.getElementById('inp-end-age').value,
-                expense: getNumberFromInput('inp-expense'),
-                inflation: getNumberFromInput('inp-inflation'),
+                inflation: baseInfl,
                 initInv: getNumberFromInput('inp-init-inv'),
                 dca: getNumberFromInput('inp-dca'),
-                otherIncome: getNumberFromInput('inp-other-income'),
-                riskLevel: riskVal
+                riskLevel: riskVal,
+                confidence: conf,
+                expCats: expCats,
+                incCats: incCats,
+                // ยอดรวม เก็บไว้ให้ validateParams และหน้า PDF ใช้อ้างอิง
+                expense: expenseTotal,
+                otherIncome: incomeTotal
             };
         }
 
@@ -555,7 +888,7 @@
             if(!validateParams(baseParams)) return;
 
             const tbody = document.getElementById("whatif-table-body");
-            tbody.innerHTML = `<tr><td colspan="5" class="p-4 text-center text-slate-500"><i class="fa-solid fa-spinner fa-spin"></i> กำลังคำนวณ...</td></tr>`;
+            tbody.innerHTML = `<tr><td colspan="6" class="p-4 text-center text-slate-500"><i class="fa-solid fa-spinner fa-spin"></i> กำลังคำนวณ...</td></tr>`;
             
             setTimeout(() => {
                 const baseRes = runMonteCarlo(baseParams, SIM_PATHS, false);
@@ -571,14 +904,20 @@
                 const sc4Res = runMonteCarlo({...baseParams, riskLevel: nextRisk}, SIM_PATHS, false);
 
                 function renderRow(title, changeText, res, isBase, actionParam, changeClass) {
-                    const probClass = res.probSuccess >= 85 ? 'bg-green-100 text-green-700' : 
+                    const probClass = res.probSuccess >= 85 ? 'bg-green-100 text-green-700' :
                                       res.probSuccess >= 60 ? 'bg-yellow-100 text-yellow-700' : 'bg-red-100 text-red-700';
                     const riskName = RISK_PROFILES[isBase ? baseParams.riskLevel : (actionParam.riskLevel || baseParams.riskLevel)].name;
-                    
-                    let btnHtml = isBase 
+
+                    // คอลัมน์ส่วนต่าง — ใช้ได้เพราะ engine คืน median-at-retire แม้ตอน trackTrajectory=false แล้ว
+                    const gapM = Math.abs(res.gap) / 1e6;
+                    const gapHtml = res.gap >= 0
+                        ? `<span class="text-emerald-600 font-bold">+${gapM.toFixed(1)} ลบ.</span>`
+                        : `<span class="text-rose-600 font-bold">−${gapM.toFixed(1)} ลบ.</span>`;
+
+                    let btnHtml = isBase
                         ? `<button class="px-3 py-1 bg-slate-200 text-slate-500 rounded text-[11px] font-semibold cursor-not-allowed" disabled>ใช้งานอยู่</button>`
                         : `<button onclick='applyScenario(${JSON.stringify(actionParam)})' class="px-3 py-1 bg-indigo-600 hover:bg-indigo-500 text-white rounded text-[11px] font-bold transition shadow">ใช้แผนนี้</button>`;
-                    
+
                     return `
                         <tr class="hover:bg-slate-50 transition border-b border-slate-100 ${isBase ? 'bg-slate-50/50' : ''}">
                             <td class="p-3 font-semibold text-slate-700">
@@ -588,6 +927,7 @@
                             <td class="p-3 text-center">
                                 <span class="px-2 py-1 rounded-full text-xs font-bold ${probClass}">${res.probSuccess.toFixed(0)}%</span>
                             </td>
+                            <td class="p-3 text-center">${gapHtml}</td>
                             <td class="p-3 text-center text-slate-600">${riskName}</td>
                             <td class="p-3 text-center">${btnHtml}</td>
                         </tr>
@@ -625,6 +965,71 @@
             showToast("✅ อัปเดตแผนการลงทุนเรียบร้อยแล้ว!");
         }
 
+        // --- คำตัดสินและข้อความสรุป ---
+        // ใช้ฟังก์ชันเดียวกันทั้งหน้าเว็บและ PDF เพื่อไม่ให้ข้อความสองที่หลุดจากกัน
+        //
+        // เกณฑ์สี: ผูกกับ "ระดับความเชื่อมั่นที่ผู้ใช้เลือก" ไม่ใช่ค่าตายตัว 85/60 แบบเดิม
+        // เดิมเลือก 95% แล้วได้ 88% จะขึ้นเขียว "ยอดเยี่ยม" ทั้งที่ยังไม่ถึงเกณฑ์ที่ตั้งเอง — ขัดแย้งกันเอง
+        const VERDICT_YELLOW_BAND = 15; // ห่างจากเกณฑ์ไม่เกินกี่จุดจึงยังนับเป็นเหลือง
+
+        function buildVerdict(res) {
+            const conf = res.confidence;
+            const p    = res.probSuccess;
+            const d    = p - conf;                 // บวก = ผ่านเกณฑ์
+            const gapPositive = res.gap >= 0;
+            const gapM = Math.abs(res.gap) / 1e6;
+
+            // สี — คำนวณแยกจากเคส เพื่อให้ผูกกับเกณฑ์ที่เลือกอย่างเดียว
+            const tone = p >= conf ? 'green'
+                       : (p >= conf - VERDICT_YELLOW_BAND ? 'yellow' : 'red');
+
+            // ท่อนส่วนต่าง — เลือกถ้อยคำตามเครื่องหมายจริงเสมอ ไม่ผูกกับเคส
+            // (กันปัญหาแบบบั๊ก Math.max(0,..) เดิมที่ข้อความไม่ตรงกับตัวเลข หากเจอสถานะที่ไม่ได้คาดไว้)
+            const gapPhrase = gapPositive
+                ? `เงินคาดการณ์ ณ วันเกษียณสูงกว่าเป้าหมาย ${gapM.toFixed(2)} ล้านบาท`
+                : `เงินคาดการณ์ ณ วันเกษียณยังขาดเป้าหมายอีก ${gapM.toFixed(2)} ล้านบาท`;
+
+            // ต้นไม้ตัดสินใจแบบครอบคลุมทุกสถานะ — ทุกเคสตกลงได้กรณีเดียวเสมอ
+            let kase, title, icon, body;
+            if (d >= 0) {
+                if (d < 5) {
+                    kase = 2;
+                    icon  = 'fa-circle-check';
+                    title = 'ผ่านเกณฑ์แบบเฉียดฉิว';
+                    body  = `โอกาสสำเร็จ ${p.toFixed(0)}% สูงกว่าเกณฑ์ ${conf}% ที่คุณเลือกอยู่เพียง ${d.toFixed(0)} จุด `
+                          + `และ${gapPhrase} หากสถานการณ์เปลี่ยนเล็กน้อยอาจหลุดเกณฑ์ได้ ควรเผื่อความปลอดภัยไว้มากกว่านี้`;
+                } else {
+                    kase = 1;
+                    icon  = 'fa-circle-check';
+                    title = 'แผนนี้ผ่านเกณฑ์ที่คุณตั้งไว้';
+                    body  = `โอกาสสำเร็จ ${p.toFixed(0)}% สูงกว่าเกณฑ์ ${conf}% ที่เลือก `
+                          + `และ${gapPhrase} รักษาวินัยการลงทุนแบบนี้ต่อไปครับ`;
+                }
+            } else if (gapPositive) {
+                kase = 3;
+                icon  = 'fa-circle-question';
+                title = 'ตัวเลขดูขัดกัน แต่ไม่ขัดจริง';
+                body  = `${gapPhrase} — แต่นั่นคือกรณี<b>ค่ากลาง</b> ในความเป็นจริงมีราว `
+                      + `<b>${res.belowTargetPct.toFixed(0)}%</b> ของสถานการณ์จำลองที่มาถึงวันเกษียณด้วยเงิน<b>น้อยกว่า</b>เป้าหมาย `
+                      + `โอกาสสำเร็จรวมจึงอยู่ที่ ${p.toFixed(0)}% ซึ่งยังต่ำกว่าเกณฑ์ ${conf}% ที่คุณตั้งไว้ `
+                      + `หากต้องการความมั่นใจตามเกณฑ์นี้จริง ยังต้องเพิ่มเงินออมหรือลดค่าใช้จ่ายหลังเกษียณ`;
+            } else if (conf - p > 30) {
+                kase = 5;
+                icon  = 'fa-triangle-exclamation';
+                title = 'แผนนี้ห่างจากเป้าหมายมาก';
+                body  = `โอกาสสำเร็จ ${p.toFixed(0)}% ต่ำกว่าเกณฑ์ ${conf}% ถึง ${(conf - p).toFixed(0)} จุด `
+                      + `และ${gapPhrase} การปรับเพียงเล็กน้อยอาจไม่พอ `
+                      + `แนะนำให้ทบทวนทั้งค่าใช้จ่ายหลังเกษียณและอายุเกษียณไปพร้อมกัน`;
+            } else {
+                kase = 4;
+                icon  = 'fa-triangle-exclamation';
+                title = 'แผนนี้ยังไม่ถึงเกณฑ์';
+                body  = `โอกาสสำเร็จ ${p.toFixed(0)}% ต่ำกว่าเกณฑ์ ${conf}% ที่เลือกอยู่ ${(conf - p).toFixed(0)} จุด `
+                      + `และ${gapPhrase} ลองพิจารณาเพิ่มเงินออม เลื่อนอายุเกษียณ หรือปรับพอร์ตดูครับ`;
+            }
+            return { tone, kase, title, icon, body };
+        }
+
         // --- Core UI Update ---
         function updateUIAndChart() {
             const params = getUIParams();
@@ -639,35 +1044,59 @@
                 document.getElementById('out-prob-success').innerText = res.probSuccess.toFixed(0) + '%';
                 document.getElementById('out-target-wealth').innerText = (res.targetWealth / 1000000).toFixed(2) + ' ล้านบาท';
                 document.getElementById('out-projected-wealth').innerText = (res.projectedWealthAtRetire / 1000000).toFixed(2) + ' ล้านบาท';
+                document.getElementById('out-target-label').innerText = `เงินก้อนที่ต้องมี ณ วันเกษียณ (สำเร็จ ${res.confidence}%)`;
+
+                // Gap สองทิศ — ไม่ clamp ที่ 0 อีกแล้ว จึงแสดง "เกินเป้า" ได้ด้วย
+                const gapEl = document.getElementById('out-gap');
+                const gapM = Math.abs(res.gap) / 1000000;
+                if (res.gap >= 0) {
+                    gapEl.innerText = `เกินเป้า ${gapM.toFixed(2)} ล้านบาท`;
+                    gapEl.className = 'font-bold text-emerald-600';
+                } else {
+                    gapEl.innerText = `ขาดอีก ${gapM.toFixed(2)} ล้านบาท`;
+                    gapEl.className = 'font-bold text-rose-600';
+                }
+
+                // คำอธิบายระดับความเชื่อมั่นที่เลือก
+                const confInfo = CONFIDENCE_LEVELS[res.confidence];
+                if (confInfo) document.getElementById('conf-desc').innerText = confInfo.label + ' — ' + confInfo.desc;
+
+                // Safe Withdrawal Rate
+                document.getElementById('out-swr-pct').innerText = res.swrPct.toFixed(2) + '%';
+                document.getElementById('out-swr-today').innerText = Math.round(res.swrMonthlyToday).toLocaleString('th-TH') + ' บาท';
+                document.getElementById('out-swr-retire').innerText = Math.round(res.swrMonthlyAtRetire).toLocaleString('th-TH') + ' บาท';
+
+                // แผงความเสี่ยงจากจังหวะตลาด
+                const LB = v => (v / 1000000).toFixed(2) + ' ลบ.';
+                document.getElementById('seq-paths').innerText = `(จากการจำลอง ${res.numPaths.toLocaleString('th-TH')} สถานการณ์)`;
+                document.getElementById('out-seq-p10').innerText    = LB(res.reqPercentiles.p10);
+                document.getElementById('out-seq-p50').innerText    = LB(res.reqPercentiles.p50);
+                document.getElementById('out-seq-target').innerText = LB(res.targetWealth);
+                document.getElementById('out-seq-p95').innerText    = LB(res.reqPercentiles.p95);
+                document.getElementById('out-seq-conf').innerText   = `ความเชื่อมั่น ${res.confidence}%`;
+                const buffer = res.targetWealth - res.reqPercentiles.p50;
+                const bufPct = res.reqPercentiles.p50 > 0 ? (res.targetWealth / res.reqPercentiles.p50 - 1) * 100 : 0;
+                document.getElementById('out-seq-buffer').innerText = `${LB(buffer)} (+${bufPct.toFixed(0)}%)`;
 
                 const card = document.getElementById('diagnostic-card');
                 const probText = document.getElementById('out-prob-success');
                 const adviceTitle = document.getElementById('advice-title');
                 const adviceText = document.getElementById('advice-text');
 
-                card.className = "bg-white p-6 rounded-2xl border border-slate-200 shadow-sm relative overflow-hidden transition-all duration-300";
-                
-                if (res.probSuccess >= 85) {
-                    card.classList.add('bg-status-green');
-                    probText.className = "text-5xl font-black status-green";
-                    adviceTitle.innerHTML = `<i class="fa-solid fa-circle-check text-green-600"></i> เป้าหมายมีโอกาสสำเร็จสูงมาก!`;
-                    adviceTitle.className = "text-sm font-bold flex items-center gap-2 mb-2 text-green-700";
-                    adviceText.innerHTML = `แผนปัจจุบันของคุณยอดเยี่ยมมาก คาดว่าจะมีเงินก้อนพอใช้ยามเกษียณ รักษาวินัยการลงทุนแบบนี้ต่อไปครับ`;
-                } else if (res.probSuccess >= 60) {
-                    card.classList.add('bg-status-yellow');
-                    probText.className = "text-5xl font-black status-yellow";
-                    adviceTitle.innerHTML = `<i class="fa-solid fa-triangle-exclamation text-yellow-600"></i> แผนนี้ต้องเฝ้าระวัง`;
-                    adviceTitle.className = "text-sm font-bold flex items-center gap-2 mb-2 text-yellow-700";
-                    let gap = Math.max(0, (res.targetWealth - res.projectedWealthAtRetire)/1000000).toFixed(1);
-                    adviceText.innerHTML = `มีความเสี่ยงที่เงินจะไม่พอใช้ตลอดอายุขัย (อาจขาดอีกประมาณ ${gap} ลบ. ณ วันเกษียณ) แนะนำให้ลองพิจารณาเพิ่มเงินออม เลื่อนอายุเกษียณ หรือปรับพอร์ตเล็กน้อย`;
-                } else {
-                    card.classList.add('bg-status-red');
-                    probText.className = "text-5xl font-black status-red";
-                    adviceTitle.innerHTML = `<i class="fa-solid fa-triangle-exclamation text-red-600"></i> อันตราย! เงินไม่พอเกษียณ`;
-                    adviceTitle.className = "text-sm font-bold flex items-center gap-2 mb-2 text-red-700";
-                    let gap = Math.max(0, (res.targetWealth - res.projectedWealthAtRetire)/1000000).toFixed(1);
-                    adviceText.innerHTML = `ตามแผนปัจจุบัน คุณจะขาดเงินก้อนตอนเกษียณราว <b>${gap} ล้านบาท</b> แนะนำให้เพิ่มเงินออม DCA หรือปรับพอร์ตให้เสี่ยงขึ้นหากรับไหว ดูทางเลือกด้านล่างครับ`;
-                }
+                // คำตัดสิน+ข้อความ มาจาก buildVerdict() ตัวเดียวกับที่หน้า PDF ใช้
+                // เกณฑ์สีผูกกับระดับความเชื่อมั่นที่เลือก ไม่ใช่ค่าตายตัว 85/60 แบบเดิม
+                const v = buildVerdict(res);
+                const TONE = {
+                    green:  { bg:'bg-status-green',  txt:'status-green',  head:'text-green-700',  ico:'text-green-600'  },
+                    yellow: { bg:'bg-status-yellow', txt:'status-yellow', head:'text-yellow-700', ico:'text-yellow-600' },
+                    red:    { bg:'bg-status-red',    txt:'status-red',    head:'text-red-700',    ico:'text-red-600'    }
+                }[v.tone];
+
+                card.className = "bg-white p-6 rounded-2xl border border-slate-200 shadow-sm relative overflow-hidden transition-all duration-300 " + TONE.bg;
+                probText.className = "text-5xl font-black " + TONE.txt;
+                adviceTitle.innerHTML = `<i class="fa-solid ${v.icon} ${TONE.ico}"></i> ${v.title}`;
+                adviceTitle.className = "text-sm font-bold flex items-center gap-2 mb-2 " + TONE.head;
+                adviceText.innerHTML = v.body;
 
                 renderChart(res);
                 calculateWhatIfScenarios();
@@ -766,174 +1195,249 @@
         // --- Export PDF Logic ---
         function buildPdfSummary() {
             const el = document.getElementById('pdf-summary');
-            // A4: escape name ก่อนใส่ HTML (A4: security - prevent XSS)
-            const rawName = document.getElementById('inp-name').value || '-';
-            const name = rawName.replace(/[<>"&]/g, c => ({'<':'&lt;','>':'&gt;','"':'&quot;','&':'&amp;'}[c]));
+            // A4: escape ค่าที่ผู้ใช้กรอกก่อนใส่ HTML (กัน XSS)
+            const esc = s => String(s).replace(/[<>"&]/g, c => ({'<':'&lt;','>':'&gt;','"':'&quot;','&':'&amp;'}[c]));
+            const name = esc(document.getElementById('inp-name').value || '-');
+
             const currentAge = getNumberFromInput('inp-current-age');
-            const retireAge = getNumberFromInput('inp-retire-age');
-            const endAge = document.getElementById('inp-end-age').value;
-            
-            const expense = getNumberFromInput('inp-expense').toLocaleString('th-TH');
-            const inflation = getNumberFromInput('inp-inflation');
-            const initInv = getNumberFromInput('inp-init-inv').toLocaleString('th-TH');
-            const dca = getNumberFromInput('inp-dca').toLocaleString('th-TH');
-            const otherIncome = getNumberFromInput('inp-other-income').toLocaleString('th-TH');
-            
+            const retireAge  = getNumberFromInput('inp-retire-age');
+            const endAge     = document.getElementById('inp-end-age').value;
+            const inflation  = getNumberFromInput('inp-inflation');
+            const initInv    = getNumberFromInput('inp-init-inv').toLocaleString('th-TH');
+            const dca        = getNumberFromInput('inp-dca').toLocaleString('th-TH');
+
+            const p = getUIParams();
+            const B  = n => Math.round(n).toLocaleString('th-TH');
+            const LB = n => (n / 1e6).toFixed(2);
+            const pctTxt = v => (Math.round(v * 100) / 100) + '%';
+
             let riskProfileLabel = '-';
-            document.querySelectorAll('input[name="riskProfile"]').forEach(r => { 
-                if(r.checked) riskProfileLabel = RISK_PROFILES[r.value].name + ' (' + RISK_PROFILES[r.value].label + ')'; 
+            document.querySelectorAll('input[name="riskProfile"]').forEach(r => {
+                if(r.checked) riskProfileLabel = RISK_PROFILES[r.value].name + ' (' + RISK_PROFILES[r.value].label + ')';
             });
+
+            const conf = appState.confidence || DEFAULT_CONFIDENCE;
+            const confInfo = CONFIDENCE_LEVELS[conf] || { label: '', desc: '' };
+
+            const expTotal = p.expCats.reduce((s, c) => s + c.amt, 0);
+            const incTotal = p.incCats.reduce((s, c) => s + c.amt, 0);
+            const EXP_NAMES = ['จำเป็นพื้นฐาน', 'ด้านสุขภาพ', 'ไม่จำเป็น / เพื่อความสุข'];
+            const INC_NAMES = ['สวัสดิการรัฐและนายจ้าง', 'รายได้จากการลงทุนอื่น', 'รายได้อื่นๆ'];
+
+            // แถวหมวดย่อย — แสดงจำนวนเงินและอัตราเงินเฟ้อของแต่ละหมวด
+            const catRows = (cats, names, color) => cats.map((c, i) => `
+                <tr>
+                    <td style="padding:2px 6px; color:#64748b;">${names[i] || ('หมวด ' + (i+1))}</td>
+                    <td style="padding:2px 6px; text-align:right; color:${color}; font-weight:700;">${B(c.amt)}</td>
+                    <td style="padding:2px 6px; text-align:right; color:#64748b;">${pctTxt(c.infl)}</td>
+                </tr>`).join('');
 
             let chartImgHtml = '';
             const canvas = document.getElementById('portfolioChart');
             if (canvas) {
                 const imgData = canvas.toDataURL('image/png', 1.0);
-                chartImgHtml = `<img src="${imgData}" style="width:100%; height:auto; display:block; margin: 0 auto; border: 1px solid #e2e8f0; border-radius: 6px; padding: 4px;">`;
+                chartImgHtml = `<img src="${imgData}" style="width:100%; height:auto; display:block; margin:0 auto; border:1px solid #e2e8f0; border-radius:6px; padding:3px;">`;
             }
 
-            const logoHtml = `<img src="logo.svg" style="height: 28px; max-width: 120px; width: auto; object-fit: contain; display: block;" alt="Money Director Logo" />`;
+            const logoHtml = `<img src="logo.svg" style="height:28px; max-width:120px; width:auto; object-fit:contain; display:block;" alt="Money Director Logo" />`;
 
-            // B2: ลายน้ำ diagonal — "Money Director" + URL เอียงกลางหน้า เหมือน Port SIM
+            // B2: ลายน้ำ diagonal — "Money Director" + URL เอียงกลางหน้า
             const watermarkHtml = `
                 <div style="
-                    position: absolute;
-                    top: 50%; left: 50%;
-                    transform: translate(-50%, -50%) rotate(-35deg);
-                    pointer-events: none;
-                    user-select: none;
-                    text-align: center;
-                    opacity: 0.07;
-                    white-space: nowrap;
-                    z-index: 0;
+                    position:absolute; top:50%; left:50%;
+                    transform:translate(-50%,-50%) rotate(-35deg);
+                    pointer-events:none; user-select:none; text-align:center;
+                    opacity:0.07; white-space:nowrap; z-index:0;
                 ">
-                    <div style="font-size: 52px; font-weight: 900; color: #334155; letter-spacing: 2px; line-height: 1.1; font-family: 'Sarabun', sans-serif;">Money Director</div>
-                    <div style="font-size: 18px; font-weight: 600; color: #334155; letter-spacing: 1px; font-family: 'Sarabun', sans-serif;">facebook.com/themoneydirector</div>
+                    <div style="font-size:52px; font-weight:900; color:#334155; letter-spacing:2px; line-height:1.1; font-family:'Sarabun',sans-serif;">Money Director</div>
+                    <div style="font-size:18px; font-weight:600; color:#334155; letter-spacing:1px; font-family:'Sarabun',sans-serif;">facebook.com/themoneydirector</div>
                 </div>`;
 
             const todayStr = new Date().toLocaleDateString('th-TH', {year:'numeric', month:'long', day:'numeric'});
 
-            // B1: width=794px (A4 landscape: 595.28pt ÷ 0.75 ≈ 793.7px ≈ 794px)
-            // B2: watermark, B3: header bar, B4: footer footnote
+            const gapPositive = (appState.gap || 0) >= 0;
+            const gapColor = gapPositive ? '#059669' : '#e11d48';
+            const gapLabel = gapPositive ? 'เกินเป้า' : 'ขาดอีก';
+
+            // คำตัดสิน + ข้อความสรุป ใช้ฟังก์ชันเดียวกับหน้าเว็บ เพื่อให้สองที่ตรงกันเสมอ
+            const verdict = buildVerdict(appState);
+            const VTONE = {
+                green:  { txt:'#059669', bg:'#ecfdf5', bd:'#a7f3d0', head:'#047857' },
+                yellow: { txt:'#d97706', bg:'#fffbeb', bd:'#fde68a', head:'#b45309' },
+                red:    { txt:'#dc2626', bg:'#fff1f2', bd:'#fecdd3', head:'#be123c' }
+            }[verdict.tone];
+            const probColor = VTONE.txt;
+
+            const rp = appState.reqPercentiles || { p10:0, p50:0, p95:0 };
+            const buffer = (appState.targetWealth || 0) - rp.p50;
+            const bufferPct = rp.p50 > 0 ? ((appState.targetWealth / rp.p50 - 1) * 100).toFixed(0) : '0';
+
+            // B1: width 794px (A4 landscape: 595.28pt ÷ 0.75 ≈ 794px)
+            // B3: header bar | B4: footer footnote | เนื้อหา 3 คอลัมน์เพื่อให้จบใน 1 หน้า
             el.innerHTML = `
                 <div id="pdf-render-target" style="
-                    width: 794px;
-                    padding: 0;
-                    font-family: 'Sarabun', sans-serif;
-                    background: #ffffff;
-                    color: #111827;
-                    box-sizing: border-box;
-                    overflow: hidden;
-                    position: relative;
+                    width:794px; padding:0; font-family:'Sarabun',sans-serif;
+                    background:#ffffff; color:#111827; box-sizing:border-box;
+                    overflow:hidden; position:relative;
                 ">
                     ${watermarkHtml}
 
-                    <!-- B3: Header bar -->
-                    <div style="
-                        background: #4338ca;
-                        padding: 8px 20px;
-                        display: flex;
-                        justify-content: space-between;
-                        align-items: center;
-                        position: relative;
-                        z-index: 1;
-                    ">
-                        <div style="display: flex; align-items: center; gap: 10px;">
+                    <!-- Header bar -->
+                    <div style="background:#4338ca; padding:7px 16px; display:flex; justify-content:space-between; align-items:center; position:relative; z-index:1;">
+                        <div style="display:flex; align-items:center; gap:10px;">
                             ${logoHtml}
                             <div>
-                                <div style="font-size: 14px; font-weight: 700; color: #ffffff;">Retire Rich Planner</div>
-                                <div style="font-size: 9px; color: #c7d2fe;">รายงานสรุปแผนเกษียณ | Money Director</div>
+                                <div style="font-size:14px; font-weight:700; color:#ffffff;">Retire Rich Planner</div>
+                                <div style="font-size:8.5px; color:#c7d2fe;">รายงานสรุปแผนเกษียณ | Money Director</div>
                             </div>
                         </div>
-                        <div style="text-align: right;">
-                            <div style="font-size: 10px; color: #e0e7ff; font-weight: 600;">รายงานสรุปแผนเกษียณและการลงทุนส่วนบุคคล</div>
-                            <div style="font-size: 9px; color: #c7d2fe;">${todayStr}</div>
+                        <div style="text-align:right;">
+                            <div style="font-size:10px; color:#e0e7ff; font-weight:600;">${name}</div>
+                            <div style="font-size:8.5px; color:#c7d2fe;">${todayStr}</div>
                         </div>
                     </div>
 
-                    <!-- Main content -->
-                    <div style="padding: 12px 18px 10px 18px; position: relative; z-index: 1;">
+                    <div style="padding:10px 16px 8px 16px; position:relative; z-index:1;">
 
-                        <!-- Info row: 4 columns -->
-                        <table style="width:100%; margin-bottom:8px; font-size:9.5px; border-collapse:collapse; background:#f8fafc; border:1px solid #e2e8f0;">
+                        <!-- แถวข้อมูลพื้นฐาน -->
+                        <table style="width:100%; margin-bottom:7px; font-size:9px; border-collapse:collapse; background:#f8fafc; border:1px solid #e2e8f0;">
                             <tr>
-                                <td style="padding:5px 10px; border-bottom:1px solid #e2e8f0; width:25%; border-right:1px solid #e2e8f0;">
-                                    <span style="color:#64748b;">ชื่อ-นามสกุล:</span> <strong style="color:#1e293b;">${name}</strong>
+                                <td style="padding:4px 8px; width:25%; border-right:1px solid #e2e8f0;">
+                                    <span style="color:#64748b;">อายุปัจจุบัน / เกษียณ:</span> <strong>${currentAge} / ${retireAge} ปี</strong> <span style="color:#94a3b8;">(ออมอีก ${retireAge - currentAge} ปี)</span>
                                 </td>
-                                <td style="padding:5px 10px; border-bottom:1px solid #e2e8f0; width:25%; border-right:1px solid #e2e8f0;">
-                                    <span style="color:#64748b;">อายุปัจจุบัน / เกษียณ:</span> <strong style="color:#1e293b;">${currentAge} / ${retireAge} ปี</strong> (ออมอีก ${retireAge - currentAge} ปี)
+                                <td style="padding:4px 8px; width:25%; border-right:1px solid #e2e8f0;">
+                                    <span style="color:#64748b;">อายุคาดการณ์ถึง:</span> <strong>${endAge} ปี</strong>
                                 </td>
-                                <td style="padding:5px 10px; border-bottom:1px solid #e2e8f0; width:25%; border-right:1px solid #e2e8f0;">
-                                    <span style="color:#64748b;">อายุคาดการณ์ถึง:</span> <strong style="color:#1e293b;">${endAge} ปี</strong>
+                                <td style="padding:4px 8px; width:25%; border-right:1px solid #e2e8f0;">
+                                    <span style="color:#64748b;">เงินตั้งต้น:</span> <strong>฿${initInv}</strong>
                                 </td>
-                                <td style="padding:5px 10px; border-bottom:1px solid #e2e8f0; width:25%;">
-                                    <span style="color:#64748b;">ค่าใช้จ่าย/เดือน (ปัจจุบัน):</span> <strong style="color:#059669;">฿${expense}</strong>
+                                <td style="padding:4px 8px; width:25%;">
+                                    <span style="color:#64748b;">DCA/เดือน:</span> <strong style="color:#4f46e5;">฿${dca}</strong>
                                 </td>
                             </tr>
                             <tr>
-                                <td style="padding:5px 10px; border-right:1px solid #e2e8f0;">
-                                    <span style="color:#64748b;">เงินตั้งต้น:</span> <strong style="color:#1e293b;">฿${initInv}</strong>
+                                <td style="padding:4px 8px; border-top:1px solid #e2e8f0; border-right:1px solid #e2e8f0;">
+                                    <span style="color:#64748b;">เงินเฟ้อฐาน:</span> <strong>${inflation}% ต่อปี</strong>
                                 </td>
-                                <td style="padding:5px 10px; border-right:1px solid #e2e8f0;">
-                                    <span style="color:#64748b;">DCA/เดือน:</span> <strong style="color:#4f46e5;">฿${dca}</strong>
+                                <td style="padding:4px 8px; border-top:1px solid #e2e8f0; border-right:1px solid #e2e8f0;" colspan="2">
+                                    <span style="color:#64748b;">ระดับความเสี่ยงพอร์ต:</span> <strong style="color:#d97706;">${riskProfileLabel}</strong>
                                 </td>
-                                <td style="padding:5px 10px; border-right:1px solid #e2e8f0;">
-                                    <span style="color:#64748b;">รายได้อื่นๆ หลังเกษียณ:</span> <strong style="color:#7c3aed;">฿${otherIncome}/เดือน</strong>
-                                </td>
-                                <td style="padding:5px 10px;">
-                                    <span style="color:#64748b;">เงินเฟ้อ / ระดับความเสี่ยง:</span> <strong style="color:#d97706;">${inflation}% / ${riskProfileLabel}</strong>
+                                <td style="padding:4px 8px; border-top:1px solid #e2e8f0;">
+                                    <span style="color:#64748b;">ความเชื่อมั่น:</span> <strong style="color:#4338ca;">${conf}% — ${confInfo.label}</strong>
                                 </td>
                             </tr>
                         </table>
 
-                        <!-- KPIs + Chart: side by side -->
-                        <div style="display:flex; gap:10px; margin-bottom:8px; align-items:flex-start;">
+                        <!-- 3 คอลัมน์: KPI | หมวดรายจ่าย-รายได้ | ความเสี่ยงจังหวะตลาด -->
+                        <div style="display:flex; gap:8px; margin-bottom:7px; align-items:stretch;">
 
-                            <!-- KPI column -->
-                            <div style="width:200px; flex-shrink:0; display:flex; flex-direction:column; gap:6px;">
-                                <div style="background:#f8fafc; border:1px solid #e2e8f0; border-radius:6px; padding:10px; text-align:center;">
-                                    <div style="font-size:8.5px; color:#64748b; margin-bottom:3px;">โอกาสสำเร็จ</div>
-                                    <div style="font-size:34px; font-weight:800; color:${appState.probSuccess >= 85 ? '#059669' : (appState.probSuccess >= 60 ? '#d97706' : '#dc2626')}; line-height:1;">${appState.probSuccess ? appState.probSuccess.toFixed(0) : 0}%</div>
-                                    <div style="font-size:7.5px; color:#94a3b8; margin-top:2px;">จาก 1,000 สถานการณ์จำลอง</div>
+                            <!-- คอลัมน์ 1: ผลลัพธ์หลัก -->
+                            <div style="width:176px; flex-shrink:0; display:flex; flex-direction:column; gap:5px;">
+                                <div style="background:#f8fafc; border:1px solid #e2e8f0; border-radius:5px; padding:7px; text-align:center;">
+                                    <div style="font-size:8px; color:#64748b;">โอกาสสำเร็จ</div>
+                                    <div style="font-size:30px; font-weight:800; color:${probColor}; line-height:1.05;">${appState.probSuccess ? appState.probSuccess.toFixed(0) : 0}%</div>
+                                    <div style="font-size:7px; color:#94a3b8;">จาก ${(appState.numPaths || SIM_PATHS).toLocaleString('th-TH')} สถานการณ์จำลอง</div>
                                 </div>
-                                <div style="background:#fff7ed; border:1px solid #fed7aa; border-radius:6px; padding:8px; text-align:center;">
-                                    <div style="font-size:8.5px; color:#64748b; margin-bottom:2px;">เงินก้อนเป้าหมาย</div>
-                                    <div style="font-size:22px; font-weight:700; color:#ea580c; line-height:1.1;">${appState.targetWealth ? (appState.targetWealth/1e6).toFixed(2) : 0}</div>
-                                    <div style="font-size:8.5px; color:#64748b;">ล้านบาท</div>
+                                <div style="background:#eef2ff; border:1px solid #c7d2fe; border-radius:5px; padding:6px; text-align:center;">
+                                    <div style="font-size:8px; color:#64748b;">เงินก้อนที่ต้องมี (สำเร็จ ${conf}%)</div>
+                                    <div style="font-size:18px; font-weight:700; color:#4338ca; line-height:1.15;">${LB(appState.targetWealth || 0)}</div>
+                                    <div style="font-size:8px; color:#64748b;">ล้านบาท</div>
                                 </div>
-                                <div style="background:#f0fdf4; border:1px solid #bbf7d0; border-radius:6px; padding:8px; text-align:center;">
-                                    <div style="font-size:8.5px; color:#64748b; margin-bottom:2px;">เงินคาดการณ์ ณ วันเกษียณ</div>
-                                    <div style="font-size:22px; font-weight:700; color:#047857; line-height:1.1;">${appState.projectedWealthAtRetire ? (appState.projectedWealthAtRetire/1e6).toFixed(2) : 0}</div>
-                                    <div style="font-size:8.5px; color:#64748b;">ล้านบาท (มัธยฐาน)</div>
+                                <div style="background:#f0fdf4; border:1px solid #bbf7d0; border-radius:5px; padding:6px; text-align:center;">
+                                    <div style="font-size:8px; color:#64748b;">คาดการณ์ ณ วันเกษียณ</div>
+                                    <div style="font-size:18px; font-weight:700; color:#047857; line-height:1.15;">${LB(appState.projectedWealthAtRetire || 0)}</div>
+                                    <div style="font-size:8px; color:#64748b;">ล้านบาท (มัธยฐาน)</div>
                                 </div>
-                                <div style="background:#f8fafc; border:1px solid #e2e8f0; border-radius:6px; padding:7px; font-size:8.5px;">
-                                    <div style="color:#475569; line-height:1.6;">
-                                        <div>จำนวนสถานการณ์: <strong>1,000 paths</strong></div>
-                                        <div>เกณฑ์สำเร็จ: <strong>เงินเหลือ ≥ 0 ถึงอายุ ${endAge} ปี</strong></div>
+                                <div style="background:${gapPositive ? '#ecfdf5' : '#fff1f2'}; border:1px solid ${gapPositive ? '#a7f3d0' : '#fecdd3'}; border-radius:5px; padding:6px; text-align:center;">
+                                    <div style="font-size:8px; color:#64748b;">ส่วนต่างจากเป้าหมาย</div>
+                                    <div style="font-size:16px; font-weight:700; color:${gapColor}; line-height:1.15;">${gapLabel} ${LB(Math.abs(appState.gap || 0))}</div>
+                                    <div style="font-size:8px; color:#64748b;">ล้านบาท</div>
+                                </div>
+                            </div>
+
+                            <!-- คอลัมน์ 2: หมวดรายจ่าย / รายได้ + SWR -->
+                            <div style="width:212px; flex-shrink:0; display:flex; flex-direction:column; gap:5px;">
+                                <div style="border:1px solid #e2e8f0; border-radius:5px; overflow:hidden;">
+                                    <div style="background:#f1f5f9; padding:3px 6px; font-size:8.5px; font-weight:700; color:#334155; display:flex; justify-content:space-between;">
+                                        <span>รายจ่ายหลังเกษียณ (บาท/ด.)</span><span style="color:#059669;">฿${B(expTotal)}</span>
+                                    </div>
+                                    <table style="width:100%; font-size:8px; border-collapse:collapse;">
+                                        <tr style="color:#94a3b8; font-size:7px;">
+                                            <td style="padding:1px 6px;">หมวด</td>
+                                            <td style="padding:1px 6px; text-align:right;">บาท/เดือน</td>
+                                            <td style="padding:1px 6px; text-align:right;">เงินเฟ้อ</td>
+                                        </tr>
+                                        ${catRows(p.expCats, EXP_NAMES, '#059669')}
+                                    </table>
+                                </div>
+                                <div style="border:1px solid #e2e8f0; border-radius:5px; overflow:hidden;">
+                                    <div style="background:#f5f3ff; padding:3px 6px; font-size:8.5px; font-weight:700; color:#5b21b6; display:flex; justify-content:space-between;">
+                                        <span>รายได้ประจำอื่นๆ (บาท/ด.)</span><span>฿${B(incTotal)}</span>
+                                    </div>
+                                    <table style="width:100%; font-size:8px; border-collapse:collapse;">
+                                        <tr style="color:#94a3b8; font-size:7px;">
+                                            <td style="padding:1px 6px;">หมวด</td>
+                                            <td style="padding:1px 6px; text-align:right;">บาท/เดือน</td>
+                                            <td style="padding:1px 6px; text-align:right;">เงินเฟ้อ</td>
+                                        </tr>
+                                        ${catRows(p.incCats, INC_NAMES, '#7c3aed')}
+                                    </table>
+                                </div>
+                                <div style="border:1px solid #99f6e4; border-radius:5px; background:#f0fdfa; padding:6px;">
+                                    <div style="font-size:8.5px; font-weight:700; color:#0f766e; margin-bottom:3px;">อัตราถอนปลอดภัย (ปีแรกที่เกษียณ)</div>
+                                    <div style="display:flex; align-items:baseline; gap:4px; margin-bottom:3px;">
+                                        <span style="font-size:20px; font-weight:800; color:#0d9488; line-height:1;">${(appState.swrPct || 0).toFixed(2)}%</span>
+                                        <span style="font-size:8px; color:#64748b;">ต่อปี</span>
+                                    </div>
+                                    <div style="font-size:8px; color:#334155; line-height:1.5;">
+                                        <div>ถอนได้ <strong style="color:#0f766e;">฿${B(appState.swrMonthlyToday || 0)}</strong>/ด. <span style="color:#94a3b8;">(ค่าเงินวันนี้)</span></div>
+                                        <div>ถอนได้ <strong style="color:#0f766e;">฿${B(appState.swrMonthlyAtRetire || 0)}</strong>/ด. <span style="color:#94a3b8;">(ณ วันเกษียณ หลังปรับเงินเฟ้อ)</span></div>
                                     </div>
                                 </div>
                             </div>
 
-                            <!-- Chart -->
-                            <div style="flex:1; min-width:0;">
-                                <div style="font-size:9.5px; color:#1e293b; font-weight:700; margin-bottom:4px;">วิถีความมั่งคั่งตลอดชีพ (Wealth Trajectory)</div>
-                                ${chartImgHtml}
+                            <!-- คอลัมน์ 3: ความเสี่ยงจังหวะตลาด -->
+                            <div style="flex:1; min-width:0; border:1px solid #fecdd3; border-radius:5px; background:#fff8f8; padding:7px; display:flex; flex-direction:column;">
+                                <div style="font-size:8.5px; font-weight:700; color:#be123c; margin-bottom:2px;">ความเสี่ยงจากจังหวะตลาด (Sequence of Returns Risk)</div>
+                                <div style="font-size:7.5px; color:#64748b; margin-bottom:5px; line-height:1.4;">เงินที่ต้องมี ณ วันเกษียณ ขึ้นกับว่าเจอตลาดแบบไหนในช่วงต้น (จาก ${(appState.numPaths || SIM_PATHS).toLocaleString('th-TH')} สถานการณ์จำลอง)</div>
+                                <table style="width:100%; font-size:8px; border-collapse:separate; border-spacing:0 2px;">
+                                    <tr>
+                                        <td style="background:#ecfdf5; border:1px solid #a7f3d0; padding:3px 6px; border-radius:3px;">ตลาดเป็นใจ <span style="color:#94a3b8; font-size:7px;">ดีกว่าค่ากลาง</span></td>
+                                        <td style="background:#ecfdf5; border:1px solid #a7f3d0; padding:3px 6px; text-align:right; font-weight:700; color:#047857; border-radius:3px;">${LB(rp.p10)} ลบ.</td>
+                                    </tr>
+                                    <tr>
+                                        <td style="background:#f8fafc; border:1px solid #e2e8f0; padding:3px 6px; border-radius:3px;">ตลาดปกติ <span style="color:#94a3b8; font-size:7px;">กรณีกลาง</span></td>
+                                        <td style="background:#f8fafc; border:1px solid #e2e8f0; padding:3px 6px; text-align:right; font-weight:700; color:#334155; border-radius:3px;">${LB(rp.p50)} ลบ.</td>
+                                    </tr>
+                                    <tr>
+                                        <td style="background:#eef2ff; border:1.5px solid #6366f1; padding:3px 6px; border-radius:3px;"><strong>เป้าหมายที่แนะนำ</strong> <span style="color:#4338ca; font-size:7px;">ความเชื่อมั่น ${conf}%</span></td>
+                                        <td style="background:#eef2ff; border:1.5px solid #6366f1; padding:3px 6px; text-align:right; font-weight:700; color:#4338ca; border-radius:3px;">${LB(appState.targetWealth || 0)} ลบ.</td>
+                                    </tr>
+                                    <tr>
+                                        <td style="background:#fff1f2; border:1px solid #fecdd3; padding:3px 6px; border-radius:3px;">ตลาดแย่ช่วงต้น <span style="color:#94a3b8; font-size:7px;">แย่กว่าค่ากลางมาก</span></td>
+                                        <td style="background:#fff1f2; border:1px solid #fecdd3; padding:3px 6px; text-align:right; font-weight:700; color:#be123c; border-radius:3px;">${LB(rp.p95)} ลบ.</td>
+                                    </tr>
+                                </table>
+                                <div style="margin-top:5px; background:#fffbeb; border:1px solid #fde68a; border-radius:4px; padding:5px; font-size:7.5px; color:#78350f; line-height:1.5;">
+                                    ส่วนต่างระหว่าง <strong>ตลาดปกติ</strong> กับ <strong>เป้าหมายที่แนะนำ</strong> = <strong>${LB(buffer)} ลบ. (+${bufferPct}%)</strong> คือส่วนเผื่อสำหรับความเสี่ยงที่ตลาดจะไม่เป็นใจในช่วงต้นของการเกษียณ ซึ่งการคำนวณด้วยผลตอบแทนคงที่แบบง่ายจะมองข้ามไป
+                                </div>
                             </div>
                         </div>
 
+                        <!-- คำตัดสิน + ข้อความสรุป (ข้อความเดียวกับที่แสดงบนหน้าเว็บ) -->
+                        <div style="background:${VTONE.bg}; border:1px solid ${VTONE.bd}; border-left:4px solid ${VTONE.txt}; border-radius:5px; padding:7px 10px; margin-bottom:7px;">
+                            <div style="font-size:9.5px; font-weight:700; color:${VTONE.head}; margin-bottom:2px;">${verdict.title}</div>
+                            <div style="font-size:8.5px; color:#334155; line-height:1.55;">${verdict.body}</div>
+                        </div>
+
+                        <!-- กราฟ -->
+                        <div style="font-size:9px; color:#1e293b; font-weight:700; margin-bottom:3px;">วิถีความมั่งคั่งตลอดชีพ (Wealth Trajectory)</div>
+                        ${chartImgHtml}
                     </div>
 
-                    <!-- B4: Footer footnote disclaimer -->
-                    <div style="
-                        background: #f8fafc;
-                        border-top: 1px solid #e2e8f0;
-                        padding: 5px 18px;
-                        font-size: 7.5px;
-                        color: #94a3b8;
-                        line-height: 1.4;
-                        position: relative;
-                        z-index: 1;
-                    ">
-                        <strong style="color:#64748b;">คำเตือน:</strong> ผลการจำลองการลงทุนด้วยแบบจำลอง Monte Carlo มิได้เป็นสิ่งยืนยันถึงผลตอบแทนในอนาคต เครื่องมือนี้จัดทำเพื่อการศึกษาและวางแผนเกษียณเบื้องต้นเท่านั้น มิใช่คำแนะนำทางการเงินหรือการลงทุน ผู้ใช้ควรศึกษาข้อมูลเพิ่มเติมและปรึกษาผู้เชี่ยวชาญก่อนตัดสินใจลงทุน | Money Director — facebook.com/themoneydirector
+                    <!-- Footer footnote -->
+                    <div style="background:#f8fafc; border-top:1px solid #e2e8f0; padding:5px 16px; font-size:7px; color:#94a3b8; line-height:1.4; position:relative; z-index:1;">
+                        <strong style="color:#64748b;">คำเตือน:</strong> ผลการจำลองการลงทุนด้วยแบบจำลอง Monte Carlo มิได้เป็นสิ่งยืนยันถึงผลตอบแทนในอนาคต เครื่องมือนี้จัดทำเพื่อการศึกษาและวางแผนเกษียณเบื้องต้นเท่านั้น มิใช่คำแนะนำทางการเงินหรือการลงทุน ผู้ใช้ควรศึกษาข้อมูลเพิ่มเติมและปรึกษาผู้เชี่ยวชาญก่อนตัดสินใจลงทุน · อัตราถอนปลอดภัยเป็นตัวเลขของปีแรกที่เกษียณตามนิยามมาตรฐาน คิดจากเงินก้อน ณ วันเกษียณ (ถอนจำนวนบาทเท่าเดิมปรับด้วยเงินเฟ้อในปีถัดไป) | Money Director — facebook.com/themoneydirector
                     </div>
                 </div>
             `;
@@ -1135,6 +1639,96 @@ async function exportToPDF() {
             lDca.innerText = parseInt(sDca.value).toLocaleString() + ' บาท/ด.';
             sRet.value = getNumberFromInput('inp-retire-age');
             lRet.innerText = sRet.value + ' ปี';
+
+            // ===== ระดับความเชื่อมั่น =====
+            document.querySelectorAll('input[name="confidenceLevel"]').forEach(radio => {
+                radio.addEventListener('change', triggerUpdate);
+            });
+
+            // ===== Accordion แยกหมวด =====
+            function wireAccordion(btnId, boxId, icoId) {
+                const btn = document.getElementById(btnId);
+                const box = document.getElementById(boxId);
+                const ico = document.getElementById(icoId);
+                if (!btn || !box) return;
+                btn.addEventListener('click', () => {
+                    const open = box.classList.toggle('hidden') === false;
+                    if (ico) ico.style.transform = open ? 'rotate(180deg)' : 'rotate(0deg)';
+                });
+            }
+            wireAccordion('btn-toggle-exp', 'box-exp-cats', 'ico-toggle-exp');
+            wireAccordion('btn-toggle-inc', 'box-inc-cats', 'ico-toggle-inc');
+
+            // ===== ซิงก์ยอดรวม <-> หมวดย่อย =====
+            // แก้ยอดรวม -> กระจายลงหมวดตามสัดส่วนเดิม (ถ้าทุกหมวดเป็น 0 ใช้สัดส่วนเริ่มต้นแทน)
+            // แก้หมวดย่อย -> อัปเดตยอดรวม
+            // ทำแบบนี้เพื่อให้ผู้ใช้ที่ไม่กางหมวดยังใช้งานได้เหมือนเดิมทุกประการ
+            let syncing = false;
+            function sumCats(ids) {
+                return ids.reduce((s, id) => s + getNumberFromInput(id), 0);
+            }
+            function distributeTotal(totalId, ids, fallbackRatio) {
+                if (syncing) return;
+                syncing = true;
+                const total = getNumberFromInput(totalId);
+                const cur = ids.map(id => getNumberFromInput(id));
+                const curSum = cur.reduce((a, b) => a + b, 0);
+                const ratio = curSum > 0 ? cur.map(v => v / curSum) : fallbackRatio;
+                ids.forEach((id, i) => {
+                    const el = document.getElementById(id);
+                    if (el) el.value = formatNumberWithCommas(Math.round(total * ratio[i]));
+                });
+                syncing = false;
+            }
+            function rollUpTotal(totalId, ids) {
+                if (syncing) return;
+                syncing = true;
+                const el = document.getElementById(totalId);
+                if (el) el.value = formatNumberWithCommas(sumCats(ids));
+                syncing = false;
+            }
+
+            const EXP_IDS = ['inp-exp-basic', 'inp-exp-health', 'inp-exp-leisure'];
+            const INC_IDS = ['inp-inc-welfare', 'inp-inc-invest', 'inp-inc-other'];
+
+            document.getElementById('inp-expense').addEventListener('input', () => {
+                distributeTotal('inp-expense', EXP_IDS, [0.6, 0.2, 0.2]);
+            });
+            // รายได้: ถ้ายังไม่เคยกรอกหมวดไหนเลย ให้ลงหมวดแรก (สวัสดิการ, เงินเฟ้อ 0%)
+            // ซึ่งให้ผลเท่ากับพฤติกรรมเดิมที่รายได้ไม่ปรับเงินเฟ้อเป๊ะ
+            document.getElementById('inp-other-income').addEventListener('input', () => {
+                distributeTotal('inp-other-income', INC_IDS, [1, 0, 0]);
+            });
+            EXP_IDS.forEach(id => {
+                const el = document.getElementById(id);
+                if (el) el.addEventListener('input', () => { rollUpTotal('inp-expense', EXP_IDS); triggerUpdate(); });
+            });
+            INC_IDS.forEach(id => {
+                const el = document.getElementById(id);
+                if (el) el.addEventListener('input', () => { rollUpTotal('inp-other-income', INC_IDS); triggerUpdate(); });
+            });
+
+            // ===== อัตราเงินเฟ้อรายหมวด =====
+            // หมวดที่ผู้ใช้ยังไม่เคยแก้เอง จะผูกกับเงินเฟ้อฐาน (คูณด้วย data-mult)
+            // พอผู้ใช้แก้ช่องไหนเอง ช่องนั้นจะหลุดจากการผูก (data-touched) และค้างค่าที่ตั้งไว้
+            function syncCatInflation() {
+                const base = getNumberFromInput('inp-inflation');
+                document.querySelectorAll('.cat-infl').forEach(el => {
+                    if (el.dataset.touched === '1') return;
+                    const mult = parseFloat(el.dataset.mult) || 1;
+                    el.value = (base * mult).toFixed(2).replace(/\.?0+$/, '');
+                });
+            }
+            document.querySelectorAll('.cat-infl').forEach(el => {
+                el.addEventListener('input', () => { el.dataset.touched = '1'; triggerUpdate(); });
+            });
+            ['inp-exp-basic-infl','inp-exp-health-infl','inp-exp-leisure-infl',
+             'inp-inc-welfare-infl','inp-inc-invest-infl','inp-inc-other-infl'].forEach(id => {
+                const el = document.getElementById(id);
+                if (el && !el.classList.contains('cat-infl')) el.addEventListener('input', triggerUpdate);
+            });
+            sInflation.addEventListener('input', () => { syncCatInflation(); });
+            syncCatInflation();
 
             document.getElementById('btn-export-pdf').addEventListener('click', exportToPDF);
 
