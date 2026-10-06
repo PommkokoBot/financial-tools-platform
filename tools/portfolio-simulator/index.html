@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <meta http-equiv="Content-Security-Policy" content="default-src 'none'; script-src 'self' 'sha256-yftwlYLT3AHGx8oPwKbvKYUl2z+GAd4lGwCTD+3raS8=' https://cdn.jsdelivr.net https://cdn.sheetjs.com https://cdnjs.cloudflare.com; style-src 'self' 'unsafe-inline' https://cdnjs.cloudflare.com https://fonts.googleapis.com; font-src https://cdnjs.cloudflare.com https://fonts.gstatic.com; img-src 'self' data: blob:; connect-src 'none'; form-action 'none'; base-uri 'none'; object-src 'none'; frame-src 'none'; worker-src 'none'; manifest-src 'none';">
+    <meta http-equiv="Content-Security-Policy" content="default-src 'none'; script-src 'self' 'sha256-zON3xiPZ+drqdfPm7PMO2wVtVknCPuA5or87mqqTiGw=' https://cdn.jsdelivr.net https://cdn.sheetjs.com https://cdnjs.cloudflare.com; style-src 'self' 'unsafe-inline' https://cdnjs.cloudflare.com https://fonts.googleapis.com; font-src https://cdnjs.cloudflare.com https://fonts.gstatic.com; img-src 'self' data: blob:; connect-src 'none'; form-action 'none'; base-uri 'none'; object-src 'none'; frame-src 'none'; worker-src 'none'; manifest-src 'none';">
     <title>Money Director — Institutional Portfolio Simulator</title>
     <!-- Tailwind is compiled ahead of time and inlined below instead of loading the Play
          CDN (cdn.tailwindcss.com). The CDN script is unversioned, compiles CSS in the
@@ -528,12 +528,16 @@
                                         <th class="pb-1 font-medium text-center">เติบโต</th>
                                         <th class="pb-1 font-medium text-center">ผลตอบแทนรวม</th>
                                         <th class="pb-1 font-medium text-center">S.D. พอร์ตจริง</th>
+                                        <th class="pb-1 font-medium text-center">VaR 95% / เดือน</th>
                                     </tr>
                                 </thead>
                                 <tbody id="phase-metrics-body" class="divide-y divide-slate-800">
                                 </tbody>
                             </table>
                         </div>
+                        <!-- Caveat for the VaR column. Text comes from DISCLAIMER_RISK_METRICS,
+                             the same constant the PDF prints, so the two cannot drift apart. -->
+                        <p id="stats-risk-note" class="mt-2 text-[10px] text-slate-500 leading-relaxed"></p>
                     </div>
 
                     <!-- Main Chart -->
@@ -859,7 +863,7 @@
         // Single source of truth for the version string. Shown in the page header, written
         // into the _meta sheet of every saved case file, printed on the PDF cover, and logged
         // to the console -- so a bug report from a stranger can always be tied to a build.
-        const APP_VERSION = '1.0.0';
+        const APP_VERSION = '1.1.0';
 
         // Single source of truth for the disclaimer. The page footer and every PDF page print
         // the same wording; changing it here changes both. Keeping two copies would let one
@@ -872,6 +876,11 @@
         // wording, which Peat already approved as-is.
         const DISCLAIMER_WEB_PRIVACY = 'ข้อมูลทั้งหมดที่ท่านกรอกถูกประมวลผลในเครื่องของท่านเอง ไม่มีการส่งออกหรือจัดเก็บไว้ที่เซิร์ฟเวอร์ใด';
         const DISCLAIMER_SHORT = 'เครื่องมือนี้เป็นการจำลองทางสถิติเพื่อการศึกษา ไม่ใช่คำแนะนำการลงทุน · ข้อมูลที่ท่านกรอกประมวลผลในเครื่องของท่าน ไม่ถูกส่งออกไปที่ใด';
+        // Shared by the on-screen stats table and the PDF structure page, for the same
+        // anti-drift reason as the disclaimer above: a risk number without its caveat is
+        // the part people quote. VaR is the headline figure most likely to be over-read,
+        // so the sentence that says what it is NOT travels with it to every surface.
+        const DISCLAIMER_RISK_METRICS = 'VaR 95% ต่อเดือน เป็นค่าประมาณจากสูตรทางสถิติที่สมมติให้ผลตอบแทนกระจายตัวแบบปกติ จึงประเมินเหตุการณ์รุนแรงต่ำกว่าที่เคยเกิดขึ้นจริงได้ อ่านว่า "ในทุก 20 เดือน จะมีราว 1 เดือนที่ขาดทุนมากกว่าค่านี้" ไม่ใช่ตัวเลขขาดทุนสูงสุดที่เป็นไปได้';
 
         // Data Templates
         // Public default set: generic asset-class names, not real funds. Putting expected-return
@@ -961,6 +970,30 @@
         const barColors = ['#3b82f6', '#10b981', '#f59e0b', '#ef4444', '#8b5cf6', '#ec4899', '#06b6d4', '#f97316', '#6366f1', '#14b8a6'];
 
         // --- MATH: Covariance & Risk Engine ---
+
+        // One-month 95% parametric Value at Risk, returned as a positive decimal loss
+        // (0.0788 = "a 5%-of-months month loses more than 7.88%").
+        //
+        // Deliberately built from the SAME two numbers the simulation engine uses for a
+        // month -- expected monthly return (1+r)^(1/12)-1 and monthly S.D. sd/sqrt(12) --
+        // so the figure on screen describes the model that actually runs, rather than a
+        // second opinion computed a different way. It is display-only: nothing in
+        // runSimulation / runDriftVisualizer / runHeatmap reads it, so adding it cannot
+        // move a simulated number.
+        //
+        // Clamped at 0: when the expected return is larger than 1.645 monthly S.D. the
+        // formula goes negative, which would mean "the bad month is still a gain". That
+        // is a true statement about the assumption, but printing a negative loss reads as
+        // a bug, so it shows 0.00% instead.
+        const VAR_Z_95 = 1.6448536269514722;
+        function monthlyVaR95(totalRAnnual, sdAnnual) {
+            const sd = parseFloat(sdAnnual), r = parseFloat(totalRAnnual);
+            if (!isFinite(sd) || sd <= 0 || !isFinite(r)) return 0;
+            const muMonthly = Math.pow(1 + r, 1 / 12) - 1;
+            const sdMonthly = sd / Math.sqrt(12);
+            return Math.max(0, VAR_Z_95 * sdMonthly - muMonthly);
+        }
+
         function classifyAsset(sd) {
             if (sd >= 8.0) return 'Equity';
             if (sd <= 4.0) return 'Bond';
@@ -978,7 +1011,7 @@
 
         function calculatePhaseStats(funds) {
             const totalW = funds.reduce((s, f) => s + f.weight, 0);
-            if(totalW <= 0) return { yield: 0, growth: 0, sd: 0, totalR: 0, valid: false };
+            if(totalW <= 0) return { yield: 0, growth: 0, sd: 0, totalR: 0, var95: 0, valid: false };
 
             let y = 0, g = 0;
             const normW = [];
@@ -1002,7 +1035,7 @@
                 }
             }
             const trueSd = Math.sqrt(varSum);
-            return { yield: y, growth: g, sd: trueSd, totalR: y + g, valid: true };
+            return { yield: y, growth: g, sd: trueSd, totalR: y + g, var95: monthlyVaR95(y + g, trueSd), valid: true };
         }
 
         function randomNormal(mean, stdDev) {
@@ -1103,7 +1136,7 @@
         // "weighted overview" row across portfolios in the Phase Stats Matrix.
         function blendWeightedStats(items) {
             const totalW = items.reduce((s, it) => s + it.weight, 0);
-            if (totalW <= 0) return { yield: 0, growth: 0, sd: 0, totalR: 0, valid: false };
+            if (totalW <= 0) return { yield: 0, growth: 0, sd: 0, totalR: 0, var95: 0, valid: false };
             const normW = items.map(it => it.weight / totalW);
             let y = 0, g = 0;
             items.forEach((it, i) => { y += normW[i] * it.yield; g += normW[i] * it.growth; });
@@ -1117,7 +1150,8 @@
                     varSum += normW[i] * normW[j] * items[i].sd * items[j].sd * corr;
                 }
             }
-            return { yield: y, growth: g, sd: Math.sqrt(varSum), totalR: y + g, valid: true };
+            const blendedSd = Math.sqrt(varSum);
+            return { yield: y, growth: g, sd: blendedSd, totalR: y + g, var95: monthlyVaR95(y + g, blendedSd), valid: true };
         }
 
         // Whether a portfolio has reached its own configured rebalance start date yet.
@@ -1343,6 +1377,8 @@
             if (short) short.textContent = DISCLAIMER_SHORT;
             const full = document.getElementById('disclaimer-full');
             if (full) full.textContent = DISCLAIMER_WEB_LEAD + DISCLAIMER_CORE + ' ' + DISCLAIMER_WEB_PRIVACY;
+            const riskNote = document.getElementById('stats-risk-note');
+            if (riskNote) riskNote.textContent = DISCLAIMER_RISK_METRICS;
         }
 
         document.addEventListener("DOMContentLoaded", () => {
@@ -1391,6 +1427,7 @@
                             <td class="py-1.5 text-center font-semibold text-emerald-400">${(s.growth*100).toFixed(2)}%</td>
                             <td class="py-1.5 text-center font-bold text-slate-200">${(s.totalR*100).toFixed(2)}%</td>
                             <td class="py-1.5 text-center text-orange-300">${(s.sd*100).toFixed(2)}%</td>
+                            <td class="py-1.5 text-center text-rose-300">${(s.var95*100).toFixed(2)}%</td>
                         </tr>
                     `;
                 });
@@ -1413,6 +1450,7 @@
                             <td class="py-1.5 text-center font-semibold text-emerald-400">${(overview.growth*100).toFixed(2)}%</td>
                             <td class="py-1.5 text-center font-bold text-slate-200">${(overview.totalR*100).toFixed(2)}%</td>
                             <td class="py-1.5 text-center text-orange-300">${(overview.sd*100).toFixed(2)}%</td>
+                            <td class="py-1.5 text-center text-rose-300">${(overview.var95*100).toFixed(2)}%</td>
                         </tr>
                     `;
                 }
@@ -4173,12 +4211,13 @@
             blocks.push(pdfEl('div', 'mdr-block', `
                 <div class="mdr-h2">ข้อมูลคาดการณ์ทุกพอร์ต (Phase Stats Matrix)</div>
                 <table class="mdr-table">
-                    <thead><tr><th>พอร์ต</th><th>เฟส</th><th class="ctr">เริ่ม (ปีที่)</th><th class="num">Yield เฉลี่ย</th><th class="num">เติบโต</th><th class="num">ผลตอบแทนรวม</th><th class="num">S.D. พอร์ตจริง</th></tr></thead>
+                    <thead><tr><th>พอร์ต</th><th>เฟส</th><th class="ctr">เริ่ม (ปีที่)</th><th class="num">Yield เฉลี่ย</th><th class="num">เติบโต</th><th class="num">ผลตอบแทนรวม</th><th class="num">S.D. พอร์ตจริง</th><th class="num">VaR 95% / เดือน</th></tr></thead>
                     <tbody>${stats.map(r => r.type === 'port'
-                        ? `<tr><td><span class="mdr-chip" style="color:${barColors[r.idx % barColors.length]}"><span class="mdr-dot" style="background:${barColors[r.idx % barColors.length]}"></span>${escapeHtml(r.pt.name)}</span></td><td>เฟส ${r.phase}</td><td class="ctr">${r.pt.phaseSettings[r.phase].startYear}</td><td class="num">${pdfFmtPct(r.s.yield)}</td><td class="num">${pdfFmtPct(r.s.growth)}</td><td class="num">${pdfFmtPct(r.s.totalR)}</td><td class="num">${pdfFmtPct(r.s.sd)}</td></tr>`
-                        : `<tr class="mdr-total"><td colspan="2">ภาพรวม เฟส ${r.phase} (ถ่วงน้ำหนัก)</td><td class="ctr">–</td><td class="num">${pdfFmtPct(r.s.yield)}</td><td class="num">${pdfFmtPct(r.s.growth)}</td><td class="num">${pdfFmtPct(r.s.totalR)}</td><td class="num">${pdfFmtPct(r.s.sd)}</td></tr>`).join('')}</tbody>
+                        ? `<tr><td><span class="mdr-chip" style="color:${barColors[r.idx % barColors.length]}"><span class="mdr-dot" style="background:${barColors[r.idx % barColors.length]}"></span>${escapeHtml(r.pt.name)}</span></td><td>เฟส ${r.phase}</td><td class="ctr">${r.pt.phaseSettings[r.phase].startYear}</td><td class="num">${pdfFmtPct(r.s.yield)}</td><td class="num">${pdfFmtPct(r.s.growth)}</td><td class="num">${pdfFmtPct(r.s.totalR)}</td><td class="num">${pdfFmtPct(r.s.sd)}</td><td class="num">${pdfFmtPct(r.s.var95)}</td></tr>`
+                        : `<tr class="mdr-total"><td colspan="2">ภาพรวม เฟส ${r.phase} (ถ่วงน้ำหนัก)</td><td class="ctr">–</td><td class="num">${pdfFmtPct(r.s.yield)}</td><td class="num">${pdfFmtPct(r.s.growth)}</td><td class="num">${pdfFmtPct(r.s.totalR)}</td><td class="num">${pdfFmtPct(r.s.sd)}</td><td class="num">${pdfFmtPct(r.s.var95)}</td></tr>`).join('')}</tbody>
                 </table>
-                <div class="mdr-note" style="margin-top:4px">Yield / Growth / S.D. ต่อกองทุนเป็นค่าที่ผู้ใช้กรอกเอง (ช่องที่เว้นว่าง "–" นับเป็น 0% ในการคำนวณ) · S.D. พอร์ตคำนวณรวมผลของสหสัมพันธ์ระหว่างกองทุน/พอร์ต</div>`));
+                <div class="mdr-note" style="margin-top:4px">Yield / Growth / S.D. ต่อกองทุนเป็นค่าที่ผู้ใช้กรอกเอง (ช่องที่เว้นว่าง "–" นับเป็น 0% ในการคำนวณ) · S.D. พอร์ตคำนวณรวมผลของสหสัมพันธ์ระหว่างกองทุน/พอร์ต</div>
+                <div class="mdr-note" style="margin-top:2px">${DISCLAIMER_RISK_METRICS}</div>`));
 
             return pdfFlowBlocks(ctx, 'โครงสร้างพอร์ตและสมมติฐานกองทุน', 'สัดส่วนกองทุน ผลตอบแทนคาดหวัง และความผันผวนที่ใช้ในการจำลอง', blocks);
         }

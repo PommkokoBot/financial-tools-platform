@@ -9,6 +9,63 @@ from a stranger names the build that produced it.
 
 ---
 
+## 1.1.0 — 2026-10-06
+
+First of three planned releases that add risk reporting to the tool. This one is the
+cheapest and most isolated of the three on purpose: it adds a number that is computed
+from inputs the page already has, so no engine, no saved file and no existing output
+changes. Max Drawdown (1.2.0) and the user-entered historical figures (1.3.0) follow.
+
+### Added
+
+- **Monthly 95% VaR column** in the Phase Stats Matrix, per portfolio per phase plus the
+  weighted overview row. It is built from the same two numbers a simulated month uses —
+  expected monthly return `(1+r)^(1/12)-1` and monthly S.D. `sd/√12` — so the figure
+  describes the model that actually runs rather than being a second opinion derived some
+  other way. It updates as you type, like S.D., with no Run required.
+  Clamped at zero: when the expected return exceeds 1.645 monthly S.D. the formula turns
+  negative, which is a true statement about the assumption but reads as a bug when printed
+  as a loss.
+- **The same column on the PDF structure page.** Not optional: `pdf-report.test.js` asserts
+  the report's Phase Stats Matrix matches the on-screen table cell for cell, so a column on
+  one surface and not the other is a red suite, by design.
+- **`DISCLAIMER_RISK_METRICS`** — one constant, printed under the table on the page and
+  under the table in the PDF. VaR is the figure most likely to be over-read, so the
+  sentence saying what it is not travels with it to every surface, the same way the
+  disclaimer does. `var-metric.test.js` compares both rendered surfaces to the constant.
+
+### Changed
+
+- `calculatePhaseStats()` and `blendWeightedStats()` now also return `var95`. Nothing in
+  `runSimulation` / `runDriftVisualizer` / `runHeatmap` reads it — the value is display-only.
+- `regression.test.js` now snapshots the stats table separately from the other DOM outputs.
+  The table legitimately gained a column, so comparing its markup byte-for-byte against the
+  1.0.0 baseline would fail for the one change that was intended. The new comparison strips
+  only the VaR cell and then demands an exact match, and refuses to pass unless it found one
+  VaR cell in every row — so a vanished column fails rather than passing as "identical".
+  Everything else in the suite is unchanged and still compares byte-for-byte.
+- `APP_VERSION` → `1.1.0`.
+
+### Verified
+
+- `npm test` — 14 suites pass (13 existing + `var-metric.test.js`, 30 checks).
+- `regression.test.js` — **ALL IDENTICAL** against the 1.0.0 baseline across all four
+  scenarios: `runSimulation`, `runDriftVisualizer` and both heatmap modes produce the same
+  bytes. The engine did not move.
+- Browser suites on Chromium: `sri-load` 8/8 · `csp-load` 27/27, 0 violations ·
+  `heatmap-badge`, `case-roundtrip`, `pdf-export` (7 pages) pass.
+- `desktop-diff`: 32 differences, all of them the contents of `#section-mc` shifted down
+  41px by the new note line, plus the note itself. Page width and height unchanged.
+  Checked and expected; the baseline was deliberately **not** promoted in this release.
+- `mobile-audit` at 390px: unchanged from 1.0.0 — 22 sub-32px targets (same list), no new
+  horizontal page scroll. The stats table already scrolled sideways before the column.
+- Eight sabotages, all caught: VaR formula drifting to `r/12` · the page cell deleted ·
+  an existing stats cell reformatted · the PDF given its own copy of the caveat · the PDF
+  column dropped · the header removed · `var95` zeroed at the source · one space added to
+  the inline script without re-running `npm run csp -- --write`.
+
+---
+
 ## 1.0.0 — 2026-09-27
 
 First release meant for people outside the team. Three rounds of work sit behind it: the page
