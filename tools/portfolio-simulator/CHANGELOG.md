@@ -9,6 +9,97 @@ from a stranger names the build that produced it.
 
 ---
 
+## 1.3.0 — 2026-10-06
+
+Last of the three risk-reporting releases. The feature it adds is defined as much by what
+it does not do as by what it does: the figures a user types here are displayed, saved and
+printed, and read by nothing.
+
+### Added
+
+- **Historical reference figures per fund** — past monthly 95% VaR and past Max Drawdown,
+  in a panel below the fund table that is **collapsed until opened**. Deliberately not two
+  more columns inside the fund table: every box in that table feeds the simulation, and
+  putting boxes that do not next to boxes that do is how a user concludes that typing here
+  changes the answer.
+- **The model's own VaR for the same fund, beside the entered one**, so the comparison is
+  like for like rather than against a portfolio-level number.
+- **A portfolio-level view that refuses to invent a single number.** Drawdowns of different
+  funds happen in different months and cannot be averaged into "the portfolio's past
+  drawdown". What is shown is the range, the share of the phase's weight actually covered
+  by the entries, and a weight-weighted figure labelled for exactly what it assumes —
+  every fund bottoming in the same month, which is an upper bound, not a history.
+- **`DISCLAIMER_PAST`**, printed inside the panel where the boxes are and in the report,
+  saying the values are user-entered, unverified, and used in no calculation at all.
+- **Two appended columns in the case file's funds sheet** (`pastVar`, `pastDd`) and a
+  **keyed drawdown block appended to the results sheet**, written only on the path that
+  already refuses to save results that no longer match the inputs in the same file.
+- **A report block that prints only when something was entered**, so a report from someone
+  who never opened the panel is byte-identical to a 1.2.0 one.
+
+### Changed
+
+- Typing in this panel does **not** call `markDirty()`. These values feed no engine, so the
+  last Run is still valid, and sending the user to press Run again would throw away a
+  correct result for nothing.
+- A finished Run refreshes the panel's comparison line (from the Run button's handler, once
+  `hasRunOnce`/`simResultsStale` are set — not from inside `runSimulation()`, where those
+  flags still describe the previous state, and where a silent Optimizer run would repaint a
+  panel the user is looking at).
+- Blank stays blank: `''` means "not provided" and is stored and reloaded as such, never as
+  0. A value typed as `-42` is stored as the magnitude, since fact sheets print it signed.
+- **`CASE_SCHEMA_VERSION` stays at 1.** Nothing was redefined — the columns are appended and
+  read by key, so a file written before this release opens here with the boxes blank, and a
+  file written here still opens in 1.2.0, which looks up the keys it knows and ignores the
+  rest. Bumping the number would make this release's files unopenable by any older build
+  for no benefit.
+- `tests/unit/csp.test.js` now resolves the file under test through `tests/lib/paths.js`
+  like every other suite. It used to hardcode `<tool dir>/index.html`, so it silently
+  ignored `SIM_APP_FILE` and reported on the committed file instead of the candidate build
+  it was pointed at — green for a file it had never read. Found while proving the 1.1.0
+  suites could go red; now proved red against a candidate build, which was impossible before.
+- `tests/unit/regression.test.js` compares the whole `runSimulation()` return again, the
+  1.2.0 carve-out having become unnecessary once the baseline carried `maxDrawdown` itself.
+- `tests/unit/case-excel.test.js` knows about the appended drawdown block, and checks the
+  yearly table is still exactly 31 rows + header at the same positions.
+- The historical panel's toggle is 32px tall so it does not add to the mobile backlog.
+- `APP_VERSION` → `1.3.0`. Baseline promoted to 1.2.0 (verified on the live site first).
+
+### Fixed
+
+- The panel kept showing "press Run to compare" after a Run had already finished, because
+  only typing refreshed it. Found by looking at a real PDF export, not by a test — and the
+  first test written for it passed without the fix, because it checked after typing, which
+  refreshes the panel as a side effect. Rewritten to check with no typing after the Run.
+
+### Verified
+
+- `npm test` — 16 suites pass (`past-metrics.test.js`, 46 checks, is new).
+- `regression.test.js` — **ALL IDENTICAL** against the 1.2.0 baseline, now including the
+  drawdown figures in the comparison.
+- Filling every historical box on every fund leaves the engine output and the phase stats
+  (VaR included) byte-identical — the central claim of the feature, pinned by test.
+- Case files both ways: values survive save → open; a file with the two columns physically
+  removed (a pre-1.3.0 file) opens with blank boxes and **no warnings**.
+- Browser suites on Chromium: `sri-load` 8/8 · `csp-load` 27/27, 0 violations ·
+  `case-roundtrip`, `pdf-export`, `heatmap-badge` pass.
+- `desktop-diff` vs the 1.2.0 baseline: 11 differences, all of them the left panel shifted
+  down 39px by the collapsed toggle row. `mobile-audit`: back to 22 sub-32px targets after
+  the toggle was given a 32px height, nothing overflowing, no new horizontal scroll.
+- The Excel template was checked with the app's **own** `parseCaseWorkbook()`, loaded out of
+  the `index.html` in this release: it parses with no warnings, parses **identically to the
+  previous template** once the two new fields are stripped, carries typed values through
+  (including `-12` normalised to `12`), and a copy with the key row deleted is refused.
+- Ten sabotages, all caught by the suite that owns them: past values reaching the engine ·
+  editing one marking results stale · blank stored as 0 · the upper bound becoming a plain
+  average · the new columns inserted instead of appended · the drawdown block dropped from
+  the case file · the report given its own copy of the caveat · the panel starting open ·
+  a Run no longer refreshing the comparison line · and a space added to the inline script
+  without re-running `npm run csp -- --write` (that last one would have passed before the
+  `csp.test.js` fix above).
+
+---
+
 ## 1.2.0 — 2026-10-06
 
 Second of the three risk-reporting releases. Unlike 1.1.0 this one does touch the engine

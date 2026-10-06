@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <meta http-equiv="Content-Security-Policy" content="default-src 'none'; script-src 'self' 'sha256-DlGfs3Q64FkVmVbYNohLmGBI4rcvkTeHVPoScPOsU2w=' https://cdn.jsdelivr.net https://cdn.sheetjs.com https://cdnjs.cloudflare.com; style-src 'self' 'unsafe-inline' https://cdnjs.cloudflare.com https://fonts.googleapis.com; font-src https://cdnjs.cloudflare.com https://fonts.gstatic.com; img-src 'self' data: blob:; connect-src 'none'; form-action 'none'; base-uri 'none'; object-src 'none'; frame-src 'none'; worker-src 'none'; manifest-src 'none';">
+    <meta http-equiv="Content-Security-Policy" content="default-src 'none'; script-src 'self' 'sha256-nfLF2jU39vS0V/cPLdyKjNhMW+ifHmMgh5woF0QsTfg=' https://cdn.jsdelivr.net https://cdn.sheetjs.com https://cdnjs.cloudflare.com; style-src 'self' 'unsafe-inline' https://cdnjs.cloudflare.com https://fonts.googleapis.com; font-src https://cdnjs.cloudflare.com https://fonts.gstatic.com; img-src 'self' data: blob:; connect-src 'none'; form-action 'none'; base-uri 'none'; object-src 'none'; frame-src 'none'; worker-src 'none'; manifest-src 'none';">
     <title>Money Director — Institutional Portfolio Simulator</title>
     <!-- Tailwind is compiled ahead of time and inlined below instead of loading the Play
          CDN (cdn.tailwindcss.com). The CDN script is unversioned, compiles CSS in the
@@ -451,6 +451,37 @@
                                         <i class="fa-solid fa-copy"></i> คัดลอกจากเฟสก่อน
                                     </button>
                                 </div>
+
+                                <!-- Historical reference figures. Collapsed by default and kept OUT of the
+                                     table above on purpose: every box in that table feeds the simulation,
+                                     and these do not. Nothing here is read by any engine. -->
+                                <div class="mt-3 border-t border-slate-800 pt-2">
+                                    <button id="btn-toggle-past" type="button" aria-expanded="false" aria-controls="past-panel"
+                                        class="w-full flex items-center justify-between text-[10px] font-bold text-slate-400 hover:text-slate-200 transition py-2 min-h-[32px]">
+                                        <span class="flex items-center gap-1.5">
+                                            <i id="past-panel-caret" class="fa-solid fa-chevron-right"></i>
+                                            ค่าที่เคยเกิดขึ้นจริงในอดีต (ถ้ามี) — ไม่บังคับ
+                                        </span>
+                                        <span id="past-filled-badge" class="px-1.5 py-0.5 rounded bg-slate-800 text-slate-500 text-[9px]">ยังไม่ได้กรอก</span>
+                                    </button>
+                                    <div id="past-panel" class="hidden mt-2 space-y-2">
+                                        <p id="past-panel-note" class="text-[10px] text-slate-500 leading-relaxed"></p>
+                                        <div class="overflow-x-auto">
+                                            <table class="w-full min-w-[420px] sm:min-w-0 text-left text-[11px] text-slate-300">
+                                                <thead>
+                                                    <tr class="border-b border-slate-700 text-slate-400">
+                                                        <th class="py-1 pr-1 w-1/3">กองทุน</th>
+                                                        <th class="py-1 w-16 text-center">VaR 95%<br><span class="text-[9px] font-normal">ที่เคยเกิด</span></th>
+                                                        <th class="py-1 w-16 text-center">VaR 95%<br><span class="text-[9px] font-normal">จากแบบจำลอง</span></th>
+                                                        <th class="py-1 w-16 text-center">ลงลึกสุด<br><span class="text-[9px] font-normal">ที่เคยเกิด</span></th>
+                                                    </tr>
+                                                </thead>
+                                                <tbody id="past-rows" class="divide-y divide-slate-800"></tbody>
+                                            </table>
+                                        </div>
+                                        <div id="past-summary" class="text-[10px] text-slate-400 bg-slate-900/60 border border-slate-800 rounded p-2 leading-relaxed"></div>
+                                    </div>
+                                </div>
                             </div>
 
                             <!-- OPTIMIZER: Efficient Frontier presets for the currently-selected
@@ -867,7 +898,7 @@
         // Single source of truth for the version string. Shown in the page header, written
         // into the _meta sheet of every saved case file, printed on the PDF cover, and logged
         // to the console -- so a bug report from a stranger can always be tied to a build.
-        const APP_VERSION = '1.2.0';
+        const APP_VERSION = '1.3.0';
 
         // Single source of truth for the disclaimer. The page footer and every PDF page print
         // the same wording; changing it here changes both. Keeping two copies would let one
@@ -889,6 +920,10 @@
         // an extra job: saying out loud that the number ignores deposits and withdrawals.
         // Without that, a reader compares it with the balance on the chart, sees two
         // different stories, and trusts neither.
+        // Shown inside the historical-figures panel itself, where the boxes are -- not in a
+        // footnote. The one thing a reader must not conclude is that typing a number here
+        // changes the simulation.
+        const DISCLAIMER_PAST = 'ตัวเลขในส่วนนี้เป็นข้อมูลอ้างอิงที่ท่านกรอกเอง เครื่องมือไม่ได้ตรวจสอบความถูกต้อง และ "ไม่ถูกนำไปใช้ในการคำนวณหรือการจำลองใด ๆ" ทั้งสิ้น — ใส่ไว้เพื่อวางเทียบกับตัวเลขที่แบบจำลองให้เท่านั้น · ผลงานในอดีตไม่ได้เป็นเครื่องยืนยันผลในอนาคต · กรอกเป็นตัวเลขบวก เช่น 42 หมายถึงเคยลงลึก -42%';
         const DISCLAIMER_MAXDD = 'การลงลึกสุด (Max Drawdown) วัดจากผลตอบแทนของตลาดล้วน ๆ ไม่รวมเงินที่ใส่เพิ่มและเงินที่ถอนออก จึงเทียบกับตัวเลขในหนังสือชี้ชวนกองทุนได้ · "กลาง" คือเส้นทางกลางของการจำลอง ซึ่งอีกครึ่งหนึ่งของเส้นทางแย่กว่านั้น และ "แย่ 10%" คือระดับที่ 1 ใน 10 เส้นทางลงลึกกว่า ไม่ใช่ขอบเขตสูงสุดของความเสียหาย';
 
         // Data Templates
@@ -1395,6 +1430,8 @@
             if (full) full.textContent = DISCLAIMER_WEB_LEAD + DISCLAIMER_CORE + ' ' + DISCLAIMER_WEB_PRIVACY;
             const riskNote = document.getElementById('stats-risk-note');
             if (riskNote) riskNote.textContent = DISCLAIMER_RISK_METRICS + ' · ' + DISCLAIMER_MAXDD;
+            const pastNote = document.getElementById('past-panel-note');
+            if (pastNote) pastNote.textContent = DISCLAIMER_PAST;
         }
 
         document.addEventListener("DOMContentLoaded", () => {
@@ -1575,6 +1612,11 @@
                     hasRunOnce = true;
                     simResultsStale = false;
                     renderPortfolioChart();
+                    // Refreshed here rather than inside runSimulation(): the panel prints the
+                    // simulated drawdown beside the entered ones, and it may only do that once
+                    // the two flags above say this Run's results are the current ones. Called
+                    // from here, a silent Optimizer run also cannot repaint it.
+                    renderPastPanel();
                     btn.innerHTML = originalHtml;
                     
                     document.getElementById('status-badge').innerHTML = '✅ ข้อมูลอัปเดตล่าสุด';
@@ -1742,6 +1784,31 @@
                     const fund = port.fundsData[currentEditingPhase].find(f => f.id === id);
                     if (fund) { fund[field] = val; updateTotalFundWeightBadge(); markDirty(); }
                 }
+            });
+
+            // Historical figures. markDirty() is deliberately NOT called: these values feed
+            // no engine, so the last Run is still valid and telling the user to re-run would
+            // throw away a correct result for nothing.
+            document.getElementById("past-rows").addEventListener("input", (e) => {
+                if (e.target.tagName !== "INPUT") return;
+                const id = parseInt(e.target.dataset.id);
+                const field = e.target.dataset.past;
+                if (!field) return;
+                const port = portfolios.find(p => p.id === activePortId);
+                const fund = port && port.fundsData[currentEditingPhase].find(f => f.id === id);
+                if (!fund) return;
+                fund[field] = pastNum(e.target.value);
+                renderPastSummary(port, port.fundsData[currentEditingPhase]);
+            });
+
+            document.getElementById("btn-toggle-past").addEventListener("click", () => {
+                const panel = document.getElementById("past-panel");
+                const btn = document.getElementById("btn-toggle-past");
+                const caret = document.getElementById("past-panel-caret");
+                const open = panel.classList.toggle("hidden") === false;
+                btn.setAttribute("aria-expanded", open ? "true" : "false");
+                if (caret) caret.className = open ? "fa-solid fa-chevron-down" : "fa-solid fa-chevron-right";
+                if (open) renderPastPanel();
             });
 
             document.getElementById("fund-rows").addEventListener("click", (e) => {
@@ -2011,6 +2078,106 @@
                 tbody.appendChild(tr);
             });
             updateTotalFundWeightBadge();
+            renderPastPanel();
+        }
+
+        // ---- Historical reference figures (display-only) -------------------------------
+        // Entered per fund, stored as '' when blank so "not provided" stays distinguishable
+        // from "the user typed 0". No engine reads these; they exist so a user can put the
+        // model's forward-looking numbers next to what a fund actually did.
+
+        // Blank -> '', otherwise a finite number. Negative input is accepted and normalised
+        // to a magnitude: a fact sheet prints a drawdown as -42%, a person may type 42.
+        function pastNum(raw) {
+            const s = String(raw === undefined || raw === null ? '' : raw).trim();
+            if (s === '') return '';
+            const n = parseFloat(s.replace(/,/g, ''));
+            return isFinite(n) ? Math.abs(n) : '';
+        }
+        function pastHas(v) { return v !== '' && v !== undefined && v !== null && isFinite(v); }
+
+        function renderPastPanel() {
+            const tbody = document.getElementById('past-rows');
+            if (!tbody) return;
+            const pt = portfolios.find(p => p.id === activePortId);
+            if (!pt) return;
+            const funds = pt.fundsData[currentEditingPhase] || [];
+
+            tbody.innerHTML = '';
+            funds.forEach(fund => {
+                const modelVar = monthlyVaR95(((parseFloat(fund.yield) || 0) + (parseFloat(fund.capGain) || 0)) / 100,
+                    (parseFloat(fund.sd) || 0) / 100);
+                const tr = document.createElement('tr');
+                tr.className = 'hover:bg-slate-800/60 transition';
+                tr.innerHTML = `
+                    <td class="py-1 pr-1 text-slate-400">${escapeHtml(fund.name)}</td>
+                    <td class="py-1 text-center"><input type="number" step="0.1" min="0" data-id="${fund.id}" data-past="pastVar" value="${pastHas(fund.pastVar) ? fund.pastVar : ''}" placeholder="–" class="w-14 bg-slate-800 border border-slate-600 text-center rounded px-1 py-0.5 focus:border-slate-400 focus:outline-none placeholder:text-slate-600"></td>
+                    <td class="py-1 text-center text-rose-300/70">${(modelVar * 100).toFixed(2)}%</td>
+                    <td class="py-1 text-center"><input type="number" step="0.1" min="0" data-id="${fund.id}" data-past="pastDd" value="${pastHas(fund.pastDd) ? fund.pastDd : ''}" placeholder="–" class="w-14 bg-slate-800 border border-slate-600 text-center rounded px-1 py-0.5 focus:border-slate-400 focus:outline-none placeholder:text-slate-600"></td>
+                `;
+                tbody.appendChild(tr);
+            });
+
+            renderPastSummary(pt, funds);
+        }
+
+        // Portfolio-level view of the entered drawdowns. Deliberately NOT a single blended
+        // number presented as "the portfolio's past drawdown": drawdowns of different funds
+        // happen in different months and cannot be averaged into one. What is shown is the
+        // range, plus a weighted figure labelled for exactly what it assumes -- every fund
+        // hitting its worst month simultaneously, which is an upper bound, not a history.
+        function pastSummaryData(funds) {
+            const withDd = funds.filter(f => pastHas(f.pastDd));
+            const withVar = funds.filter(f => pastHas(f.pastVar));
+            const totalW = funds.reduce((s, f) => s + (parseFloat(f.weight) || 0), 0);
+            const ddW = withDd.reduce((s, f) => s + (parseFloat(f.weight) || 0), 0);
+            const vals = withDd.map(f => parseFloat(f.pastDd));
+            const upper = ddW > 0
+                ? withDd.reduce((s, f) => s + (parseFloat(f.weight) || 0) / ddW * parseFloat(f.pastDd), 0)
+                : 0;
+            return {
+                funds: funds.length,
+                filledDd: withDd.length, filledVar: withVar.length,
+                coverage: totalW > 0 ? (ddW / totalW) * 100 : 0,
+                min: vals.length ? Math.min(...vals) : null,
+                max: vals.length ? Math.max(...vals) : null,
+                upperBound: vals.length ? upper : null
+            };
+        }
+
+        function renderPastSummary(pt, funds) {
+            const box = document.getElementById('past-summary');
+            const badge = document.getElementById('past-filled-badge');
+            const d = pastSummaryData(funds);
+            const anyFilled = d.filledDd > 0 || d.filledVar > 0;
+
+            if (badge) {
+                badge.textContent = anyFilled
+                    ? `กรอกแล้ว ${Math.max(d.filledDd, d.filledVar)}/${d.funds} กองทุน`
+                    : 'ยังไม่ได้กรอก';
+                badge.className = anyFilled
+                    ? 'px-1.5 py-0.5 rounded bg-slate-700 text-slate-300 text-[9px]'
+                    : 'px-1.5 py-0.5 rounded bg-slate-800 text-slate-500 text-[9px]';
+            }
+            if (!box) return;
+
+            if (d.filledDd === 0) {
+                box.innerHTML = 'กรอกการลงลึกสุดในอดีตอย่างน้อยหนึ่งกองทุน เพื่อดูภาพรวมของพอร์ตนี้';
+                return;
+            }
+            const sim = globalExportData.maxDrawdown;
+            const simLine = (hasRunOnce && sim && !simResultsStale)
+                ? `<div class="mt-1 text-slate-400">แบบจำลองให้พอร์ตรวม <span class="text-rose-300 font-bold">${fmtDrawdown(sim.median)}</span> (เส้นทางกลาง) และ <span class="text-rose-300 font-bold">${fmtDrawdown(sim.worst10)}</span> (แย่ 10%)</div>`
+                : `<div class="mt-1 text-slate-500">กด "ประมวลผลกราฟ" เพื่อดูตัวเลขของแบบจำลองมาเทียบ</div>`;
+            box.innerHTML = `
+                <div>กองทุนในเฟสนี้ที่กรอกไว้เคยลงลึกระหว่าง
+                    <span class="text-slate-200 font-bold">-${d.min.toFixed(1)}%</span> ถึง
+                    <span class="text-slate-200 font-bold">-${d.max.toFixed(1)}%</span>
+                    (กรอกครบ ${d.filledDd}/${d.funds} กองทุน คิดเป็น ${d.coverage.toFixed(0)}% ของน้ำหนักในเฟสนี้)</div>
+                <div class="mt-1">ถ้าทุกกองทุนลงลึกสุดพร้อมกันในเดือนเดียวกัน จะได้ราว
+                    <span class="text-slate-200 font-bold">-${d.upperBound.toFixed(1)}%</span>
+                    <span class="text-slate-500">— เป็นขอบบน ไม่ใช่สิ่งที่เคยเกิดขึ้นจริง</span></div>
+                ${simLine}`;
         }
 
         function updateTotalFundWeightBadge() {
@@ -3178,7 +3345,13 @@
         ];
         const CASE_FUND_COLS = [
             ['portId', 'รหัสพอร์ต'], ['phase', 'เฟส'], ['fundName', 'ชื่อกองทุน'],
-            ['weight', 'สัดส่วน (%)'], ['yield', 'Yield (%)'], ['capGain', 'Growth (%)'], ['sd', 'S.D. (%)']
+            ['weight', 'สัดส่วน (%)'], ['yield', 'Yield (%)'], ['capGain', 'Growth (%)'], ['sd', 'S.D. (%)'],
+            // Added in 1.3.0. Appended, never inserted, and read by key rather than by column
+            // position -- so a file saved before this release still opens (the keys are simply
+            // absent and the fields stay blank), and a file saved now still opens in 1.2.0,
+            // which looks up the keys it knows and ignores the rest. That two-way
+            // compatibility is why CASE_SCHEMA_VERSION stays at 1: nothing was redefined.
+            ['pastVar', 'VaR 95% ที่เคยเกิด (%) — อ้างอิง'], ['pastDd', 'ลงลึกสุดที่เคยเกิด (%) — อ้างอิง']
         ];
 
         function caseNum(v, fallback) {
@@ -3244,7 +3417,9 @@
                         const v = {
                             portId: pt.id, phase, fundName: f.name,
                             weight: caseFundCell(f.weight), yield: caseFundCell(f.yield),
-                            capGain: caseFundCell(f.capGain), sd: caseFundCell(f.sd)
+                            capGain: caseFundCell(f.capGain), sd: caseFundCell(f.sd),
+                            pastVar: pastHas(f.pastVar) ? f.pastVar : '',
+                            pastDd: pastHas(f.pastDd) ? f.pastDd : ''
                         };
                         rows.push(CASE_FUND_COLS.map(c => v[c[0]]));
                     });
@@ -3271,6 +3446,19 @@
                 row.push(globalExportData.resultsByYear['total'][i]?.best || 0);
                 portfolios.forEach(pt => { row.push(globalExportData.resultsByYear[pt.id]?.[i]?.median || 0); });
                 aoa.push(row);
+            }
+            // Appended below the yearly table, keyed, so anything reading this sheet can find
+            // it without depending on where it sits. Written only on this path, which already
+            // refuses to run when the results no longer match the inputs in the same file --
+            // so the drawdown can never be from a different set of assumptions than the rows
+            // above it. Nothing reads these keys back: the yearly table is still the only
+            // thing the tool itself parses.
+            const dd = globalExportData.maxDrawdown;
+            if (dd) {
+                aoa.push([]);
+                aoa.push(['คีย์ (ห้ามแก้)', 'รายการ', 'ค่า (%)']);
+                aoa.push(['maxDrawdownMedian', 'การลงลึกสุดของพอร์ตรวม — เส้นทางกลาง (50th)', +(dd.median * 100).toFixed(4)]);
+                aoa.push(['maxDrawdownWorst10', 'การลงลึกสุดของพอร์ตรวม — กรณีแย่ (10th)', +(dd.worst10 * 100).toFixed(4)]);
             }
             return { aoa, hasResults: true };
         }
@@ -3485,7 +3673,9 @@
                 byId[pid].fundsData[phase].push({
                     id: fundSeq++, name: fname,
                     weight: caseNum(r.weight, 0),
-                    yield: caseFundCell(r.yield), capGain: caseFundCell(r.capGain), sd: caseFundCell(r.sd)
+                    yield: caseFundCell(r.yield), capGain: caseFundCell(r.capGain), sd: caseFundCell(r.sd),
+                    // Absent in files saved before 1.3.0 -> pastNum('') -> '' -> blank box.
+                    pastVar: pastNum(r.pastVar), pastDd: pastNum(r.pastDd)
                 });
             });
             if (errors.length) throw new Error(errors.join('\n'));
@@ -4243,7 +4433,33 @@
                 ])}
                 <div class="mdr-note" style="margin-top:4px">${DISCLAIMER_MAXDD}</div>`);
 
-            return pdfFlowBlocks(ctx, 'สรุปผลการจำลอง', 'ภาพรวมผลลัพธ์จาก Run Simulation ล่าสุด', [kpis, drawdown, grid, yearly]);
+            // Historical reference block: printed only when the user actually entered
+            // something, so a report from someone who never opened that panel looks exactly
+            // as it did in 1.2.0.
+            const blocks = [kpis, drawdown, grid, yearly];
+            const pastRows = [];
+            portfolios.forEach(pt => {
+                [1, 2, 3, 4].forEach(ph => {
+                    if (!pt.phaseSettings[ph].enabled) return;
+                    (pt.fundsData[ph] || []).forEach(f => {
+                        if (!pastHas(f.pastVar) && !pastHas(f.pastDd)) return;
+                        pastRows.push(`<tr><td>${escapeHtml(pt.name)}</td><td>เฟส ${ph}</td><td>${escapeHtml(f.name)}</td>` +
+                            `<td class="num">${pastHas(f.pastVar) ? '-' + Number(f.pastVar).toFixed(1) + '%' : '–'}</td>` +
+                            `<td class="num">${pastHas(f.pastDd) ? '-' + Number(f.pastDd).toFixed(1) + '%' : '–'}</td></tr>`);
+                    });
+                });
+            });
+            if (pastRows.length) {
+                blocks.push(pdfEl('div', 'mdr-block', `
+                    <div class="mdr-h2">ค่าที่เคยเกิดขึ้นจริงในอดีต (ข้อมูลอ้างอิงที่ผู้ใช้กรอก)</div>
+                    <table class="mdr-table">
+                        <thead><tr><th>พอร์ต</th><th>เฟส</th><th>กองทุน</th><th class="num">VaR 95% ที่เคยเกิด</th><th class="num">ลงลึกสุดที่เคยเกิด</th></tr></thead>
+                        <tbody>${pastRows.join('')}</tbody>
+                    </table>
+                    <div class="mdr-note" style="margin-top:4px">${DISCLAIMER_PAST}</div>`));
+            }
+
+            return pdfFlowBlocks(ctx, 'สรุปผลการจำลอง', 'ภาพรวมผลลัพธ์จาก Run Simulation ล่าสุด', blocks);
         }
 
         function pdfBuildStructure(ctx) {
