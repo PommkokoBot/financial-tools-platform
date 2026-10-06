@@ -9,6 +9,81 @@ from a stranger names the build that produced it.
 
 ---
 
+## 1.2.0 — 2026-10-06
+
+Second of the three risk-reporting releases. Unlike 1.1.0 this one does touch the engine
+loop, so the bar it had to clear was that every existing simulated number comes out
+byte-identical — which it does.
+
+### Added
+
+- **Max Drawdown of the combined portfolio**, reported as two figures: the middle path and
+  the path 10% of futures are worse than. The median alone reads as a ceiling on risk when
+  it is the middle of a range, so it is never shown on its own.
+- **Measured on a pure market index, not on the balance.** The engine compounds only the
+  monthly market return of the whole portfolio into a separate index; deposits, withdrawals
+  and rebalancing cashflows never enter it. Measuring the balance instead would make a
+  withdrawal plan that spends itself down exactly as intended report a drawdown approaching
+  −100%, which says nothing about risk — and would not be comparable with the drawdown
+  figure printed in a fund's own fact sheet, which is what a reader will compare it to.
+  The mix still drifts and still rebalances; those change *which* returns get compounded,
+  they are simply not cashflows.
+- **A block on the PDF summary page** with both figures and the caveat. Deliberately its
+  own block rather than a fifth KPI box: that row is a fixed four-column grid, so a fifth
+  card would wrap onto a row of its own with three empty slots.
+- **`DISCLAIMER_MAXDD`** — one constant, printed on the page and in the PDF, saying that
+  the figure excludes cashflows and that "bad case" is not a worst-case bound.
+
+### Changed
+
+- `runSimulation()` returns `maxDrawdown` and publishes it to `globalExportData`. The
+  bookkeeping is taken at the end of the market-return step, before any cashflow touches a
+  balance; it consumes no random number and writes nothing the engine reads back.
+- The new metric card is written with `textContent` rather than the `innerText` the older
+  cards use: jsdom does not implement `innerText`, so a value written that way cannot be
+  verified by the suite at all. Identical behaviour in a browser for a span of plain text.
+- `regression.test.js`: now that the 1.1.0 baseline carries the VaR column, the stats table
+  goes back into the plain byte-for-byte DOM comparison and the 1.1.0 column-stripping
+  helper is gone. The `sim` snapshot compares the fields that existed before this release
+  and checks the new one separately — present in the new build on both surfaces
+  (return value and `globalExportData`), absent in the baseline — so a build that quietly
+  dropped it fails instead of passing as "identical".
+- `var-metric.test.js`: the page-note check became `includes` rather than equality, since
+  that paragraph now carries both caveats. Still compared against the constant itself.
+- Baseline promoted to 1.1.0 (verified on the live site before promotion).
+- `APP_VERSION` → `1.2.0`.
+
+### Verified
+
+- `npm test` — 15 suites pass (`maxdd.test.js`, 23 checks, is new).
+- `regression.test.js` — **ALL IDENTICAL** against the 1.1.0 baseline across all four
+  scenarios, including the two heatmap modes and the drift visualiser. The engine loop was
+  edited and did not move a single number.
+- Arithmetic checked against values computed independently in the suite, not against the
+  app's own output: with volatility switched off, a +7% portfolio must report exactly zero
+  drawdown, and a −12% portfolio must report the compounded 30-year figure to 1e-12.
+- The design decision is pinned by test: a 20,000/month withdrawal and a 50,000/month DCA
+  each leave the drawdown unchanged to within 1e-12 (float noise from dividing differently
+  sized numbers; anything measuring the balance would be off by percentage points), with a
+  guard that the withdrawal scenario did not deplete the portfolio, which would have made
+  that comparison pass for the wrong reason.
+- Browser suites on Chromium: `sri-load` 8/8 · `csp-load` 27/27, 0 violations ·
+  `heatmap-badge`, `case-roundtrip` pass · `pdf-export` succeeds.
+- **The PDF grew from 7 pages to 8.** The new block pushed the per-period table onto a
+  page of its own; both pages were rendered and inspected, nothing overflows or is clipped.
+- `desktop-diff` vs the 1.1.0 baseline: 33 differences, all of them the contents of
+  `#section-mc` shifted down 32px by the caveat's second sentence, plus the new card. Page
+  width and height unchanged.
+- `mobile-audit` at 360px and 390px: unchanged from 1.1.0 — 22 sub-32px targets, nothing
+  overflowing, no new horizontal page scroll.
+- Eight sabotages, all caught: the index measuring the balance instead of market returns ·
+  the bookkeeping moved after the withdrawal step · the two percentiles swapped · the
+  figure printed unsigned · the PDF given its own copy of the caveat · `maxDrawdown`
+  dropped from the return value · the card left unpainted · a silent run repainting the
+  card the user is looking at.
+
+---
+
 ## 1.1.0 — 2026-10-06
 
 First of three planned releases that add risk reporting to the tool. This one is the
