@@ -96,8 +96,19 @@ const reread = (buf) => XLSX.read(buf, { type: 'buffer' });
     await flush(200);
     wb = e.run(`buildCaseWorkbook('x')`);
     aoa = XLSX.utils.sheet_to_json(wb.Sheets['ผลจำลอง 30 ปี'], { header: 1 });
-    check('after Run => 31 data rows + header', aoa.length === 32 && aoa[0][0] === 'ปีที่ (Year)', aoa.length);
+    // 1.3.0 appends a keyed drawdown block below the yearly table (blank row + header +
+    // two keys). The yearly table itself must still be exactly 31 rows + header -- checked
+    // by position, so a block that ever grew INTO the table would fail here.
+    check('after Run => 31 data rows + header', aoa.length === 36 && aoa[0][0] === 'ปีที่ (Year)', aoa.length);
     check('year-30 median in sheet matches engine', Math.abs(aoa[31][3] - e.run(`globalExportData.resultsByYear.total[30].median`)) < 1e-6);
+    check('row after the yearly table is blank, then the drawdown block',
+      (aoa[32] === undefined || aoa[32].length === 0) && aoa[33][0] === 'คีย์ (ห้ามแก้)' &&
+      aoa[34][0] === 'maxDrawdownMedian' && aoa[35][0] === 'maxDrawdownWorst10',
+      JSON.stringify(aoa.slice(32)));
+    check('drawdown block carries the live figures',
+      Math.abs(aoa[34][2] - e.run(`globalExportData.maxDrawdown.median`) * 100) < 1e-3 &&
+      Math.abs(aoa[35][2] - e.run(`globalExportData.maxDrawdown.worst10`) * 100) < 1e-3,
+      `${aoa[34][2]} / ${aoa[35][2]}`);
     check('meta hasResults TRUE', XLSX.utils.sheet_to_json(wb.Sheets['_meta'], { header: 1 }).find(r => r[0] === 'hasResults')[1] === 'TRUE');
 
     e.run(`markDirty()`);

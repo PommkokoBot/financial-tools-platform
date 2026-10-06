@@ -7,18 +7,10 @@ const NEW = requireFile(APP, 'app under test');
 async function snapshot(file, scenario) {
   const { w, run } = makeEnv(file, 12345);
   run(scenario.setup);
-  // Only the fields that existed before this release. runSimulation() gained maxDrawdown
-  // in 1.2.0, and stringifying the whole object would make the snapshot differ for the one
-  // change that was intended, hiding whether anything else moved. The new field is checked
-  // separately below -- and in maxdd.test.js, which owns its arithmetic.
-  const sim = run(`(() => { const r = runSimulation();
-    return JSON.stringify({ resultsByYear: r.resultsByYear, randomPaths: r.randomPaths,
-      cashflows: r.cashflows, survivalRate: r.survivalRate, totalCapitalInjected: r.totalCapitalInjected }); })()`);
-  // Both surfaces of the new field: what runSimulation() hands back (read by the Optimizer's
-  // comparison runs) and what it publishes for the report. Checking only one lets a build
-  // that dropped the other pass as "identical".
-  const hasNewField = run(`[typeof (runSimulation({ silent: true }).maxDrawdown || {}).median,
-    typeof (globalExportData.maxDrawdown || {}).median].join('/')`);
+  // Back to the whole return object in 1.3.0: the 1.2.0 baseline carries maxDrawdown too,
+  // so the field-by-field carve-out that release needed is gone and the comparison is a
+  // plain byte-for-byte match again -- including the drawdown figures, which must not move.
+  const sim = run(`JSON.stringify(runSimulation())`);
   run(`runDriftVisualizer()`);
   const drift = run(`JSON.stringify(globalDriftData)`);
   const dom = run(`JSON.stringify(['metric-survival-rate','cf-year-1','cf-year-10','cf-year-20','cf-year-30','total-cf-withdrawn','metric-total-capital','phase-metrics-body'].map(id => document.getElementById(id).innerHTML))`);
@@ -28,7 +20,7 @@ async function snapshot(file, scenario) {
   run(`heatmapWithdrawalMode='planned'; runHeatmap();`);
   await flush(600);
   const hm2 = w.document.getElementById('heatmap-body').innerHTML;
-  return { sim, drift, dom, hasNewField, hm1, hm2 };
+  return { sim, drift, dom, hm1, hm2 };
 }
 
 const scenarios = [
@@ -48,14 +40,6 @@ const scenarios = [
     const a = await snapshot(OLD, sc);
     const b = await snapshot(NEW, sc);
     for (const k of Object.keys(a)) {
-      // The new build must HAVE the new field and the baseline must not -- otherwise a
-      // build that quietly dropped maxDrawdown would sail through as "identical".
-      if (k === 'hasNewField') {
-        const ok = a[k] === 'undefined/undefined' && b[k] === 'number/number';
-        if (!ok) fails++;
-        console.log(`${ok ? 'OK ' : 'XX '} [${sc.name}] maxDrawdown present in new build only (old=${a[k]} new=${b[k]})`);
-        continue;
-      }
       const same = a[k] === b[k];
       if (!same) fails++;
       console.log(`${same ? 'OK ' : 'XX '} [${sc.name}] ${k} (${a[k].length} chars)`);

@@ -17,8 +17,12 @@ const path = require('path');
 const { JSDOM } = require('jsdom');
 const { buildTag, buildPolicy, hashOf, inlineScript } = require('../tools/make-csp');
 
-const TOOL_DIR = path.join(__dirname, '..', '..');
-const html = fs.readFileSync(path.join(TOOL_DIR, 'index.html'), 'utf8');
+// Resolved through paths.js like every other suite. This file used to hardcode
+// <tool dir>/index.html, which meant it silently ignored SIM_APP_FILE and reported on the
+// committed file instead of the candidate build it was pointed at -- green for a file it
+// had never read. Fixed in 1.3.0.
+const { APP, requireFile } = require('../lib/paths');
+const html = fs.readFileSync(requireFile(APP, 'app under test'), 'utf8');
 
 const results = { pass: [], fail: [] };
 const check = (name, cond, detail) =>
