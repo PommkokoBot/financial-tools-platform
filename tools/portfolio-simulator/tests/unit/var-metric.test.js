@@ -137,8 +137,11 @@ const expectedVaR = (rAnnual, sdAnnual) =>
   const d = w.document;
   const note = d.getElementById('stats-risk-note');
   check('risk note element exists under the stats table', !!note);
+  // `includes`, not equality, since 1.2.0: the same paragraph now also carries the Max
+  // Drawdown caveat (maxdd.test.js owns that half). Still compared against the constant
+  // itself, so a hand-edited copy of the sentence on the page fails here as before.
   check('risk note text comes from DISCLAIMER_RISK_METRICS',
-    note && note.textContent === w.DISCLAIMER_RISK_METRICS, note ? note.textContent.slice(0, 80) : '(missing)');
+    note && note.textContent.includes(w.DISCLAIMER_RISK_METRICS), note ? note.textContent.slice(0, 80) : '(missing)');
   check('risk note says the normal assumption understates extremes',
     /กระจายตัวแบบปกติ/.test(w.DISCLAIMER_RISK_METRICS) && /ต่ำกว่า/.test(w.DISCLAIMER_RISK_METRICS),
     w.DISCLAIMER_RISK_METRICS);
