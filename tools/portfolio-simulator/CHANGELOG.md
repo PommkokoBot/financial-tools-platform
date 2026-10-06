@@ -9,6 +9,56 @@ from a stranger names the build that produced it.
 
 ---
 
+## 1.4.0 — 2026-10-06
+
+Two naming and disclosure changes requested after the three risk-reporting releases were
+live. No engine code was touched and no number moved.
+
+### Changed
+
+- **"ลงลึกสุด" → "Max Drawdown"** everywhere it appeared: the metric card, the past-values
+  column header, two sentences in the past-values summary, the funds-sheet column label in
+  saved case files, the two keyed rows in the results sheet, the report's drawdown rows and
+  the report's past-values header — eleven places in all. The Thai gloss survives in exactly
+  one spot, inside `DISCLAIMER_MAXDD`, so a reader meeting the English term for the first
+  time still gets it explained once.
+  `maxdd.test.js` now fails if the old term appears anywhere in the document except inside
+  that one caveat string — the failure mode being renamed in one place and missed in
+  another, which leaves the tool calling one number two things.
+- **`DISCLAIMER_SURVIVAL`** — the survival headline now says what it counts, on the page
+  and directly under the KPI row in the report, from one constant. The phrase reads
+  stronger than the measurement in two specific ways, and both of them flatter the result,
+  so both are stated: the check happens **once, at the end of year 30**, and **any balance
+  above zero passes it**. Concretely — a path that runs out mid-way and is refilled by a
+  DCA set up later still counts as survived, and "more than 0" is not "enough to live on".
+- `APP_VERSION` → `1.4.0`. Baseline promoted to 1.3.0 (verified on the live site first).
+
+### Verified
+
+- `npm test` — 16 suites pass. `regression.test.js` **ALL IDENTICAL** against the 1.3.0
+  baseline: this release is wording only, and the suite proves it.
+- `app-chrome.test.js` now also reads the engine's own source and asserts that survival is
+  counted the way the new sentence describes (`endTotal > 0`, once, after the last month).
+  A disclosure that drifts from the code it describes is worse than none, and this is the
+  only check in the suite that compares prose against implementation.
+- Browser suites on Chromium: `sri-load` 8/8 · `csp-load` 27/27, 0 violations ·
+  `case-roundtrip`, `pdf-export` (8 pages), `heatmap-badge` pass.
+- `desktop-diff` vs the 1.3.0 baseline: 32 differences, all of them the contents of
+  `#section-mc` shifted down 33px by the survival sentence added to the note. Page width
+  and height unchanged. `mobile-audit`: 22 sub-32px targets, unchanged.
+- The Excel template was rebuilt with the renamed column header and re-checked with the
+  app's own `parseCaseWorkbook()`: it parses **identically to the 1.3.0 template**, since
+  the tool reads that sheet by the key row, not by the header text. A copy with the key row
+  deleted is still refused.
+- Six sabotages, all caught: the rename missed on the card · the rename missed in the PDF
+  only · the survival explanation dropped from the page · dropped from the report · the
+  explanation reworded to claim "never ran out along the way" · and the engine switched to
+  `endTotal >= 0`. That last one left `regression.test.js` green (no path in those
+  scenarios lands exactly on zero) and was caught by the source-reading check above —
+  which is the reason that check exists.
+
+---
+
 ## 1.3.0 — 2026-10-06
 
 Last of the three risk-reporting releases. The feature it adds is defined as much by what
