@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <meta http-equiv="Content-Security-Policy" content="default-src 'none'; script-src 'self' 'sha256-zON3xiPZ+drqdfPm7PMO2wVtVknCPuA5or87mqqTiGw=' https://cdn.jsdelivr.net https://cdn.sheetjs.com https://cdnjs.cloudflare.com; style-src 'self' 'unsafe-inline' https://cdnjs.cloudflare.com https://fonts.googleapis.com; font-src https://cdnjs.cloudflare.com https://fonts.gstatic.com; img-src 'self' data: blob:; connect-src 'none'; form-action 'none'; base-uri 'none'; object-src 'none'; frame-src 'none'; worker-src 'none'; manifest-src 'none';">
+    <meta http-equiv="Content-Security-Policy" content="default-src 'none'; script-src 'self' 'sha256-DlGfs3Q64FkVmVbYNohLmGBI4rcvkTeHVPoScPOsU2w=' https://cdn.jsdelivr.net https://cdn.sheetjs.com https://cdnjs.cloudflare.com; style-src 'self' 'unsafe-inline' https://cdnjs.cloudflare.com https://fonts.googleapis.com; font-src https://cdnjs.cloudflare.com https://fonts.gstatic.com; img-src 'self' data: blob:; connect-src 'none'; form-action 'none'; base-uri 'none'; object-src 'none'; frame-src 'none'; worker-src 'none'; manifest-src 'none';">
     <title>Money Director — Institutional Portfolio Simulator</title>
     <!-- Tailwind is compiled ahead of time and inlined below instead of loading the Play
          CDN (cdn.tailwindcss.com). The CDN script is unversioned, compiles CSS in the
@@ -511,6 +511,10 @@
                             </h3>
                             <div class="flex gap-4">
                                 <div class="text-right">
+                                    <span class="text-[10px] text-slate-400 block">ลงลึกสุด (กลาง / แย่ 10%)</span>
+                                    <span id="metric-max-drawdown" class="text-xs font-bold text-rose-300">-- / --</span>
+                                </div>
+                                <div class="text-right">
                                     <span class="text-[10px] text-slate-400 block">โอกาสพอร์ตรวมอยู่รอด</span>
                                     <span id="metric-survival-rate" class="text-xs font-bold text-cyan-400">-- %</span>
                                 </div>
@@ -863,7 +867,7 @@
         // Single source of truth for the version string. Shown in the page header, written
         // into the _meta sheet of every saved case file, printed on the PDF cover, and logged
         // to the console -- so a bug report from a stranger can always be tied to a build.
-        const APP_VERSION = '1.1.0';
+        const APP_VERSION = '1.2.0';
 
         // Single source of truth for the disclaimer. The page footer and every PDF page print
         // the same wording; changing it here changes both. Keeping two copies would let one
@@ -881,6 +885,11 @@
         // the part people quote. VaR is the headline figure most likely to be over-read,
         // so the sentence that says what it is NOT travels with it to every surface.
         const DISCLAIMER_RISK_METRICS = 'VaR 95% ต่อเดือน เป็นค่าประมาณจากสูตรทางสถิติที่สมมติให้ผลตอบแทนกระจายตัวแบบปกติ จึงประเมินเหตุการณ์รุนแรงต่ำกว่าที่เคยเกิดขึ้นจริงได้ อ่านว่า "ในทุก 20 เดือน จะมีราว 1 เดือนที่ขาดทุนมากกว่าค่านี้" ไม่ใช่ตัวเลขขาดทุนสูงสุดที่เป็นไปได้';
+        // MaxDD travels with its own sentence for the same reason VaR does, and this one has
+        // an extra job: saying out loud that the number ignores deposits and withdrawals.
+        // Without that, a reader compares it with the balance on the chart, sees two
+        // different stories, and trusts neither.
+        const DISCLAIMER_MAXDD = 'การลงลึกสุด (Max Drawdown) วัดจากผลตอบแทนของตลาดล้วน ๆ ไม่รวมเงินที่ใส่เพิ่มและเงินที่ถอนออก จึงเทียบกับตัวเลขในหนังสือชี้ชวนกองทุนได้ · "กลาง" คือเส้นทางกลางของการจำลอง ซึ่งอีกครึ่งหนึ่งของเส้นทางแย่กว่านั้น และ "แย่ 10%" คือระดับที่ 1 ใน 10 เส้นทางลงลึกกว่า ไม่ใช่ขอบเขตสูงสุดของความเสียหาย';
 
         // Data Templates
         // Public default set: generic asset-class names, not real funds. Putting expected-return
@@ -992,6 +1001,13 @@
             const muMonthly = Math.pow(1 + r, 1 / 12) - 1;
             const sdMonthly = sd / Math.sqrt(12);
             return Math.max(0, VAR_Z_95 * sdMonthly - muMonthly);
+        }
+
+        // Drawdowns are negative decimals (-0.184 = "fell 18.4% from its peak"). Printed with
+        // the sign, because a risk figure shown as a bare positive number invites being read
+        // as a gain somewhere down the line.
+        function fmtDrawdown(dd) {
+            return (isFinite(dd) ? dd * 100 : 0).toFixed(1) + '%';
         }
 
         function classifyAsset(sd) {
@@ -1378,7 +1394,7 @@
             const full = document.getElementById('disclaimer-full');
             if (full) full.textContent = DISCLAIMER_WEB_LEAD + DISCLAIMER_CORE + ' ' + DISCLAIMER_WEB_PRIVACY;
             const riskNote = document.getElementById('stats-risk-note');
-            if (riskNote) riskNote.textContent = DISCLAIMER_RISK_METRICS;
+            if (riskNote) riskNote.textContent = DISCLAIMER_RISK_METRICS + ' · ' + DISCLAIMER_MAXDD;
         }
 
         document.addEventListener("DOMContentLoaded", () => {
@@ -2079,6 +2095,7 @@
                 randomPaths[pt.id] = [];
             });
             const yearlyCashflows = Array.from({length: 30}, () => []);
+            const pathDrawdowns = [];   // worst peak-to-trough of each path's market index
             let successfulPaths = 0;
             const randomIndexToCapture = Math.floor(Math.random() * numPaths); 
 
@@ -2108,6 +2125,15 @@
                 
                 let sumCfYear = 0;
 
+                // Drawdown bookkeeping for this path. ddIndex is a pure market index: it
+                // compounds ONLY the monthly market return of the whole portfolio and never
+                // sees DCA, withdrawals or rebalancing. That is the whole point -- a plan
+                // that spends its money down exactly as intended would otherwise report a
+                // drawdown approaching -100%, which says nothing about risk. This measures
+                // the mix the path actually held each month, so drift and rebalancing still
+                // change WHICH returns get compounded; they just are not cashflows.
+                let ddIndex = 1, ddPeak = 1, ddWorst = 0;
+
                 // --- MONTHLY ENGINE LOOP ---
                 for (let m = 1; m <= numMonths; m++) {
                     // Correlated cross-portfolio shocks (replaces the old single shared `z`,
@@ -2117,6 +2143,9 @@
                     // 1. Market Return Growth
                     let monthYieldPool = {};
                     let totalMonthYieldGenerated = 0;
+                    // Captured before step 1 and compared with the total after it, so the
+                    // ratio is the market return of the whole portfolio for this month.
+                    const ddValueBefore = portfolios.reduce((s, pt) => s + currentVals[pt.id], 0);
 
                     portfolios.forEach((pt, ptIdx) => {
                         if (currentVals[pt.id] <= 0) {
@@ -2154,6 +2183,17 @@
                         monthYieldPool[pt.id] = portYieldMonth;
                         totalMonthYieldGenerated += portYieldMonth;
                     });
+
+                    // 1b. Drawdown index -- read-only bookkeeping, taken here because this is
+                    // the last moment before any cashflow touches the balances. Consumes no
+                    // random number and writes nothing the engine reads back.
+                    if (ddValueBefore > 0) {
+                        const ddValueAfter = portfolios.reduce((s, pt) => s + currentVals[pt.id], 0);
+                        ddIndex *= (ddValueAfter / ddValueBefore);
+                        if (ddIndex > ddPeak) ddPeak = ddIndex;
+                        const dd = (ddPeak > 0) ? (ddIndex / ddPeak - 1) : 0;
+                        if (dd < ddWorst) ddWorst = dd;
+                    }
 
                     // 2. Portfolio Specific DCA Top-ups
                     portfolios.forEach(pt => {
@@ -2263,9 +2303,21 @@
                 }
                 
                 if (p === 0) expectedTotalCapitalInjected = pathTotalCapital;
+                pathDrawdowns.push(ddWorst);
                 let endTotal = portfolios.reduce((s, p) => s + currentVals[p.id], 0);
                 if (endTotal > 0) successfulPaths++;
             }
+
+            // Reported as two numbers, in the same 10th/50th-percentile language the chart
+            // already uses: the middle path, and the path 10% of futures are worse than.
+            // The median alone reads as a ceiling on risk when it is the middle of the range.
+            // Sorted ascending, so index 10% lands on the deep end -- same convention as the
+            // `worst` percentile picked for portfolio values below.
+            const sortedDd = pathDrawdowns.slice().sort((a, b) => a - b);
+            const maxDrawdown = {
+                median: sortedDd[Math.floor(numPaths * 0.5)] || 0,
+                worst10: sortedDd[Math.floor(numPaths * 0.1)] || 0
+            };
 
             if (!silent) {
                 document.getElementById("metric-total-capital").innerText = `${expectedTotalCapitalInjected.toLocaleString('th-TH', {maximumFractionDigits:0})} บาท`;
@@ -2307,12 +2359,20 @@
                 globalExportData.resultsByYear = processedResults;
                 globalExportData.randomPaths = randomPaths;
                 globalExportData.cashflows = cfByYear;
+                globalExportData.maxDrawdown = maxDrawdown;
+
+                // textContent, not innerText like the older metric cards: jsdom does not
+                // implement innerText, so anything written that way is invisible to the test
+                // suite and cannot be verified. Identical behaviour in a browser for a span
+                // of plain text.
+                const ddEl = document.getElementById('metric-max-drawdown');
+                if (ddEl) ddEl.textContent = `${fmtDrawdown(maxDrawdown.median)} / ${fmtDrawdown(maxDrawdown.worst10)}`;
             }
 
             // Always returned (even on a normal, non-silent call) so the Optimizer's
             // comparison-run caller can read results directly -- nothing in the existing
             // codebase uses runSimulation()'s return value, so this is additive only.
-            return { resultsByYear: processedResults, randomPaths, cashflows: cfByYear, survivalRate, totalCapitalInjected: expectedTotalCapitalInjected };
+            return { resultsByYear: processedResults, randomPaths, cashflows: cfByYear, survivalRate, totalCapitalInjected: expectedTotalCapitalInjected, maxDrawdown };
         }
 
         // =========================================================================
@@ -4172,7 +4232,18 @@
                 </table>
                 <div class="mdr-note" style="margin-top:4px">มัธยฐานของกระแสเงินสดและของมูลค่าพอร์ตคำนวณแยกกันจาก 1,000 เส้นทางจำลอง จึงอาจไม่ได้มาจากเส้นทางเดียวกัน</div>`);
 
-            return pdfFlowBlocks(ctx, 'สรุปผลการจำลอง', 'ภาพรวมผลลัพธ์จาก Run Simulation ล่าสุด', [kpis, grid, yearly]);
+            // Its own block rather than a fifth KPI box: the KPI row is a fixed 4-column
+            // grid, so a fifth card would wrap onto a row of its own with three empty slots.
+            const dd = globalExportData.maxDrawdown || { median: 0, worst10: 0 };
+            const drawdown = pdfEl('div', 'mdr-block', `
+                <div class="mdr-h2">ความเสี่ยงขาลงของพอร์ตรวม (จากการจำลอง)</div>
+                ${pdfKvTable([
+                    ['การลงลึกสุด — เส้นทางกลาง (50th)', fmtDrawdown(dd.median)],
+                    ['การลงลึกสุด — กรณีแย่ (10th)', fmtDrawdown(dd.worst10)]
+                ])}
+                <div class="mdr-note" style="margin-top:4px">${DISCLAIMER_MAXDD}</div>`);
+
+            return pdfFlowBlocks(ctx, 'สรุปผลการจำลอง', 'ภาพรวมผลลัพธ์จาก Run Simulation ล่าสุด', [kpis, drawdown, grid, yearly]);
         }
 
         function pdfBuildStructure(ctx) {
