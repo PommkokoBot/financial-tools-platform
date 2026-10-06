@@ -46,7 +46,7 @@ const FILLED = `
   check('no default fund ships with a historical value',
     run(`JSON.stringify(portfolios.every(pt => [1,2,3,4].every(ph => (pt.fundsData[ph]||[]).every(f => !pastHas(f.pastVar) && !pastHas(f.pastDd)))))`) === 'true');
   check('summary asks for input rather than printing a number',
-    d.getElementById('past-summary').textContent.includes('กรอกการลงลึกสุด'),
+    d.getElementById('past-summary').textContent.includes('กรอก Max Drawdown ในอดีต'),
     d.getElementById('past-summary').textContent);
 
   // The toggle is a button with a listener, not an inline onclick -- CSP forbids the latter.
@@ -71,7 +71,7 @@ const FILLED = `
   check('weighted upper bound is weight-weighted, not a plain average',
     text.includes('-33.0%') && !text.includes('-27.0%'), text.slice(0, 220));
   check('upper bound is labelled as an assumption, not as history',
-    /ถ้าทุกกองทุนลงลึกสุดพร้อมกัน/.test(text) && /เป็นขอบบน/.test(text), text.slice(0, 260));
+    /ถ้าทุกกองทุน Drawdown ลึกสุดพร้อมกัน/.test(text) && /เป็นขอบบน/.test(text), text.slice(0, 260));
   check('coverage of the entered funds is stated', /100% ของน้ำหนัก/.test(text), text.slice(0, 200));
 
   const summary = JSON.parse(run(`JSON.stringify(pastSummaryData(portfolios[0].fundsData[1]))`));

@@ -142,6 +142,21 @@ const flatFunds = (capGain) => `
   check('caveat says the bad case is not a worst-case bound',
     /ไม่ใช่ขอบเขตสูงสุด/.test(w.DISCLAIMER_MAXDD), w.DISCLAIMER_MAXDD);
 
+  // 1.4.0 renamed the metric. The old Thai term is kept only as the gloss inside the
+  // caveat sentence; anywhere else it means a rename was done in one place and missed in
+  // another, which is how a tool ends up calling one number two things.
+  run(`window.__html = document.documentElement.innerHTML;`);
+  // split/join, not replace: the caveat appears twice in the document -- once as the
+  // rendered note and once as the string literal in the inline script -- and removing
+  // only the first would leave the literal behind and fail for the wrong reason.
+  const strayOldTerm = w.__html.split(w.DISCLAIMER_MAXDD).join('').includes('ลงลึกสุด');
+  check('the old term "ลงลึกสุด" survives only inside the caveat gloss', !strayOldTerm);
+  check('the metric card is labelled Max Drawdown',
+    /Max Drawdown/.test(w.document.getElementById('metric-max-drawdown').parentElement.textContent),
+    w.document.getElementById('metric-max-drawdown').parentElement.textContent);
+  check('the caveat still carries the Thai gloss once',
+    /Max Drawdown \(การลงลึกสุดจากจุดสูงสุด\)/.test(w.DISCLAIMER_MAXDD), w.DISCLAIMER_MAXDD);
+
   run(REAL_FUNDS + `runSimulation();`);
   const summaryHtml = run(`(() => {
     const __root = document.createElement('div');

@@ -76,6 +76,30 @@ check('footer disclaimer carries the privacy sentence',
 check('footer disclaimer disclaims any tie to a financial institution',
   full && full.textContent.includes('ไม่มีความเกี่ยวข้องกับสถาบันการเงินหรือบริษัทหลักทรัพย์ใดๆ'));
 
+// --- 3b. What the survival headline actually counts (1.4.0) ---
+// The phrase "chance the portfolio survives" reads stronger than what is measured, in two
+// specific ways that both flatter the result. Both must be stated, on the page and in the
+// report, from one constant -- the same anti-drift arrangement as the disclaimer itself.
+run(`window.DISCLAIMER_SURVIVAL = DISCLAIMER_SURVIVAL;`);
+const riskNote = doc.getElementById('stats-risk-note');
+check('page risk note carries the survival explanation',
+  riskNote && riskNote.textContent.includes(w.DISCLAIMER_SURVIVAL),
+  riskNote ? riskNote.textContent.slice(0, 120) : '(element missing)');
+check('explanation names the 1,000 paths it counts',
+  /1,000 เส้นทาง/.test(w.DISCLAIMER_SURVIVAL), w.DISCLAIMER_SURVIVAL);
+check('explanation says the test is "more than 0 at the end of year 30"',
+  /สิ้นปีที่ 30/.test(w.DISCLAIMER_SURVIVAL) && /มากกว่า 0/.test(w.DISCLAIMER_SURVIVAL), w.DISCLAIMER_SURVIVAL);
+check('explanation admits it does not mean "never ran out along the way"',
+  /ไม่ได้แปลว่าไม่เคยหมดระหว่างทาง/.test(w.DISCLAIMER_SURVIVAL), w.DISCLAIMER_SURVIVAL);
+check('explanation admits "more than 0" is not "enough to live on"',
+  /ไม่ได้แปลว่าเหลือพอใช้/.test(w.DISCLAIMER_SURVIVAL), w.DISCLAIMER_SURVIVAL);
+
+// And it must match what the engine actually does: survival is counted once, after the
+// last month, on the summed balance being greater than zero.
+run(`window.__src = [...document.querySelectorAll('script')].filter(x => !x.src).map(x => x.textContent).join('');`);
+check('the engine really counts end-of-horizon balance > 0',
+  /let endTotal = portfolios\.reduce\([\s\S]{0,120}?if \(endTotal > 0\) successfulPaths\+\+;/.test(w.__src));
+
 // --- 4. The anti-drift check: page and PDF must print the same core wording ---
 const pdfHtml = w.pdfDisclaimerHtml('1 ม.ค. 2569');
 check('PDF disclaimer carries the same shared core wording',

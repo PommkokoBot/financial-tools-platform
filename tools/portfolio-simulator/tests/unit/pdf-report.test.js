@@ -85,6 +85,12 @@ async function runMain(run) {
   check('cover TOC lists 3 sections with page numbers', pages[0].includes('<span>สรุปผลการจำลอง</span><span>หน้า 2</span>') && pages[0].includes('<span>วิถีความมั่งคั่ง 30 ปี (Monte Carlo)</span><span>หน้า 4</span>') && !pages[0].includes('Heatmap</span>'));
   check('no customer-name field in report', pages.every(p => !p.includes('ชื่อลูกค้า')));
   // Summary numbers match what the app shows
+  // 1.4.0: the report must explain the survival headline, from the same constant the
+  // page prints, so the two cannot drift apart.
+  check('summary explains what the survival figure counts',
+    pages[1].includes(run(`DISCLAIMER_SURVIVAL`)), pages[1].slice(0, 200));
+  check('summary labels the drawdown rows with the new name',
+    pages[1].includes('Max Drawdown — เส้นทางกลาง (50th)') && !pages[1].includes('การลงลึกสุด —'));
   const surv = d.getElementById('metric-survival-rate').textContent;
   check('summary shows same survival rate as app', pages[1].includes(`>${surv}<`), surv);
   const y30 = Math.round(run(`globalExportData.resultsByYear.total[30].median`)).toLocaleString('th-TH');
