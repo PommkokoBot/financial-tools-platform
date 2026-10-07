@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <meta http-equiv="Content-Security-Policy" content="default-src 'none'; script-src 'self' 'sha256-nfLF2jU39vS0V/cPLdyKjNhMW+ifHmMgh5woF0QsTfg=' https://cdn.jsdelivr.net https://cdn.sheetjs.com https://cdnjs.cloudflare.com; style-src 'self' 'unsafe-inline' https://cdnjs.cloudflare.com https://fonts.googleapis.com; font-src https://cdnjs.cloudflare.com https://fonts.gstatic.com; img-src 'self' data: blob:; connect-src 'none'; form-action 'none'; base-uri 'none'; object-src 'none'; frame-src 'none'; worker-src 'none'; manifest-src 'none';">
+    <meta http-equiv="Content-Security-Policy" content="default-src 'none'; script-src 'self' 'sha256-3YOxYIqpwMzTcAz+Nq8WgcsQGt/EYWIrceoC+4ZJruU=' https://cdn.jsdelivr.net https://cdn.sheetjs.com https://cdnjs.cloudflare.com; style-src 'self' 'unsafe-inline' https://cdnjs.cloudflare.com https://fonts.googleapis.com; font-src https://cdnjs.cloudflare.com https://fonts.gstatic.com; img-src 'self' data: blob:; connect-src 'none'; form-action 'none'; base-uri 'none'; object-src 'none'; frame-src 'none'; worker-src 'none'; manifest-src 'none';">
     <title>Money Director — Institutional Portfolio Simulator</title>
     <!-- Tailwind is compiled ahead of time and inlined below instead of loading the Play
          CDN (cdn.tailwindcss.com). The CDN script is unversioned, compiles CSS in the
@@ -473,7 +473,7 @@
                                                         <th class="py-1 pr-1 w-1/3">กองทุน</th>
                                                         <th class="py-1 w-16 text-center">VaR 95%<br><span class="text-[9px] font-normal">ที่เคยเกิด</span></th>
                                                         <th class="py-1 w-16 text-center">VaR 95%<br><span class="text-[9px] font-normal">จากแบบจำลอง</span></th>
-                                                        <th class="py-1 w-16 text-center">ลงลึกสุด<br><span class="text-[9px] font-normal">ที่เคยเกิด</span></th>
+                                                        <th class="py-1 w-16 text-center">Max Drawdown<br><span class="text-[9px] font-normal">ที่เคยเกิด</span></th>
                                                     </tr>
                                                 </thead>
                                                 <tbody id="past-rows" class="divide-y divide-slate-800"></tbody>
@@ -542,7 +542,7 @@
                             </h3>
                             <div class="flex gap-4">
                                 <div class="text-right">
-                                    <span class="text-[10px] text-slate-400 block">ลงลึกสุด (กลาง / แย่ 10%)</span>
+                                    <span class="text-[10px] text-slate-400 block">Max Drawdown (กลาง / แย่ 10%)</span>
                                     <span id="metric-max-drawdown" class="text-xs font-bold text-rose-300">-- / --</span>
                                 </div>
                                 <div class="text-right">
@@ -890,6 +890,7 @@
         <p id="disclaimer-full" class="text-[11px] leading-relaxed text-slate-400"></p>
         <p class="text-[11px] text-slate-500 mt-2">
             <span id="footer-version"></span> ·
+            <a id="manual-link" href="docs/PortfolioSimulator_UserManual_v1.4.0.pdf" target="_blank" rel="noopener" class="text-amber-400/70 hover:text-amber-300">คู่มือการใช้งาน (PDF)</a> ·
             <a href="https://www.facebook.com/themoneydirector" target="_blank" rel="noopener" class="text-amber-400/70 hover:text-amber-300">facebook.com/themoneydirector</a>
         </p>
     </footer>
@@ -898,7 +899,7 @@
         // Single source of truth for the version string. Shown in the page header, written
         // into the _meta sheet of every saved case file, printed on the PDF cover, and logged
         // to the console -- so a bug report from a stranger can always be tied to a build.
-        const APP_VERSION = '1.3.0';
+        const APP_VERSION = '1.4.0';
 
         // Single source of truth for the disclaimer. The page footer and every PDF page print
         // the same wording; changing it here changes both. Keeping two copies would let one
@@ -923,8 +924,13 @@
         // Shown inside the historical-figures panel itself, where the boxes are -- not in a
         // footnote. The one thing a reader must not conclude is that typing a number here
         // changes the simulation.
-        const DISCLAIMER_PAST = 'ตัวเลขในส่วนนี้เป็นข้อมูลอ้างอิงที่ท่านกรอกเอง เครื่องมือไม่ได้ตรวจสอบความถูกต้อง และ "ไม่ถูกนำไปใช้ในการคำนวณหรือการจำลองใด ๆ" ทั้งสิ้น — ใส่ไว้เพื่อวางเทียบกับตัวเลขที่แบบจำลองให้เท่านั้น · ผลงานในอดีตไม่ได้เป็นเครื่องยืนยันผลในอนาคต · กรอกเป็นตัวเลขบวก เช่น 42 หมายถึงเคยลงลึก -42%';
-        const DISCLAIMER_MAXDD = 'การลงลึกสุด (Max Drawdown) วัดจากผลตอบแทนของตลาดล้วน ๆ ไม่รวมเงินที่ใส่เพิ่มและเงินที่ถอนออก จึงเทียบกับตัวเลขในหนังสือชี้ชวนกองทุนได้ · "กลาง" คือเส้นทางกลางของการจำลอง ซึ่งอีกครึ่งหนึ่งของเส้นทางแย่กว่านั้น และ "แย่ 10%" คือระดับที่ 1 ใน 10 เส้นทางลงลึกกว่า ไม่ใช่ขอบเขตสูงสุดของความเสียหาย';
+        const DISCLAIMER_PAST = 'ตัวเลขในส่วนนี้เป็นข้อมูลอ้างอิงที่ท่านกรอกเอง เครื่องมือไม่ได้ตรวจสอบความถูกต้อง และ "ไม่ถูกนำไปใช้ในการคำนวณหรือการจำลองใด ๆ" ทั้งสิ้น — ใส่ไว้เพื่อวางเทียบกับตัวเลขที่แบบจำลองให้เท่านั้น · ผลงานในอดีตไม่ได้เป็นเครื่องยืนยันผลในอนาคต · กรอกเป็นตัวเลขบวก เช่น 42 หมายถึง Drawdown เคยลึกถึง -42%';
+        const DISCLAIMER_MAXDD = 'Max Drawdown (การลงลึกสุดจากจุดสูงสุด) วัดจากผลตอบแทนของตลาดล้วน ๆ ไม่รวมเงินที่ใส่เพิ่มและเงินที่ถอนออก จึงเทียบกับตัวเลขในหนังสือชี้ชวนกองทุนได้ · "กลาง" คือเส้นทางกลางของการจำลอง ซึ่งอีกครึ่งหนึ่งของเส้นทางแย่กว่านั้น และ "แย่ 10%" คือระดับที่ 1 ใน 10 เส้นทางลึกกว่า ไม่ใช่ขอบเขตสูงสุดของความเสียหาย';
+        // What the headline "survival" number on this panel actually counts. Spelled out
+        // because the plain reading of the phrase is stronger than what is measured in two
+        // specific ways, and both of them flatter the result: the check happens once, at the
+        // end of year 30, and any balance above zero passes it.
+        const DISCLAIMER_SURVIVAL = 'โอกาสพอร์ตรวมอยู่รอด คำนวณจากการจำลอง 1,000 เส้นทาง แล้วนับสัดส่วนของเส้นทางที่ "สิ้นปีที่ 30 ยังมีมูลค่าพอร์ตเหลือมากกว่า 0" · วัดที่ปลายทางเท่านั้น ไม่ได้แปลว่าไม่เคยหมดระหว่างทาง (ถ้าตั้ง DCA ไว้ เงินที่เติมเข้ามาทีหลังทำให้เส้นทางนั้นกลับมามีมูลค่าได้) และ "เหลือมากกว่า 0" ไม่ได้แปลว่าเหลือพอใช้';
 
         // Data Templates
         // Public default set: generic asset-class names, not real funds. Putting expected-return
@@ -1429,7 +1435,7 @@
             const full = document.getElementById('disclaimer-full');
             if (full) full.textContent = DISCLAIMER_WEB_LEAD + DISCLAIMER_CORE + ' ' + DISCLAIMER_WEB_PRIVACY;
             const riskNote = document.getElementById('stats-risk-note');
-            if (riskNote) riskNote.textContent = DISCLAIMER_RISK_METRICS + ' · ' + DISCLAIMER_MAXDD;
+            if (riskNote) riskNote.textContent = DISCLAIMER_SURVIVAL + ' · ' + DISCLAIMER_RISK_METRICS + ' · ' + DISCLAIMER_MAXDD;
             const pastNote = document.getElementById('past-panel-note');
             if (pastNote) pastNote.textContent = DISCLAIMER_PAST;
         }
@@ -2162,7 +2168,7 @@
             if (!box) return;
 
             if (d.filledDd === 0) {
-                box.innerHTML = 'กรอกการลงลึกสุดในอดีตอย่างน้อยหนึ่งกองทุน เพื่อดูภาพรวมของพอร์ตนี้';
+                box.innerHTML = 'กรอก Max Drawdown ในอดีตอย่างน้อยหนึ่งกองทุน เพื่อดูภาพรวมของพอร์ตนี้';
                 return;
             }
             const sim = globalExportData.maxDrawdown;
@@ -2170,11 +2176,11 @@
                 ? `<div class="mt-1 text-slate-400">แบบจำลองให้พอร์ตรวม <span class="text-rose-300 font-bold">${fmtDrawdown(sim.median)}</span> (เส้นทางกลาง) และ <span class="text-rose-300 font-bold">${fmtDrawdown(sim.worst10)}</span> (แย่ 10%)</div>`
                 : `<div class="mt-1 text-slate-500">กด "ประมวลผลกราฟ" เพื่อดูตัวเลขของแบบจำลองมาเทียบ</div>`;
             box.innerHTML = `
-                <div>กองทุนในเฟสนี้ที่กรอกไว้เคยลงลึกระหว่าง
+                <div>กองทุนในเฟสนี้ที่กรอกไว้เคยมี Max Drawdown ระหว่าง
                     <span class="text-slate-200 font-bold">-${d.min.toFixed(1)}%</span> ถึง
                     <span class="text-slate-200 font-bold">-${d.max.toFixed(1)}%</span>
                     (กรอกครบ ${d.filledDd}/${d.funds} กองทุน คิดเป็น ${d.coverage.toFixed(0)}% ของน้ำหนักในเฟสนี้)</div>
-                <div class="mt-1">ถ้าทุกกองทุนลงลึกสุดพร้อมกันในเดือนเดียวกัน จะได้ราว
+                <div class="mt-1">ถ้าทุกกองทุน Drawdown ลึกสุดพร้อมกันในเดือนเดียวกัน จะได้ราว
                     <span class="text-slate-200 font-bold">-${d.upperBound.toFixed(1)}%</span>
                     <span class="text-slate-500">— เป็นขอบบน ไม่ใช่สิ่งที่เคยเกิดขึ้นจริง</span></div>
                 ${simLine}`;
@@ -3351,7 +3357,7 @@
             // absent and the fields stay blank), and a file saved now still opens in 1.2.0,
             // which looks up the keys it knows and ignores the rest. That two-way
             // compatibility is why CASE_SCHEMA_VERSION stays at 1: nothing was redefined.
-            ['pastVar', 'VaR 95% ที่เคยเกิด (%) — อ้างอิง'], ['pastDd', 'ลงลึกสุดที่เคยเกิด (%) — อ้างอิง']
+            ['pastVar', 'VaR 95% ที่เคยเกิด (%) — อ้างอิง'], ['pastDd', 'Max Drawdown ที่เคยเกิด (%) — อ้างอิง']
         ];
 
         function caseNum(v, fallback) {
@@ -3457,8 +3463,8 @@
             if (dd) {
                 aoa.push([]);
                 aoa.push(['คีย์ (ห้ามแก้)', 'รายการ', 'ค่า (%)']);
-                aoa.push(['maxDrawdownMedian', 'การลงลึกสุดของพอร์ตรวม — เส้นทางกลาง (50th)', +(dd.median * 100).toFixed(4)]);
-                aoa.push(['maxDrawdownWorst10', 'การลงลึกสุดของพอร์ตรวม — กรณีแย่ (10th)', +(dd.worst10 * 100).toFixed(4)]);
+                aoa.push(['maxDrawdownMedian', 'Max Drawdown ของพอร์ตรวม — เส้นทางกลาง (50th)', +(dd.median * 100).toFixed(4)]);
+                aoa.push(['maxDrawdownWorst10', 'Max Drawdown ของพอร์ตรวม — กรณีแย่ (10th)', +(dd.worst10 * 100).toFixed(4)]);
             }
             return { aoa, hasResults: true };
         }
@@ -4383,6 +4389,10 @@
                 <div class="mdr-kpi"><div class="mdr-kpi-label">มูลค่าพอร์ตรวมปีที่ 30 (มัธยฐาน, หักเงินเฟ้อ)</div><div class="mdr-kpi-value">${pdfFmtBaht(res[30] ? res[30].median : 0)}</div></div>
                 <div class="mdr-kpi"><div class="mdr-kpi-label">ถอนสะสมรวม 30 ปี (มัธยฐาน, หักเงินเฟ้อ)</div><div class="mdr-kpi-value">${pdfFmtBaht(totalWithdrawn)}</div></div>
                 <div class="mdr-kpi"><div class="mdr-kpi-label">ทุนที่ใส่ไปจริง (รวม DCA)</div><div class="mdr-kpi-value">${escapeHtml(capitalText)}</div></div>`);
+            // The survival headline is the first number a reader sees on this page, so what
+            // it counts is printed directly beneath it rather than in a footnote, from the
+            // same constant the page uses.
+            const survivalNote = pdfEl('div', 'mdr-block', `<div class="mdr-note">${DISCLAIMER_SURVIVAL}</div>`);
 
             const initPrincipal = parseFloat(document.getElementById('init-investment').value) || 0;
             const inflation = parseFloat(document.getElementById('inflation-rate').value) || 0;
@@ -4428,15 +4438,15 @@
             const drawdown = pdfEl('div', 'mdr-block', `
                 <div class="mdr-h2">ความเสี่ยงขาลงของพอร์ตรวม (จากการจำลอง)</div>
                 ${pdfKvTable([
-                    ['การลงลึกสุด — เส้นทางกลาง (50th)', fmtDrawdown(dd.median)],
-                    ['การลงลึกสุด — กรณีแย่ (10th)', fmtDrawdown(dd.worst10)]
+                    ['Max Drawdown — เส้นทางกลาง (50th)', fmtDrawdown(dd.median)],
+                    ['Max Drawdown — กรณีแย่ (10th)', fmtDrawdown(dd.worst10)]
                 ])}
                 <div class="mdr-note" style="margin-top:4px">${DISCLAIMER_MAXDD}</div>`);
 
             // Historical reference block: printed only when the user actually entered
             // something, so a report from someone who never opened that panel looks exactly
             // as it did in 1.2.0.
-            const blocks = [kpis, drawdown, grid, yearly];
+            const blocks = [kpis, survivalNote, drawdown, grid, yearly];
             const pastRows = [];
             portfolios.forEach(pt => {
                 [1, 2, 3, 4].forEach(ph => {
@@ -4453,7 +4463,7 @@
                 blocks.push(pdfEl('div', 'mdr-block', `
                     <div class="mdr-h2">ค่าที่เคยเกิดขึ้นจริงในอดีต (ข้อมูลอ้างอิงที่ผู้ใช้กรอก)</div>
                     <table class="mdr-table">
-                        <thead><tr><th>พอร์ต</th><th>เฟส</th><th>กองทุน</th><th class="num">VaR 95% ที่เคยเกิด</th><th class="num">ลงลึกสุดที่เคยเกิด</th></tr></thead>
+                        <thead><tr><th>พอร์ต</th><th>เฟส</th><th>กองทุน</th><th class="num">VaR 95% ที่เคยเกิด</th><th class="num">Max Drawdown ที่เคยเกิด</th></tr></thead>
                         <tbody>${pastRows.join('')}</tbody>
                     </table>
                     <div class="mdr-note" style="margin-top:4px">${DISCLAIMER_PAST}</div>`));
