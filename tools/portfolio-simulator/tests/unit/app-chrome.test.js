@@ -13,7 +13,8 @@
 //      test, and nothing on screen would look wrong.
 const path = require('path');
 const { makeEnv } = require('../lib/harness');
-const { APP, requireFile } = require('../lib/paths');
+const fs = require('fs');
+const { APP, TOOL_DIR, requireFile } = require('../lib/paths');
 
 const { w, run } = makeEnv(requireFile(APP, 'app under test'), 7);
 
@@ -137,6 +138,67 @@ try {
 } catch (e) {
   check('PDF cover prints the version', false, e.stack);
 }
+
+// --- 7. The link to the user manual (1.4.0) ---
+// The manual existed for two releases with nothing on the page pointing at it. Three
+// things about this one link can break without anything looking wrong on screen:
+//
+//   a) The filename carries a version number, so the obvious future mistake is shipping a
+//      new manual and leaving the link on the old one -- or on a file that is not there at
+//      all. The reader gets a 404, or last year's book, and nobody finds out.
+//   b) target="_blank" is not politeness here. The tool keeps everything in the page and
+//      has no backend, so opening the PDF in the same tab throws away whatever the person
+//      had already typed in.
+//   c) docs/README.md is the index of what lives in docs/. If the page and that index name
+//      different files, one of them is lying to the reader.
+const manualLink = doc.getElementById('manual-link');
+check('footer links to the user manual', !!manualLink, '(no element with id="manual-link")');
+
+const href = manualLink ? (manualLink.getAttribute('href') || '') : '';
+check('manual link is a relative path inside docs/', /^docs\/[^/]+\.pdf$/.test(href), href);
+check('manual link opens in a new tab (the page holds unsaved input)',
+  manualLink && manualLink.getAttribute('target') === '_blank',
+  manualLink ? String(manualLink.getAttribute('target')) : '');
+check('manual link sets rel="noopener"',
+  manualLink && (manualLink.getAttribute('rel') || '').includes('noopener'),
+  manualLink ? String(manualLink.getAttribute('rel')) : '');
+check('manual link has visible text',
+  manualLink && manualLink.textContent.trim().length > 3,
+  manualLink ? manualLink.textContent : '');
+
+const manualPath = path.join(TOOL_DIR, href || 'docs/__missing__');
+const manualThere = !!href && fs.existsSync(manualPath);
+check('the file the manual link points at exists in the repo', manualThere, manualPath);
+check('that file is a real PDF, not an empty placeholder',
+  manualThere && fs.statSync(manualPath).size > 50000,
+  manualThere ? fs.statSync(manualPath).size + ' bytes' : '(missing)');
+
+// Pointing at a manual that exists is not enough: the old editions stay in docs/ on
+// purpose (that folder's own rule is never to overwrite one), so "the file is there" would
+// still pass if the link were left on last year's book. The link must name the NEWEST
+// edition present. Deliberately not compared against APP_VERSION: a release that does not
+// change the interface should keep the manual it has, and forcing a new one would mean
+// shipping a reprint with nothing new in it.
+const manualsInDocs = fs.existsSync(path.join(TOOL_DIR, 'docs'))
+  ? fs.readdirSync(path.join(TOOL_DIR, 'docs'))
+      .filter(f => /^PortfolioSimulator_UserManual_v\d+\.\d+\.\d+\.pdf$/.test(f))
+  : [];
+const verKey = (f) => (f.match(/v(\d+)\.(\d+)\.(\d+)\.pdf$/) || []).slice(1).map(Number);
+const cmpVer = (a, b) => { const x = verKey(a), y = verKey(b);
+  for (let i = 0; i < 3; i++) if (x[i] !== y[i]) return x[i] - y[i]; return 0; };
+const newestManual = manualsInDocs.slice().sort(cmpVer).pop();
+check('docs/ contains at least one versioned manual', manualsInDocs.length > 0,
+  JSON.stringify(manualsInDocs));
+check('manual link points at the NEWEST edition in docs/, not an older one',
+  !!newestManual && path.basename(href) === newestManual,
+  `link=${path.basename(href)}  newest=${newestManual}  all=${JSON.stringify(manualsInDocs)}`);
+
+const docsReadme = path.join(TOOL_DIR, 'docs', 'README.md');
+check('docs/README.md exists', fs.existsSync(docsReadme), docsReadme);
+check('docs/README.md lists the same file the page links to',
+  !!href && fs.existsSync(docsReadme) &&
+    fs.readFileSync(docsReadme, 'utf8').includes(path.basename(href)),
+  href ? path.basename(href) : '');
 
 console.log(`PASS ${results.pass.length}  FAIL ${results.fail.length}`);
 results.fail.forEach(f => console.log('  XX  ' + f));
