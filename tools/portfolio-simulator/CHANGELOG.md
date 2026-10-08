@@ -9,6 +9,48 @@ from a stranger names the build that produced it.
 
 ---
 
+## 1.5.0 — 2026-10-08
+
+Wording and layout only, plus one input guard. No engine code was touched and no number
+moved: the regression baseline is byte-identical in behaviour and `regression.test.js`
+passes against the previous build unchanged.
+
+### Changed
+
+- **"กระแสเงินสดเฉลี่ย…" → "Median ของ Cashflow…"** — the figure was never a mean. The
+  code takes the 50th percentile of 1,000 paths for each year, and the report already
+  called it มัธยฐาน; only the page said "เฉลี่ย". Two surfaces, one number, two different
+  words for it.
+- **"ถอนสะสมรวม" → "Cashflow สะสม"** — in the yield-only mode nothing is withdrawn from
+  principal at all, so calling the total a withdrawal invited exactly the wrong reading.
+- **Withdrawal mode names.** `ดึงคงที่สู้เงินเฟ้อ` → **`Yield ตั้งต้น +เงินเฟ้อ`** and
+  `ระบุยอด (บาท/เดือน)` → **`ระบุยอด +เงินเฟ้อ`** on the buttons; the report prints the
+  long forms, `Yield ตั้งต้น เพิ่มตามเงินเฟ้อ` and `ระบุยอด (ระยะยาวปรับด้วยเงินเฟ้อ)`.
+  The old name put "คงที่" and "สู้เงินเฟ้อ" in one phrase, which reads as a contradiction
+  and never said which of the two is constant — it is purchasing power; the baht figure
+  rises every year.
+- **A note under the mode buttons** (`WD_MODE_NOTES`) spells out the rule each mode
+  follows, because the buttons only have room for a short label. Keyed by the same ids the
+  engines switch on, and `app-chrome.test.js` fails if a mode has a PDF label but no note,
+  or the reverse — so a fourth mode cannot ship with one of the two missing.
+- **The three risk-metric caveats moved out of the stats panel.** Survival, VaR and Max
+  Drawdown used to be concatenated into a single grey paragraph under the table, about
+  2,400 characters long, which is a wall nobody reads. They are now one bullet each in a
+  `คำอธิบายตัวเลขความเสี่ยง` block next to the main disclaimer, with a one-line signpost
+  left where they used to be. Same constants, same wording, still shared with the report.
+
+### Fixed
+
+- **The withdrawal start year and month now clamp at 1.** `min="1"` on a number input only
+  governs the spinner arrows; a typed or pasted `-1` went straight through. A negative
+  start year makes `startWdM` negative, so withdrawals still begin in month 1 but
+  `monthsSinceWdStart` starts at 12 or more — the first withdrawal comes out already
+  inflated by a year, and the fixed-amount frequency lands on different months. Wrong
+  numbers with nothing on screen to say so. (`0` was caught by the existing `|| 1`
+  fallback, since 0 is falsy; `-1` was not. The case-file loader already clamped.)
+
+---
+
 ## 1.4.0 — 2026-10-06
 
 Two naming and disclosure changes requested after the three risk-reporting releases were
