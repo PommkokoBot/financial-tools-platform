@@ -132,11 +132,15 @@ const flatFunds = (capGain) => `
 {
   const { w, run } = makeEnv(FILE, 77);
   run(`renderStaticChrome(); window.DISCLAIMER_MAXDD = DISCLAIMER_MAXDD; window.DISCLAIMER_RISK_METRICS = DISCLAIMER_RISK_METRICS;`);
-  const note = w.document.getElementById('stats-risk-note');
+  // Chunk A split the one grey paragraph under the stats table into a bullet per caveat,
+  // parked next to the main disclaimer. Each bullet now holds exactly one constant, so this
+  // asks for its own and separately proves the VaR one did not get lost in the move.
+  const note = w.document.getElementById('risk-note-maxdd');
   check('page note carries the drawdown caveat',
-    note && note.textContent.includes(w.DISCLAIMER_MAXDD), note ? note.textContent.slice(-120) : '(missing)');
-  check('page note still carries the VaR caveat too',
-    note && note.textContent.includes(w.DISCLAIMER_RISK_METRICS));
+    note && note.textContent === w.DISCLAIMER_MAXDD, note ? note.textContent.slice(-120) : '(missing)');
+  const varNote = w.document.getElementById('risk-note-var');
+  check('the VaR caveat survived the move too',
+    varNote && varNote.textContent === w.DISCLAIMER_RISK_METRICS, varNote ? varNote.textContent.slice(0, 80) : '(missing)');
   check('caveat says cashflows are excluded',
     /ไม่รวมเงินที่ใส่เพิ่มและเงินที่ถอนออก/.test(w.DISCLAIMER_MAXDD), w.DISCLAIMER_MAXDD);
   check('caveat says the bad case is not a worst-case bound',

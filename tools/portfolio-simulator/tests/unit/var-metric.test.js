@@ -135,13 +135,13 @@ const expectedVaR = (rAnnual, sdAnnual) =>
 // ---------- 4. The caveat travels with the number ----------
 {
   const d = w.document;
-  const note = d.getElementById('stats-risk-note');
-  check('risk note element exists under the stats table', !!note);
-  // `includes`, not equality, since 1.2.0: the same paragraph now also carries the Max
-  // Drawdown caveat (maxdd.test.js owns that half). Still compared against the constant
-  // itself, so a hand-edited copy of the sentence on the page fails here as before.
+  const note = d.getElementById('risk-note-var');
+  check('risk note element exists on the page', !!note);
+  // Back to equality in chunk A: the three caveats were split out of the single paragraph
+  // under the stats table into one bullet each, so this element now holds this constant and
+  // nothing else. A hand-edited copy of the sentence on the page still fails here.
   check('risk note text comes from DISCLAIMER_RISK_METRICS',
-    note && note.textContent.includes(w.DISCLAIMER_RISK_METRICS), note ? note.textContent.slice(0, 80) : '(missing)');
+    note && note.textContent === w.DISCLAIMER_RISK_METRICS, note ? note.textContent.slice(0, 80) : '(missing)');
   check('risk note says the normal assumption understates extremes',
     /กระจายตัวแบบปกติ/.test(w.DISCLAIMER_RISK_METRICS) && /ต่ำกว่า/.test(w.DISCLAIMER_RISK_METRICS),
     w.DISCLAIMER_RISK_METRICS);

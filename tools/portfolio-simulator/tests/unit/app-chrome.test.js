@@ -31,6 +31,11 @@ run(`
   window.DISCLAIMER_WEB_PRIVACY = DISCLAIMER_WEB_PRIVACY;
   window.pdfDisclaimerHtml = pdfDisclaimerHtml;
   window.buildCaseWorkbook = buildCaseWorkbook;
+  window.DISCLAIMER_RISK_METRICS = DISCLAIMER_RISK_METRICS;
+  window.DISCLAIMER_MAXDD = DISCLAIMER_MAXDD;
+  window.WD_MODE_NOTES = WD_MODE_NOTES;
+  window.PDF_WD_MODE_LABELS = PDF_WD_MODE_LABELS;
+  window.globalWithdrawal = globalWithdrawal;
 `);
 
 const doc = w.document;
@@ -82,7 +87,7 @@ check('footer disclaimer disclaims any tie to a financial institution',
 // specific ways that both flatter the result. Both must be stated, on the page and in the
 // report, from one constant -- the same anti-drift arrangement as the disclaimer itself.
 run(`window.DISCLAIMER_SURVIVAL = DISCLAIMER_SURVIVAL;`);
-const riskNote = doc.getElementById('stats-risk-note');
+const riskNote = doc.getElementById('risk-note-survival');
 check('page risk note carries the survival explanation',
   riskNote && riskNote.textContent.includes(w.DISCLAIMER_SURVIVAL),
   riskNote ? riskNote.textContent.slice(0, 120) : '(element missing)');
@@ -199,6 +204,97 @@ check('docs/README.md lists the same file the page links to',
   !!href && fs.existsSync(docsReadme) &&
     fs.readFileSync(docsReadme, 'utf8').includes(path.basename(href)),
   href ? path.basename(href) : '');
+
+// --- 8. Risk-metric explanations moved out of the stats panel (chunk A) ---
+// Three long explanations concatenated into one paragraph under the table came to roughly
+// 2,400 characters of grey text, which is a wall nobody reads. The wording is unchanged and
+// still comes from the shared constants -- what changed is that each is its own bullet next
+// to the main disclaimer, with a signpost left where they used to be. Both halves are checked
+// here: a signpost with no bullets, or bullets with no signpost, each lose half the point.
+check('the old single-paragraph risk note is gone', !doc.getElementById('stats-risk-note'));
+
+const pointer = doc.getElementById('stats-risk-pointer');
+check('a signpost is left under the stats table', !!pointer);
+check('the signpost names where the explanations went',
+  pointer && pointer.textContent.includes('คำอธิบายตัวเลขความเสี่ยง'),
+  pointer ? pointer.textContent : '(element missing)');
+// If this ever grows past a line or two, the wall has quietly moved back.
+check('the signpost stays short (it points, it does not explain)',
+  pointer && pointer.textContent.length < 200,
+  pointer ? pointer.textContent.length + ' chars' : '(element missing)');
+
+const riskBullets = {
+  'risk-note-survival': w.DISCLAIMER_SURVIVAL,
+  'risk-note-var': w.DISCLAIMER_RISK_METRICS,
+  'risk-note-maxdd': w.DISCLAIMER_MAXDD,
+};
+Object.entries(riskBullets).forEach(([id, text]) => {
+  const el = doc.getElementById(id);
+  check(`bullet #${id} exists`, !!el, '(element missing)');
+  check(`bullet #${id} carries its shared constant verbatim`,
+    el && el.textContent === text, el ? el.textContent.slice(0, 90) : '(element missing)');
+});
+check('the three explanations sit in one list',
+  doc.querySelectorAll('#risk-notes li').length === 3,
+  String(doc.querySelectorAll('#risk-notes li').length));
+
+// --- 9. Withdrawal-mode naming (chunk A) ---
+// Four surfaces name each mode: the button, the note under the buttons, the PDF label, and the
+// id the engines switch on. A mode that gains a button but no note ships looking finished and
+// reads as a blank line; one with no PDF label prints its raw id into the report.
+const modeIds = Object.keys(w.PDF_WD_MODE_LABELS);
+check('every withdrawal mode has a PDF label', modeIds.length >= 3, JSON.stringify(modeIds));
+modeIds.forEach(m => {
+  check(`mode "${m}" has a note under the buttons`,
+    typeof w.WD_MODE_NOTES[m] === 'string' && w.WD_MODE_NOTES[m].length > 10,
+    String(w.WD_MODE_NOTES[m]));
+});
+check('notes cover exactly the modes the PDF labels cover',
+  JSON.stringify(Object.keys(w.WD_MODE_NOTES).sort()) === JSON.stringify(modeIds.slice().sort()),
+  JSON.stringify(Object.keys(w.WD_MODE_NOTES)));
+
+const modeNoteEl = doc.getElementById('global-wd-mode-note');
+check('the mode note element exists', !!modeNoteEl, '(element missing)');
+check('the mode note is filled for the mode selected on load',
+  modeNoteEl && modeNoteEl.textContent.trim().length > 10,
+  modeNoteEl ? modeNoteEl.textContent : '(element missing)');
+
+// Renamed in chunk A. "ดึงคงที่สู้เงินเฟ้อ" read as a contradiction -- constant, yet fighting
+// inflation -- and never said which of the two was constant (it is purchasing power; the baht
+// figure rises). A stray copy left on any surface puts two names for one mode in front of the
+// same reader.
+const appSrc = fs.readFileSync(requireFile(APP, 'app under test'), 'utf8');
+['ดึงคงที่สู้เงินเฟ้อ', 'ระบุยอด (บาท/เดือน)', 'ระบุยอดถอน (บาท/งวด)'].forEach(old => {
+  check(`old mode wording is gone everywhere: "${old}"`, !appSrc.includes(old),
+    'still present');
+});
+
+// --- 10. The withdrawal start cannot be dragged below year 1 (chunk A) ---
+// min="1" on the input governs the spinner arrows only; a typed or pasted "-1" went straight
+// through, and a negative startY makes startWdM negative. Withdrawals then begin in month 1 as
+// usual, but monthsSinceWdStart starts at 12 or more -- so the very first withdrawal is already
+// inflated by a year, and the fixed-amount frequency lands on different months. Wrong numbers,
+// nothing on screen to say so. ("0" happened to be caught by the || 1 fallback; -1 was not.)
+const fireInput = (el, v) => {
+  el.value = String(v);
+  el.dispatchEvent(new w.Event('input', { bubbles: true }));
+};
+const startYEl = doc.getElementById('global-wd-start-y');
+const startMEl = doc.getElementById('global-wd-start-m');
+check('the start-year input exists', !!startYEl, '(element missing)');
+check('the start-month input exists', !!startMEl, '(element missing)');
+if (startYEl && startMEl) {
+  fireInput(startYEl, -3);
+  check('a negative start year is clamped to 1', w.globalWithdrawal.startY === 1, String(w.globalWithdrawal.startY));
+  fireInput(startYEl, 0);
+  check('start year 0 resolves to 1', w.globalWithdrawal.startY === 1, String(w.globalWithdrawal.startY));
+  fireInput(startYEl, 7);
+  check('a valid start year is left alone', w.globalWithdrawal.startY === 7, String(w.globalWithdrawal.startY));
+  fireInput(startMEl, -2);
+  check('a negative start month is clamped to 1', w.globalWithdrawal.startM === 1, String(w.globalWithdrawal.startM));
+  fireInput(startMEl, 6);
+  check('a valid start month is left alone', w.globalWithdrawal.startM === 6, String(w.globalWithdrawal.startM));
+}
 
 console.log(`PASS ${results.pass.length}  FAIL ${results.fail.length}`);
 results.fail.forEach(f => console.log('  XX  ' + f));
