@@ -9,6 +9,68 @@ from a stranger names the build that produced it.
 
 ---
 
+## 1.6.0 — 2026-10-08
+
+Every baht figure on the page can now be read in either basis. Nothing in the engine moved:
+`regression.test.js` compares `runSimulation()` byte for byte against 1.5.0 and it is
+identical, and PV remains the default, so a user who never touches the new control sees
+exactly the numbers they saw before.
+
+### Added
+
+- **A PV / Nominal toggle above the results.** The tool has always deflated every baht figure
+  back to today's money without saying so anywhere, which is what made the yield-only cashflow
+  look like it was shrinking. It is shrinking — in purchasing power — and that is the true and
+  useful reading, so the fix was to label the basis and let the reader switch rather than drop
+  PV. At the default 2.5% inflation a 30-year nominal figure is about 2.1x its real purchasing
+  power, so a page quietly showing nominal reads as a far safer plan than it is.
+  The control sits above the stats panel rather than in the chart header because it governs the
+  whole page. The chart heading and the cashflow column header both name the basis in force.
+- **A second, nominal cashflow series** (`cashflowsNominal`). Portfolio values are snapshotted
+  once a year and deflated by a single factor, so PV and nominal are one multiplication apart
+  and the page converts them itself — and because every path at a given year is scaled by the
+  same positive constant, the 10th/50th/90th stay the same paths they were. A year's cashflow
+  is not convertible that way: it is twelve withdrawals each divided by its own month's factor,
+  and scaling the annual sum by the year-end factor overshoots by about 1.1%. Close enough to
+  look right, wrong by tens of thousands of baht over thirty years. The run therefore carries
+  both series, and `view-basis.test.js` fails if the page ever goes back to multiplying its way
+  to the nominal figure.
+- **The run now records the inflation rate it used** (`infMonthly`). Editing the inflation box
+  marks results stale but leaves them on screen, so converting with the live input would
+  quietly redraw a finished run against a rate it never saw.
+
+### Changed
+
+- **The cashflow card is a table, and it folds.** Four tiles became rows for years 1, 10, 20
+  and 30 with the caveat underneath; the block is collapsible and starts open, because the
+  yearly figures were already visible and the fold is there for the clutter, not to make the
+  numbers opt-in.
+- **The caveat under that table** now states the three things the numbers do not say and that
+  each caused a real misreading: it is a median and was labelled "เฉลี่ย" until 1.5.0; the total
+  is a sum of yearly medians, which is not the median of the total; and in yield-only mode the
+  PV figure falls whenever portfolio growth trails inflation.
+- **The report prints the basis on screen** and labels it, so an export matches what was being
+  looked at — plus one line giving the year-30 median in both bases, because that is the figure
+  people quote out loud and the gap between the two is what a reader needs to see rather than
+  infer. "ทุนที่ใส่ไปจริง" never flips in either place: that is money actually handed over.
+
+### Fixed
+
+- **`metric-total-capital` and `metric-survival-rate` were written with `innerText`.** jsdom
+  does not implement it, so both landed somewhere no test could see.
+  `regression.test.js` has been snapshotting those two ids since they were added and comparing
+  one placeholder against another — a guard that could never fail. They now use `textContent`
+  (identical in a browser for plain text) and the snapshot finally has values in it.
+- **The two basis buttons were 23px tall**, under the 32px touch target the mobile audit
+  enforces, and `mobile-audit` caught them the moment they shipped — `smallCount` went 22 → 24.
+  The first fix did not work: `applyViewBasis` assigns `className` wholesale, so sizing classes
+  added to the markup alone were wiped the first time the basis was applied. Both the markup and
+  the two state strings now build from one `BASIS_BTN_BASE` constant, and `view-basis.test.js`
+  checks the size classes survive on the live elements *after* a basis has been applied, not
+  just in the HTML.
+
+---
+
 ## 1.5.0 — 2026-10-08
 
 Wording and layout only, plus one input guard. No engine code was touched and no number
