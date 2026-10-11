@@ -29,7 +29,10 @@ const COMPLEX = `
     pt.fundsData[3] = [{ id: 7, name: 'KF-INCOME', weight: 100, yield: 3.2, capGain: 1.2, sd: 5 }];
     pt.fundsData[4] = [{ id: 8, name: 'ASP-AAA-R', weight: 100, yield: 1.8, capGain: 0.2, sd: 1.5 }];
   });
-  globalWithdrawal = { mode: 'fixed_baht', fixedAmt: 77000, freq: 3, startY: 13, startM: 5, priorityOrder: [3, 1, 2] };
+  // Every field the page's own globalWithdrawal carries, including pct (1.7.0): this fixture
+  // replaces the object wholesale, so a field left out here is missing before the save and present
+  // after the load, and the round-trip check reports a difference that is the fixture's fault.
+  globalWithdrawal = { mode: 'fixed_baht', fixedAmt: 77000, freq: 3, pct: 7.5, startY: 13, startM: 5, priorityOrder: [3, 1, 2] };
   chartSimMethod = 'gbm'; heatmapSimMethod = 'volcluster'; heatmapWithdrawalMode = 'planned';
   document.getElementById('init-investment').value = '12500000';
   document.getElementById('inflation-rate').value = '3.2';

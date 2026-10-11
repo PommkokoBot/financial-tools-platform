@@ -86,7 +86,14 @@ check('footer disclaimer disclaims any tie to a financial institution',
 // The phrase "chance the portfolio survives" reads stronger than what is measured, in two
 // specific ways that both flatter the result. Both must be stated, on the page and in the
 // report, from one constant -- the same anti-drift arrangement as the disclaimer itself.
-run(`window.DISCLAIMER_SURVIVAL = DISCLAIMER_SURVIVAL;`);
+// Top-level const/let in the page script are lexical bindings, not properties of window, so every
+// constant a test reads has to be copied across explicitly like this.
+run(`window.DISCLAIMER_SURVIVAL = DISCLAIMER_SURVIVAL;
+     window.SURVIVAL_NOTES = SURVIVAL_NOTES;
+     window.SURVIVAL_LABELS = SURVIVAL_LABELS;
+     window.SURVIVAL_PV_FLOOR = SURVIVAL_PV_FLOOR;
+     window.DISCLAIMER_DCA_DISCIPLINE = DISCLAIMER_DCA_DISCIPLINE;
+     window.HEATMAP_MODE_MISMATCH = HEATMAP_MODE_MISMATCH;`);
 const riskNote = doc.getElementById('risk-note-survival');
 check('page risk note carries the survival explanation',
   riskNote && riskNote.textContent.includes(w.DISCLAIMER_SURVIVAL),
@@ -223,10 +230,14 @@ check('the signpost stays short (it points, it does not explain)',
   pointer && pointer.textContent.length < 200,
   pointer ? pointer.textContent.length + ' chars' : '(element missing)');
 
+// Both survival definitions are listed at all times, not only the one in force: somebody holding
+// a report produced in the other mode still has to be able to look up what its headline counted.
 const riskBullets = {
-  'risk-note-survival': w.DISCLAIMER_SURVIVAL,
+  'risk-note-survival': w.SURVIVAL_NOTES.standard,
+  'risk-note-survival-pct': w.SURVIVAL_NOTES.pv_floor,
   'risk-note-var': w.DISCLAIMER_RISK_METRICS,
   'risk-note-maxdd': w.DISCLAIMER_MAXDD,
+  'risk-note-dca': w.DISCLAIMER_DCA_DISCIPLINE,
 };
 Object.entries(riskBullets).forEach(([id, text]) => {
   const el = doc.getElementById(id);
@@ -234,9 +245,18 @@ Object.entries(riskBullets).forEach(([id, text]) => {
   check(`bullet #${id} carries its shared constant verbatim`,
     el && el.textContent === text, el ? el.textContent.slice(0, 90) : '(element missing)');
 });
-check('the three explanations sit in one list',
-  doc.querySelectorAll('#risk-notes li').length === 3,
+check('the standard survival bullet is still the untouched 1.5.0 wording',
+  w.SURVIVAL_NOTES.standard === w.DISCLAIMER_SURVIVAL, String(w.SURVIVAL_NOTES.standard).slice(0, 60));
+check('every explanation sits in one list, none stranded outside it',
+  doc.querySelectorAll('#risk-notes li').length === Object.keys(riskBullets).length,
   String(doc.querySelectorAll('#risk-notes li').length));
+// The caveat that every figure assumes the DCA plan is kept even through the worst years. It is
+// the one assumption that flatters the bad tail specifically, so it must name the plan, the bad
+// years and the direction of the bias -- a vague "results may vary" would pass a length check.
+const dcaText = (doc.getElementById('risk-note-dca') || {}).textContent || '';
+check('the DCA caveat names the assumption', /ครบทุกงวด/.test(dcaText), dcaText.slice(0, 80));
+check('the DCA caveat names the years it matters in', /ตลาดพัง/.test(dcaText), dcaText.slice(0, 80));
+check('the DCA caveat says which way the bias runs', /ดูดีกว่า/.test(dcaText), dcaText.slice(0, 80));
 
 // --- 9. Withdrawal-mode naming (chunk A) ---
 // Four surfaces name each mode: the button, the note under the buttons, the PDF label, and the
@@ -248,6 +268,23 @@ modeIds.forEach(m => {
   check(`mode "${m}" has a note under the buttons`,
     typeof w.WD_MODE_NOTES[m] === 'string' && w.WD_MODE_NOTES[m].length > 10,
     String(w.WD_MODE_NOTES[m]));
+});
+// A mode can have a note and a PDF label and still be unreachable, because nothing links a mode
+// id to the button that selects it. The map is spelled out so a fifth mode cannot be added
+// without deciding which button turns it on.
+const MODE_BUTTONS = {
+  yield_only: 'global-wd-mode-yield',
+  constant: 'global-wd-mode-constant',
+  fixed_baht: 'global-wd-mode-fixed',
+  pct_portfolio: 'global-wd-mode-pct',
+};
+check('every mode with a label also has a button mapped',
+  modeIds.every(m => MODE_BUTTONS[m]), JSON.stringify(modeIds.filter(m => !MODE_BUTTONS[m])));
+modeIds.forEach(m => {
+  const btn = doc.getElementById(MODE_BUTTONS[m] || '');
+  check(`mode "${m}" has a button on the page`, !!btn, MODE_BUTTONS[m] || '(unmapped)');
+  check(`the button for "${m}" has a label on it`,
+    btn && btn.textContent.trim().length > 2, btn ? btn.textContent : '(element missing)');
 });
 check('notes cover exactly the modes the PDF labels cover',
   JSON.stringify(Object.keys(w.WD_MODE_NOTES).sort()) === JSON.stringify(modeIds.slice().sort()),
