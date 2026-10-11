@@ -9,6 +9,62 @@ from a stranger names the build that produced it.
 
 ---
 
+## 1.7.0 — 2026-10-10
+
+A fourth withdrawal mode, and the second survival measure it forced. The three existing modes are
+untouched: `runSimulation()` returns byte-identical values for every field it returned in 1.6.0 in
+all four regression scenarios, and the only difference is the five keys this release adds.
+
+### Added
+
+- **A "% ของพอร์ต" withdrawal mode.** The annual amount is fixed at the top of each simulation year
+  off that moment's total value and paid in twelve equal parts. Re-reading the balance every month
+  would make the payment fall as the portfolio falls inside the year, which is not what anyone means
+  by "I take 4% a year"; locking it once at the start would make it a fixed amount with extra steps.
+  Inflation is deliberately **not** applied: the base is re-read from a portfolio that has already
+  grown, so escalating it as well compounds twice. `pct-mode.test.js` runs the same plan at 1% and at
+  6% inflation and fails if a single baht of the nominal cashflow differs — and makes the same
+  comparison against `constant` mode, which must differ, so the test is proven able to tell them apart.
+- **A second survival measure, used only by that mode.** Withdrawing a share of what is left means
+  the balance approaches zero without reaching it: across 16,000 simulated paths, including a
+  portfolio returning 0% with 20% volatility withdrawing 8% a year, not one ever ran out. "Ended
+  above zero" therefore answers 100% whatever the plan, including a plan that ends with 2% of its
+  purchasing power. The mode instead reports the share of paths that kept at least 25% of the money
+  actually put in, with both sides measured in today's baht.
+- **The threshold is printed in baht** next to the figure, on the page and in the report, so nobody
+  has to work out what 25% is 25% of.
+
+### Changed
+
+- **The headline's name changes with its definition.** Two measures with one name would be the same
+  fault this tool has spent three releases removing, so the label is a span the run fills in, and the
+  three existing modes keep "โอกาสพอร์ตรวมอยู่รอด" word for word. The label is painted by the run,
+  never by the mode buttons: changing the mode marks results stale but leaves them on screen, so a
+  label driven by the buttons would retitle a number the previous mode produced.
+- **The 25% threshold counts DCA.** Judged against the opening balance alone, a plan that contributes
+  as much again over twenty years would be held to a bar about 40% lower than the money it really put
+  in. Every top-up is discounted to today before being added, which is the only version comparable to
+  a year-30 PV value; the DCA schedule never depends on returns, so this is one deterministic figure
+  rather than something that varies by path. "ทุนที่ใส่ไปจริง" on screen stays nominal, unchanged.
+- **The heatmap says when it is not answering your question.** It has its own withdrawal rule — a
+  rate fixed at the start and raised by inflation — and does not read the mode at all, so in the new
+  mode it was testing a different plan while reading as a verdict on this one. A banner now says so,
+  and says the mode can hardly run out of money in the first place. The table itself is unchanged.
+- **A caveat that every figure assumes the DCA plan is kept**, including through the worst simulated
+  years. Measured on a 10M portfolio with 20k monthly contributions, dropping contributions in years
+  the portfolio is more than 20% below its peak moves the median outcome about 5% but the 5th
+  percentile about 24% — the bias sits almost entirely in the bad tail, which is the part this tool
+  exists to show.
+
+### Fixed
+
+- **The withdrawal percentage is clamped at both doors.** `min`/`max` on a number input govern the
+  spinner arrows only, and a case file is an ordinary spreadsheet anyone can edit by hand, so a typed,
+  pasted or hand-edited negative rate would have paid money into the portfolio every month and
+  flattered every figure on the page.
+
+---
+
 ## 1.6.0 — 2026-10-08
 
 Every baht figure on the page can now be read in either basis. Nothing in the engine moved:
