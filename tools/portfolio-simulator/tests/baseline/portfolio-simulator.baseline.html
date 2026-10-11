@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <meta http-equiv="Content-Security-Policy" content="default-src 'none'; script-src 'self' 'sha256-EGINdInDfEmWlLbx38mqhYKoXfxHfRxbLCZFQu3MGT4=' https://cdn.jsdelivr.net https://cdn.sheetjs.com https://cdnjs.cloudflare.com; style-src 'self' 'unsafe-inline' https://cdnjs.cloudflare.com https://fonts.googleapis.com; font-src https://cdnjs.cloudflare.com https://fonts.gstatic.com; img-src 'self' data: blob:; connect-src 'none'; form-action 'none'; base-uri 'none'; object-src 'none'; frame-src 'none'; worker-src 'none'; manifest-src 'none';">
+    <meta http-equiv="Content-Security-Policy" content="default-src 'none'; script-src 'self' 'sha256-gMfnJjDTrSoogKm6xC/0Kuu3lIlcjzFNt0qQgvu8rvs=' https://cdn.jsdelivr.net https://cdn.sheetjs.com https://cdnjs.cloudflare.com; style-src 'self' 'unsafe-inline' https://cdnjs.cloudflare.com https://fonts.googleapis.com; font-src https://cdnjs.cloudflare.com https://fonts.gstatic.com; img-src 'self' data: blob:; connect-src 'none'; form-action 'none'; base-uri 'none'; object-src 'none'; frame-src 'none'; worker-src 'none'; manifest-src 'none';">
     <title>Money Director — Institutional Portfolio Simulator</title>
     <!-- Tailwind is compiled ahead of time and inlined below instead of loading the Play
          CDN (cdn.tailwindcss.com). The CDN script is unversioned, compiles CSS in the
@@ -12,7 +12,7 @@
          Sarabun still come from their CDNs, so offline the page lays out correctly but
          falls back on system fonts and loses the icons.
          Regenerate after changing any class: npm run build:css:app  (see tests/README.md) -->
-    <style id="tw-build">*,:after,:before{--tw-border-spacing-x:0;--tw-border-spacing-y:0;--tw-translate-x:0;--tw-translate-y:0;--tw-rotate:0;--tw-skew-x:0;--tw-skew-y:0;--tw-scale-x:1;--tw-scale-y:1;--tw-pan-x: ;--tw-pan-y: ;--tw-pinch-zoom: ;--tw-scroll-snap-strictness:proximity;--tw-gradient-from-position: ;--tw-gradient-via-position: ;--tw-gradient-to-position: ;--tw-ordinal: ;--tw-slashed-zero: ;--tw-numeric-figure: ;--tw-numeric-spacing: ;--tw-numeric-fraction: ;--tw-ring-inset: ;--tw-ring-offset-width:0px;--tw-ring-offset-color:#fff;--tw-ring-color:rgba(59,130,246,.5);--tw-ring-offset-shadow:0 0 #0000;--tw-ring-shadow:0 0 #0000;--tw-shadow:0 0 #0000;--tw-shadow-colored:0 0 #0000;--tw-blur: ;--tw-brightness: ;--tw-contrast: ;--tw-grayscale: ;--tw-hue-rotate: ;--tw-invert: ;--tw-saturate: ;--tw-sepia: ;--tw-drop-shadow: ;--tw-backdrop-blur: ;--tw-backdrop-brightness: ;--tw-backdrop-contrast: ;--tw-backdrop-grayscale: ;--tw-backdrop-hue-rotate: ;--tw-backdrop-invert: ;--tw-backdrop-opacity: ;--tw-backdrop-saturate: ;--tw-backdrop-sepia: ;--tw-contain-size: ;--tw-contain-layout: ;--tw-contain-paint: ;--tw-contain-style: }::backdrop{--tw-border-spacing-x:0;--tw-border-spacing-y:0;--tw-translate-x:0;--tw-translate-y:0;--tw-rotate:0;--tw-skew-x:0;--tw-skew-y:0;--tw-scale-x:1;--tw-scale-y:1;--tw-pan-x: ;--tw-pan-y: ;--tw-pinch-zoom: ;--tw-scroll-snap-strictness:proximity;--tw-gradient-from-position: ;--tw-gradient-via-position: ;--tw-gradient-to-position: ;--tw-ordinal: ;--tw-slashed-zero: ;--tw-numeric-figure: ;--tw-numeric-spacing: ;--tw-numeric-fraction: ;--tw-ring-inset: ;--tw-ring-offset-width:0px;--tw-ring-offset-color:#fff;--tw-ring-color:rgba(59,130,246,.5);--tw-ring-offset-shadow:0 0 #0000;--tw-ring-shadow:0 0 #0000;--tw-shadow:0 0 #0000;--tw-shadow-colored:0 0 #0000;--tw-blur: ;--tw-brightness: ;--tw-contrast: ;--tw-grayscale: ;--tw-hue-rotate: ;--tw-invert: ;--tw-saturate: ;--tw-sepia: ;--tw-drop-shadow: ;--tw-backdrop-blur: ;--tw-backdrop-brightness: ;--tw-backdrop-contrast: ;--tw-backdrop-grayscale: ;--tw-backdrop-hue-rotate: ;--tw-backdrop-invert: ;--tw-backdrop-opacity: ;--tw-backdrop-saturate: ;--tw-backdrop-sepia: ;--tw-contain-size: ;--tw-contain-layout: ;--tw-contain-paint: ;--tw-contain-style: }/*! tailwindcss v3.4.19 | MIT License | https://tailwindcss.com*/*,:after,:before{box-sizing:border-box;border:0 solid #e5e7eb}:after,:before{--tw-content:""}:host,html{line-height:1.5;-webkit-text-size-adjust:100%;-moz-tab-size:4;-o-tab-size:4;tab-size:4;font-family:ui-sans-serif,system-ui,sans-serif,Apple Color Emoji,Segoe UI Emoji,Segoe UI Symbol,Noto Color Emoji;font-feature-settings:normal;font-variation-settings:normal;-webkit-tap-highlight-color:transparent}body{margin:0;line-height:inherit}hr{height:0;color:inherit;border-top-width:1px}abbr:where([title]){-webkit-text-decoration:underline dotted;text-decoration:underline dotted}h1,h2,h3,h4,h5,h6{font-size:inherit;font-weight:inherit}a{color:inherit;text-decoration:inherit}b,strong{font-weight:bolder}code,kbd,pre,samp{font-family:ui-monospace,SFMono-Regular,Menlo,Monaco,Consolas,Liberation Mono,Courier New,monospace;font-feature-settings:normal;font-variation-settings:normal;font-size:1em}small{font-size:80%}sub,sup{font-size:75%;line-height:0;position:relative;vertical-align:baseline}sub{bottom:-.25em}sup{top:-.5em}table{text-indent:0;border-color:inherit;border-collapse:collapse}button,input,optgroup,select,textarea{font-family:inherit;font-feature-settings:inherit;font-variation-settings:inherit;font-size:100%;font-weight:inherit;line-height:inherit;letter-spacing:inherit;color:inherit;margin:0;padding:0}button,select{text-transform:none}button,input:where([type=button]),input:where([type=reset]),input:where([type=submit]){-webkit-appearance:button;background-color:transparent;background-image:none}:-moz-focusring{outline:auto}:-moz-ui-invalid{box-shadow:none}progress{vertical-align:baseline}::-webkit-inner-spin-button,::-webkit-outer-spin-button{height:auto}[type=search]{-webkit-appearance:textfield;outline-offset:-2px}::-webkit-search-decoration{-webkit-appearance:none}::-webkit-file-upload-button{-webkit-appearance:button;font:inherit}summary{display:list-item}blockquote,dd,dl,figure,h1,h2,h3,h4,h5,h6,hr,p,pre{margin:0}fieldset{margin:0}fieldset,legend{padding:0}menu,ol,ul{list-style:none;margin:0;padding:0}dialog{padding:0}textarea{resize:vertical}input::-moz-placeholder,textarea::-moz-placeholder{opacity:1;color:#9ca3af}input::placeholder,textarea::placeholder{opacity:1;color:#9ca3af}[role=button],button{cursor:pointer}:disabled{cursor:default}audio,canvas,embed,iframe,img,object,svg,video{display:block;vertical-align:middle}img,video{max-width:100%;height:auto}[hidden]:where(:not([hidden=until-found])){display:none}.container{width:100%}@media (min-width:640px){.container{max-width:640px}}@media (min-width:768px){.container{max-width:768px}}@media (min-width:1024px){.container{max-width:1024px}}@media (min-width:1280px){.container{max-width:1280px}}@media (min-width:1536px){.container{max-width:1536px}}.visible{visibility:visible}.invisible{visibility:hidden}.collapse{visibility:collapse}.static{position:static}.fixed{position:fixed}.absolute{position:absolute}.relative{position:relative}.inset-0{inset:0}.left-1\/2{left:50%}.top-1\/2{top:50%}.z-10{z-index:10}.z-50{z-index:50}.m-1{margin:.25rem}.mx-auto{margin-left:auto;margin-right:auto}.-mt-2{margin-top:-.5rem}.mb-0\.5{margin-bottom:.125rem}.mb-1{margin-bottom:.25rem}.mb-2{margin-bottom:.5rem}.mb-3{margin-bottom:.75rem}.mb-4{margin-bottom:1rem}.mb-6{margin-bottom:1.5rem}.ml-2{margin-left:.5rem}.mr-1{margin-right:.25rem}.mt-0\.5{margin-top:.125rem}.mt-1{margin-top:.25rem}.mt-1\.5{margin-top:.375rem}.mt-10{margin-top:2.5rem}.mt-2{margin-top:.5rem}.mt-3{margin-top:.75rem}.mt-4{margin-top:1rem}.mt-6{margin-top:1.5rem}.mt-\[3px\]{margin-top:3px}.block{display:block}.inline-block{display:inline-block}.inline{display:inline}.flex{display:flex}.inline-flex{display:inline-flex}.table{display:table}.grid{display:grid}.contents{display:contents}.hidden{display:none}.h-2{height:.5rem}.h-5{height:1.25rem}.h-72{height:18rem}.h-auto{height:auto}.max-h-\[88vh\]{max-height:88vh}.min-h-\[32px\]{min-height:32px}.min-h-screen{min-height:100vh}.w-1\/2{width:50%}.w-1\/3{width:33.333333%}.w-1\/4{width:25%}.w-11\/12{width:91.666667%}.w-12{width:3rem}.w-14{width:3.5rem}.w-16{width:4rem}.w-2{width:.5rem}.w-24{width:6rem}.w-5{width:1.25rem}.w-8{width:2rem}.w-full{width:100%}.w-max{width:-moz-max-content;width:max-content}.min-w-\[420px\]{min-width:420px}.min-w-\[470px\]{min-width:470px}.min-w-\[520px\]{min-width:520px}.min-w-\[620px\]{min-width:620px}.max-w-full{max-width:100%}.max-w-md{max-width:28rem}.flex-1{flex:1 1 0%}.shrink{flex-shrink:1}.shrink-0{flex-shrink:0}.border-collapse{border-collapse:collapse}.-translate-x-1\/2{--tw-translate-x:-50%}.-translate-x-1\/2,.-translate-y-1\/2{transform:translate(var(--tw-translate-x),var(--tw-translate-y)) rotate(var(--tw-rotate)) skewX(var(--tw-skew-x)) skewY(var(--tw-skew-y)) scaleX(var(--tw-scale-x)) scaleY(var(--tw-scale-y))}.-translate-y-1\/2{--tw-translate-y:-50%}.transform{transform:translate(var(--tw-translate-x),var(--tw-translate-y)) rotate(var(--tw-rotate)) skewX(var(--tw-skew-x)) skewY(var(--tw-skew-y)) scaleX(var(--tw-scale-x)) scaleY(var(--tw-scale-y))}.cursor-pointer{cursor:pointer}.list-disc{list-style-type:disc}.grid-cols-1{grid-template-columns:repeat(1,minmax(0,1fr))}.grid-cols-2{grid-template-columns:repeat(2,minmax(0,1fr))}.grid-cols-3{grid-template-columns:repeat(3,minmax(0,1fr))}.flex-col{flex-direction:column}.flex-wrap{flex-wrap:wrap}.items-start{align-items:flex-start}.items-end{align-items:flex-end}.items-center{align-items:center}.justify-end{justify-content:flex-end}.justify-center{justify-content:center}.justify-between{justify-content:space-between}.gap-1{gap:.25rem}.gap-1\.5{gap:.375rem}.gap-2{gap:.5rem}.gap-3{gap:.75rem}.gap-4{gap:1rem}.gap-6{gap:1.5rem}.gap-x-4{-moz-column-gap:1rem;column-gap:1rem}.gap-y-1{row-gap:.25rem}.space-y-1>:not([hidden])~:not([hidden]){--tw-space-y-reverse:0;margin-top:calc(.25rem*(1 - var(--tw-space-y-reverse)));margin-bottom:calc(.25rem*var(--tw-space-y-reverse))}.space-y-2>:not([hidden])~:not([hidden]){--tw-space-y-reverse:0;margin-top:calc(.5rem*(1 - var(--tw-space-y-reverse)));margin-bottom:calc(.5rem*var(--tw-space-y-reverse))}.space-y-3>:not([hidden])~:not([hidden]){--tw-space-y-reverse:0;margin-top:calc(.75rem*(1 - var(--tw-space-y-reverse)));margin-bottom:calc(.75rem*var(--tw-space-y-reverse))}.space-y-5>:not([hidden])~:not([hidden]){--tw-space-y-reverse:0;margin-top:calc(1.25rem*(1 - var(--tw-space-y-reverse)));margin-bottom:calc(1.25rem*var(--tw-space-y-reverse))}.space-y-6>:not([hidden])~:not([hidden]){--tw-space-y-reverse:0;margin-top:calc(1.5rem*(1 - var(--tw-space-y-reverse)));margin-bottom:calc(1.5rem*var(--tw-space-y-reverse))}.divide-y>:not([hidden])~:not([hidden]){--tw-divide-y-reverse:0;border-top-width:calc(1px*(1 - var(--tw-divide-y-reverse)));border-bottom-width:calc(1px*var(--tw-divide-y-reverse))}.divide-slate-800>:not([hidden])~:not([hidden]){--tw-divide-opacity:1;border-color:rgb(30 41 59/var(--tw-divide-opacity,1))}.overflow-x-auto{overflow-x:auto}.overflow-y-auto{overflow-y:auto}.whitespace-nowrap{white-space:nowrap}.rounded{border-radius:.25rem}.rounded-2xl{border-radius:1rem}.rounded-full{border-radius:9999px}.rounded-lg{border-radius:.5rem}.rounded-xl{border-radius:.75rem}.rounded-b-lg{border-bottom-right-radius:.5rem;border-bottom-left-radius:.5rem}.rounded-t-lg{border-top-left-radius:.5rem;border-top-right-radius:.5rem}.border{border-width:1px}.border-2{border-width:2px}.border-b{border-bottom-width:1px}.border-l{border-left-width:1px}.border-l-4{border-left-width:4px}.border-r{border-right-width:1px}.border-t{border-top-width:1px}.border-t-4{border-top-width:4px}.border-dashed{border-style:dashed}.border-amber-500{--tw-border-opacity:1;border-color:rgb(245 158 11/var(--tw-border-opacity,1))}.border-amber-500\/30{border-color:rgba(245,158,11,.3)}.border-amber-700\/50{border-color:rgba(180,83,9,.5)}.border-cyan-500{--tw-border-opacity:1;border-color:rgb(6 182 212/var(--tw-border-opacity,1))}.border-emerald-500\/30{border-color:rgba(16,185,129,.3)}.border-orange-400\/30{border-color:rgba(251,146,60,.3)}.border-purple-500{--tw-border-opacity:1;border-color:rgb(168 85 247/var(--tw-border-opacity,1))}.border-purple-500\/30{border-color:rgba(168,85,247,.3)}.border-red-500\/30{border-color:rgba(239,68,68,.3)}.border-rose-500\/30{border-color:rgba(244,63,94,.3)}.border-sky-500\/30{border-color:rgba(14,165,233,.3)}.border-slate-500{--tw-border-opacity:1;border-color:rgb(100 116 139/var(--tw-border-opacity,1))}.border-slate-600{--tw-border-opacity:1;border-color:rgb(71 85 105/var(--tw-border-opacity,1))}.border-slate-700{--tw-border-opacity:1;border-color:rgb(51 65 85/var(--tw-border-opacity,1))}.border-slate-700\/50{border-color:rgba(51,65,85,.5)}.border-slate-800{--tw-border-opacity:1;border-color:rgb(30 41 59/var(--tw-border-opacity,1))}.border-slate-800\/50{border-color:rgba(30,41,59,.5)}.border-l-amber-500{--tw-border-opacity:1;border-left-color:rgb(245 158 11/var(--tw-border-opacity,1))}.border-l-cyan-500{--tw-border-opacity:1;border-left-color:rgb(6 182 212/var(--tw-border-opacity,1))}.border-t-purple-500{--tw-border-opacity:1;border-top-color:rgb(168 85 247/var(--tw-border-opacity,1))}.bg-amber-500\/10{background-color:rgba(245,158,11,.1)}.bg-amber-500\/20{background-color:rgba(245,158,11,.2)}.bg-amber-600{--tw-bg-opacity:1;background-color:rgb(217 119 6/var(--tw-bg-opacity,1))}.bg-amber-900\/40{background-color:rgba(120,53,15,.4)}.bg-cyan-500\/20{background-color:rgba(6,182,212,.2)}.bg-emerald-500\/20{background-color:rgba(16,185,129,.2)}.bg-emerald-600{--tw-bg-opacity:1;background-color:rgb(5 150 105/var(--tw-bg-opacity,1))}.bg-emerald-900\/40{background-color:rgba(6,78,59,.4)}.bg-green-500\/20{background-color:rgba(34,197,94,.2)}.bg-purple-500\/20{background-color:rgba(168,85,247,.2)}.bg-red-500\/20{background-color:rgba(239,68,68,.2)}.bg-red-900\/40{background-color:rgba(127,29,29,.4)}.bg-rose-600{--tw-bg-opacity:1;background-color:rgb(225 29 72/var(--tw-bg-opacity,1))}.bg-sky-900\/40{background-color:rgba(12,74,110,.4)}.bg-slate-700{--tw-bg-opacity:1;background-color:rgb(51 65 85/var(--tw-bg-opacity,1))}.bg-slate-800{--tw-bg-opacity:1;background-color:rgb(30 41 59/var(--tw-bg-opacity,1))}.bg-slate-800\/60{background-color:rgba(30,41,59,.6)}.bg-slate-900{--tw-bg-opacity:1;background-color:rgb(15 23 42/var(--tw-bg-opacity,1))}.bg-slate-900\/50{background-color:rgba(15,23,42,.5)}.bg-slate-900\/60{background-color:rgba(15,23,42,.6)}.bg-slate-900\/80{background-color:rgba(15,23,42,.8)}.bg-slate-950\/80{background-color:rgba(2,6,23,.8)}.bg-gradient-to-r{background-image:linear-gradient(to right,var(--tw-gradient-stops))}.from-amber-600{--tw-gradient-from:#d97706 var(--tw-gradient-from-position);--tw-gradient-to:rgba(217,119,6,0) var(--tw-gradient-to-position);--tw-gradient-stops:var(--tw-gradient-from),var(--tw-gradient-to)}.to-orange-500{--tw-gradient-to:#f97316 var(--tw-gradient-to-position)}.p-1{padding:.25rem}.p-2{padding:.5rem}.p-2\.5{padding:.625rem}.p-3{padding:.75rem}.p-4{padding:1rem}.p-5{padding:1.25rem}.p-8{padding:2rem}.px-1{padding-left:.25rem;padding-right:.25rem}.px-1\.5{padding-left:.375rem;padding-right:.375rem}.px-2{padding-left:.5rem;padding-right:.5rem}.px-3{padding-left:.75rem;padding-right:.75rem}.px-4{padding-left:1rem;padding-right:1rem}.px-5{padding-left:1.25rem;padding-right:1.25rem}.py-0\.5{padding-top:.125rem;padding-bottom:.125rem}.py-1{padding-top:.25rem;padding-bottom:.25rem}.py-1\.5{padding-top:.375rem;padding-bottom:.375rem}.py-2{padding-top:.5rem;padding-bottom:.5rem}.py-2\.5{padding-top:.625rem;padding-bottom:.625rem}.py-3{padding-top:.75rem;padding-bottom:.75rem}.py-8{padding-top:2rem;padding-bottom:2rem}.pb-0{padding-bottom:0}.pb-1{padding-bottom:.25rem}.pb-12{padding-bottom:3rem}.pb-2{padding-bottom:.5rem}.pb-4{padding-bottom:1rem}.pl-1{padding-left:.25rem}.pl-5{padding-left:1.25rem}.pr-1{padding-right:.25rem}.pt-0{padding-top:0}.pt-1{padding-top:.25rem}.pt-2{padding-top:.5rem}.pt-3{padding-top:.75rem}.pt-5{padding-top:1.25rem}.text-left{text-align:left}.text-center{text-align:center}.text-right{text-align:right}.text-2xl{font-size:1.5rem;line-height:2rem}.text-\[10px\]{font-size:10px}.text-\[11px\]{font-size:11px}.text-\[9px\]{font-size:9px}.text-base{font-size:1rem;line-height:1.5rem}.text-lg{font-size:1.125rem;line-height:1.75rem}.text-sm{font-size:.875rem;line-height:1.25rem}.text-xl{font-size:1.25rem;line-height:1.75rem}.text-xs{font-size:.75rem;line-height:1rem}.font-bold{font-weight:700}.font-medium{font-weight:500}.font-normal{font-weight:400}.font-semibold{font-weight:600}.italic{font-style:italic}.leading-relaxed{line-height:1.625}.leading-tight{line-height:1.25}.text-amber-200\/90{color:hsla(48,97%,77%,.9)}.text-amber-300{--tw-text-opacity:1;color:rgb(252 211 77/var(--tw-text-opacity,1))}.text-amber-400{--tw-text-opacity:1;color:rgb(251 191 36/var(--tw-text-opacity,1))}.text-amber-400\/70{color:rgba(251,191,36,.7)}.text-amber-400\/80{color:rgba(251,191,36,.8)}.text-amber-500{--tw-text-opacity:1;color:rgb(245 158 11/var(--tw-text-opacity,1))}.text-blue-400{--tw-text-opacity:1;color:rgb(96 165 250/var(--tw-text-opacity,1))}.text-cyan-300{--tw-text-opacity:1;color:rgb(103 232 249/var(--tw-text-opacity,1))}.text-cyan-400{--tw-text-opacity:1;color:rgb(34 211 238/var(--tw-text-opacity,1))}.text-cyan-400\/70{color:rgba(34,211,238,.7)}.text-emerald-300{--tw-text-opacity:1;color:rgb(110 231 183/var(--tw-text-opacity,1))}.text-emerald-400{--tw-text-opacity:1;color:rgb(52 211 153/var(--tw-text-opacity,1))}.text-emerald-500{--tw-text-opacity:1;color:rgb(16 185 129/var(--tw-text-opacity,1))}.text-green-400{--tw-text-opacity:1;color:rgb(74 222 128/var(--tw-text-opacity,1))}.text-orange-300{--tw-text-opacity:1;color:rgb(253 186 116/var(--tw-text-opacity,1))}.text-purple-300{--tw-text-opacity:1;color:rgb(216 180 254/var(--tw-text-opacity,1))}.text-purple-400{--tw-text-opacity:1;color:rgb(192 132 252/var(--tw-text-opacity,1))}.text-red-400{--tw-text-opacity:1;color:rgb(248 113 113/var(--tw-text-opacity,1))}.text-rose-300{--tw-text-opacity:1;color:rgb(253 164 175/var(--tw-text-opacity,1))}.text-rose-300\/70{color:rgba(253,164,175,.7)}.text-sky-300{--tw-text-opacity:1;color:rgb(125 211 252/var(--tw-text-opacity,1))}.text-slate-100{--tw-text-opacity:1;color:rgb(241 245 249/var(--tw-text-opacity,1))}.text-slate-200{--tw-text-opacity:1;color:rgb(226 232 240/var(--tw-text-opacity,1))}.text-slate-300{--tw-text-opacity:1;color:rgb(203 213 225/var(--tw-text-opacity,1))}.text-slate-400{--tw-text-opacity:1;color:rgb(148 163 184/var(--tw-text-opacity,1))}.text-slate-500{--tw-text-opacity:1;color:rgb(100 116 139/var(--tw-text-opacity,1))}.text-white{--tw-text-opacity:1;color:rgb(255 255 255/var(--tw-text-opacity,1))}.text-yellow-400{--tw-text-opacity:1;color:rgb(250 204 21/var(--tw-text-opacity,1))}.underline{text-decoration-line:underline}.accent-amber-500{accent-color:#f59e0b}.accent-cyan-500{accent-color:#06b6d4}.accent-rose-500{accent-color:#f43f5e}.shadow-2xl{--tw-shadow:0 25px 50px -12px rgba(0,0,0,.25);--tw-shadow-colored:0 25px 50px -12px var(--tw-shadow-color)}.shadow-2xl,.shadow-lg{box-shadow:var(--tw-ring-offset-shadow,0 0 #0000),var(--tw-ring-shadow,0 0 #0000),var(--tw-shadow)}.shadow-lg{--tw-shadow:0 10px 15px -3px rgba(0,0,0,.1),0 4px 6px -4px rgba(0,0,0,.1);--tw-shadow-colored:0 10px 15px -3px var(--tw-shadow-color),0 4px 6px -4px var(--tw-shadow-color)}.shadow-xl{--tw-shadow:0 20px 25px -5px rgba(0,0,0,.1),0 8px 10px -6px rgba(0,0,0,.1);--tw-shadow-colored:0 20px 25px -5px var(--tw-shadow-color),0 8px 10px -6px var(--tw-shadow-color);box-shadow:var(--tw-ring-offset-shadow,0 0 #0000),var(--tw-ring-shadow,0 0 #0000),var(--tw-shadow)}.shadow-orange-900\/50{--tw-shadow-color:rgba(124,45,18,.5);--tw-shadow:var(--tw-shadow-colored)}.brightness-125{--tw-brightness:brightness(1.25)}.brightness-125,.filter{filter:var(--tw-blur) var(--tw-brightness) var(--tw-contrast) var(--tw-grayscale) var(--tw-hue-rotate) var(--tw-invert) var(--tw-saturate) var(--tw-sepia) var(--tw-drop-shadow)}.backdrop-blur-sm{--tw-backdrop-blur:blur(4px);-webkit-backdrop-filter:var(--tw-backdrop-blur) var(--tw-backdrop-brightness) var(--tw-backdrop-contrast) var(--tw-backdrop-grayscale) var(--tw-backdrop-hue-rotate) var(--tw-backdrop-invert) var(--tw-backdrop-opacity) var(--tw-backdrop-saturate) var(--tw-backdrop-sepia);backdrop-filter:var(--tw-backdrop-blur) var(--tw-backdrop-brightness) var(--tw-backdrop-contrast) var(--tw-backdrop-grayscale) var(--tw-backdrop-hue-rotate) var(--tw-backdrop-invert) var(--tw-backdrop-opacity) var(--tw-backdrop-saturate) var(--tw-backdrop-sepia)}.transition{transition-property:color,background-color,border-color,text-decoration-color,fill,stroke,opacity,box-shadow,transform,filter,-webkit-backdrop-filter;transition-property:color,background-color,border-color,text-decoration-color,fill,stroke,opacity,box-shadow,transform,filter,backdrop-filter;transition-property:color,background-color,border-color,text-decoration-color,fill,stroke,opacity,box-shadow,transform,filter,backdrop-filter,-webkit-backdrop-filter;transition-timing-function:cubic-bezier(.4,0,.2,1);transition-duration:.15s}.transition-all{transition-property:all;transition-timing-function:cubic-bezier(.4,0,.2,1);transition-duration:.15s}.duration-200{transition-duration:.2s}.placeholder\:font-normal::-moz-placeholder{font-weight:400}.placeholder\:font-normal::placeholder{font-weight:400}.placeholder\:text-slate-600::-moz-placeholder{--tw-text-opacity:1;color:rgb(71 85 105/var(--tw-text-opacity,1))}.placeholder\:text-slate-600::placeholder{--tw-text-opacity:1;color:rgb(71 85 105/var(--tw-text-opacity,1))}.hover\:border-amber-500\/50:hover{border-color:rgba(245,158,11,.5)}.hover\:border-cyan-500\/50:hover{border-color:rgba(6,182,212,.5)}.hover\:border-rose-500\/50:hover{border-color:rgba(244,63,94,.5)}.hover\:border-slate-400:hover{--tw-border-opacity:1;border-color:rgb(148 163 184/var(--tw-border-opacity,1))}.hover\:bg-amber-500:hover{--tw-bg-opacity:1;background-color:rgb(245 158 11/var(--tw-bg-opacity,1))}.hover\:bg-amber-900\/40:hover{background-color:rgba(120,53,15,.4)}.hover\:bg-cyan-900\/40:hover{background-color:rgba(22,78,99,.4)}.hover\:bg-emerald-500:hover{--tw-bg-opacity:1;background-color:rgb(16 185 129/var(--tw-bg-opacity,1))}.hover\:bg-rose-500:hover{--tw-bg-opacity:1;background-color:rgb(244 63 94/var(--tw-bg-opacity,1))}.hover\:bg-rose-900\/40:hover{background-color:rgba(136,19,55,.4)}.hover\:bg-slate-700:hover{--tw-bg-opacity:1;background-color:rgb(51 65 85/var(--tw-bg-opacity,1))}.hover\:bg-slate-800:hover{--tw-bg-opacity:1;background-color:rgb(30 41 59/var(--tw-bg-opacity,1))}.hover\:bg-slate-800\/60:hover{background-color:rgba(30,41,59,.6)}.hover\:from-amber-500:hover{--tw-gradient-from:#f59e0b var(--tw-gradient-from-position);--tw-gradient-to:rgba(245,158,11,0) var(--tw-gradient-to-position);--tw-gradient-stops:var(--tw-gradient-from),var(--tw-gradient-to)}.hover\:to-orange-400:hover{--tw-gradient-to:#fb923c var(--tw-gradient-to-position)}.hover\:text-amber-300:hover{--tw-text-opacity:1;color:rgb(252 211 77/var(--tw-text-opacity,1))}.hover\:text-amber-400:hover{--tw-text-opacity:1;color:rgb(251 191 36/var(--tw-text-opacity,1))}.hover\:text-blue-300:hover{--tw-text-opacity:1;color:rgb(147 197 253/var(--tw-text-opacity,1))}.hover\:text-emerald-200:hover{--tw-text-opacity:1;color:rgb(167 243 208/var(--tw-text-opacity,1))}.hover\:text-emerald-300:hover{--tw-text-opacity:1;color:rgb(110 231 183/var(--tw-text-opacity,1))}.hover\:text-red-400:hover{--tw-text-opacity:1;color:rgb(248 113 113/var(--tw-text-opacity,1))}.hover\:text-red-500:hover{--tw-text-opacity:1;color:rgb(239 68 68/var(--tw-text-opacity,1))}.hover\:text-slate-200:hover{--tw-text-opacity:1;color:rgb(226 232 240/var(--tw-text-opacity,1))}.hover\:text-white:hover{--tw-text-opacity:1;color:rgb(255 255 255/var(--tw-text-opacity,1))}.focus\:border-amber-500:focus{--tw-border-opacity:1;border-color:rgb(245 158 11/var(--tw-border-opacity,1))}.focus\:border-cyan-500:focus{--tw-border-opacity:1;border-color:rgb(6 182 212/var(--tw-border-opacity,1))}.focus\:border-emerald-500:focus{--tw-border-opacity:1;border-color:rgb(16 185 129/var(--tw-border-opacity,1))}.focus\:border-purple-500:focus{--tw-border-opacity:1;border-color:rgb(168 85 247/var(--tw-border-opacity,1))}.focus\:border-rose-500:focus{--tw-border-opacity:1;border-color:rgb(244 63 94/var(--tw-border-opacity,1))}.focus\:border-slate-400:focus{--tw-border-opacity:1;border-color:rgb(148 163 184/var(--tw-border-opacity,1))}.focus\:outline-none:focus{outline:2px solid transparent;outline-offset:2px}.disabled\:cursor-not-allowed:disabled{cursor:not-allowed}.disabled\:opacity-30:disabled{opacity:.3}.disabled\:opacity-40:disabled{opacity:.4}@media (min-width:640px){.sm\:absolute{position:absolute}.sm\:right-6{right:1.5rem}.sm\:top-\[-15px\]{top:-15px}.sm\:mb-0{margin-bottom:0}.sm\:mt-0{margin-top:0}.sm\:w-auto{width:auto}.sm\:w-max{width:-moz-max-content;width:max-content}.sm\:min-w-0{min-width:0}.sm\:flex-1{flex:1 1 0%}.sm\:grid-cols-2{grid-template-columns:repeat(2,minmax(0,1fr))}.sm\:grid-cols-3{grid-template-columns:repeat(3,minmax(0,1fr))}.sm\:flex-row{flex-direction:row}.sm\:items-center{align-items:center}.sm\:gap-2{gap:.5rem}.sm\:whitespace-nowrap{white-space:nowrap}.sm\:py-2{padding-top:.5rem;padding-bottom:.5rem}.sm\:py-2\.5{padding-top:.625rem;padding-bottom:.625rem}.sm\:text-3xl{font-size:1.875rem;line-height:2.25rem}.sm\:text-lg{font-size:1.125rem;line-height:1.75rem}.sm\:text-sm{font-size:.875rem;line-height:1.25rem}.sm\:text-xs{font-size:.75rem;line-height:1rem}}@media (min-width:768px){.md\:mt-0{margin-top:0}.md\:flex-row{flex-direction:row}.md\:items-center{align-items:center}}@media (min-width:1280px){.xl\:col-span-5{grid-column:span 5/span 5}.xl\:col-span-7{grid-column:span 7/span 7}.xl\:w-64{width:16rem}.xl\:grid-cols-12{grid-template-columns:repeat(12,minmax(0,1fr))}.xl\:flex-row{flex-direction:row}.xl\:items-start{align-items:flex-start}.xl\:items-end{align-items:flex-end}}</style>
+    <style id="tw-build">*,:after,:before{--tw-border-spacing-x:0;--tw-border-spacing-y:0;--tw-translate-x:0;--tw-translate-y:0;--tw-rotate:0;--tw-skew-x:0;--tw-skew-y:0;--tw-scale-x:1;--tw-scale-y:1;--tw-pan-x: ;--tw-pan-y: ;--tw-pinch-zoom: ;--tw-scroll-snap-strictness:proximity;--tw-gradient-from-position: ;--tw-gradient-via-position: ;--tw-gradient-to-position: ;--tw-ordinal: ;--tw-slashed-zero: ;--tw-numeric-figure: ;--tw-numeric-spacing: ;--tw-numeric-fraction: ;--tw-ring-inset: ;--tw-ring-offset-width:0px;--tw-ring-offset-color:#fff;--tw-ring-color:rgba(59,130,246,.5);--tw-ring-offset-shadow:0 0 #0000;--tw-ring-shadow:0 0 #0000;--tw-shadow:0 0 #0000;--tw-shadow-colored:0 0 #0000;--tw-blur: ;--tw-brightness: ;--tw-contrast: ;--tw-grayscale: ;--tw-hue-rotate: ;--tw-invert: ;--tw-saturate: ;--tw-sepia: ;--tw-drop-shadow: ;--tw-backdrop-blur: ;--tw-backdrop-brightness: ;--tw-backdrop-contrast: ;--tw-backdrop-grayscale: ;--tw-backdrop-hue-rotate: ;--tw-backdrop-invert: ;--tw-backdrop-opacity: ;--tw-backdrop-saturate: ;--tw-backdrop-sepia: ;--tw-contain-size: ;--tw-contain-layout: ;--tw-contain-paint: ;--tw-contain-style: }::backdrop{--tw-border-spacing-x:0;--tw-border-spacing-y:0;--tw-translate-x:0;--tw-translate-y:0;--tw-rotate:0;--tw-skew-x:0;--tw-skew-y:0;--tw-scale-x:1;--tw-scale-y:1;--tw-pan-x: ;--tw-pan-y: ;--tw-pinch-zoom: ;--tw-scroll-snap-strictness:proximity;--tw-gradient-from-position: ;--tw-gradient-via-position: ;--tw-gradient-to-position: ;--tw-ordinal: ;--tw-slashed-zero: ;--tw-numeric-figure: ;--tw-numeric-spacing: ;--tw-numeric-fraction: ;--tw-ring-inset: ;--tw-ring-offset-width:0px;--tw-ring-offset-color:#fff;--tw-ring-color:rgba(59,130,246,.5);--tw-ring-offset-shadow:0 0 #0000;--tw-ring-shadow:0 0 #0000;--tw-shadow:0 0 #0000;--tw-shadow-colored:0 0 #0000;--tw-blur: ;--tw-brightness: ;--tw-contrast: ;--tw-grayscale: ;--tw-hue-rotate: ;--tw-invert: ;--tw-saturate: ;--tw-sepia: ;--tw-drop-shadow: ;--tw-backdrop-blur: ;--tw-backdrop-brightness: ;--tw-backdrop-contrast: ;--tw-backdrop-grayscale: ;--tw-backdrop-hue-rotate: ;--tw-backdrop-invert: ;--tw-backdrop-opacity: ;--tw-backdrop-saturate: ;--tw-backdrop-sepia: ;--tw-contain-size: ;--tw-contain-layout: ;--tw-contain-paint: ;--tw-contain-style: }/*! tailwindcss v3.4.19 | MIT License | https://tailwindcss.com*/*,:after,:before{box-sizing:border-box;border:0 solid #e5e7eb}:after,:before{--tw-content:""}:host,html{line-height:1.5;-webkit-text-size-adjust:100%;-moz-tab-size:4;-o-tab-size:4;tab-size:4;font-family:ui-sans-serif,system-ui,sans-serif,Apple Color Emoji,Segoe UI Emoji,Segoe UI Symbol,Noto Color Emoji;font-feature-settings:normal;font-variation-settings:normal;-webkit-tap-highlight-color:transparent}body{margin:0;line-height:inherit}hr{height:0;color:inherit;border-top-width:1px}abbr:where([title]){-webkit-text-decoration:underline dotted;text-decoration:underline dotted}h1,h2,h3,h4,h5,h6{font-size:inherit;font-weight:inherit}a{color:inherit;text-decoration:inherit}b,strong{font-weight:bolder}code,kbd,pre,samp{font-family:ui-monospace,SFMono-Regular,Menlo,Monaco,Consolas,Liberation Mono,Courier New,monospace;font-feature-settings:normal;font-variation-settings:normal;font-size:1em}small{font-size:80%}sub,sup{font-size:75%;line-height:0;position:relative;vertical-align:baseline}sub{bottom:-.25em}sup{top:-.5em}table{text-indent:0;border-color:inherit;border-collapse:collapse}button,input,optgroup,select,textarea{font-family:inherit;font-feature-settings:inherit;font-variation-settings:inherit;font-size:100%;font-weight:inherit;line-height:inherit;letter-spacing:inherit;color:inherit;margin:0;padding:0}button,select{text-transform:none}button,input:where([type=button]),input:where([type=reset]),input:where([type=submit]){-webkit-appearance:button;background-color:transparent;background-image:none}:-moz-focusring{outline:auto}:-moz-ui-invalid{box-shadow:none}progress{vertical-align:baseline}::-webkit-inner-spin-button,::-webkit-outer-spin-button{height:auto}[type=search]{-webkit-appearance:textfield;outline-offset:-2px}::-webkit-search-decoration{-webkit-appearance:none}::-webkit-file-upload-button{-webkit-appearance:button;font:inherit}summary{display:list-item}blockquote,dd,dl,figure,h1,h2,h3,h4,h5,h6,hr,p,pre{margin:0}fieldset{margin:0}fieldset,legend{padding:0}menu,ol,ul{list-style:none;margin:0;padding:0}dialog{padding:0}textarea{resize:vertical}input::-moz-placeholder,textarea::-moz-placeholder{opacity:1;color:#9ca3af}input::placeholder,textarea::placeholder{opacity:1;color:#9ca3af}[role=button],button{cursor:pointer}:disabled{cursor:default}audio,canvas,embed,iframe,img,object,svg,video{display:block;vertical-align:middle}img,video{max-width:100%;height:auto}[hidden]:where(:not([hidden=until-found])){display:none}.container{width:100%}@media (min-width:640px){.container{max-width:640px}}@media (min-width:768px){.container{max-width:768px}}@media (min-width:1024px){.container{max-width:1024px}}@media (min-width:1280px){.container{max-width:1280px}}@media (min-width:1536px){.container{max-width:1536px}}.visible{visibility:visible}.invisible{visibility:hidden}.collapse{visibility:collapse}.static{position:static}.fixed{position:fixed}.absolute{position:absolute}.relative{position:relative}.inset-0{inset:0}.left-1\/2{left:50%}.top-1\/2{top:50%}.z-10{z-index:10}.z-50{z-index:50}.m-1{margin:.25rem}.mx-auto{margin-left:auto;margin-right:auto}.-mt-2{margin-top:-.5rem}.mb-0\.5{margin-bottom:.125rem}.mb-1{margin-bottom:.25rem}.mb-2{margin-bottom:.5rem}.mb-3{margin-bottom:.75rem}.mb-4{margin-bottom:1rem}.mb-6{margin-bottom:1.5rem}.ml-2{margin-left:.5rem}.mr-1{margin-right:.25rem}.mt-0\.5{margin-top:.125rem}.mt-1{margin-top:.25rem}.mt-1\.5{margin-top:.375rem}.mt-10{margin-top:2.5rem}.mt-2{margin-top:.5rem}.mt-3{margin-top:.75rem}.mt-4{margin-top:1rem}.mt-6{margin-top:1.5rem}.mt-\[3px\]{margin-top:3px}.block{display:block}.inline-block{display:inline-block}.inline{display:inline}.flex{display:flex}.inline-flex{display:inline-flex}.table{display:table}.grid{display:grid}.contents{display:contents}.hidden{display:none}.h-2{height:.5rem}.h-5{height:1.25rem}.h-72{height:18rem}.h-auto{height:auto}.max-h-\[88vh\]{max-height:88vh}.min-h-\[32px\]{min-height:32px}.min-h-screen{min-height:100vh}.w-1\/2{width:50%}.w-1\/3{width:33.333333%}.w-1\/4{width:25%}.w-11\/12{width:91.666667%}.w-12{width:3rem}.w-14{width:3.5rem}.w-16{width:4rem}.w-2{width:.5rem}.w-24{width:6rem}.w-5{width:1.25rem}.w-8{width:2rem}.w-full{width:100%}.w-max{width:-moz-max-content;width:max-content}.min-w-\[420px\]{min-width:420px}.min-w-\[470px\]{min-width:470px}.min-w-\[520px\]{min-width:520px}.min-w-\[620px\]{min-width:620px}.max-w-full{max-width:100%}.max-w-md{max-width:28rem}.flex-1{flex:1 1 0%}.shrink{flex-shrink:1}.shrink-0{flex-shrink:0}.border-collapse{border-collapse:collapse}.-translate-x-1\/2{--tw-translate-x:-50%}.-translate-x-1\/2,.-translate-y-1\/2{transform:translate(var(--tw-translate-x),var(--tw-translate-y)) rotate(var(--tw-rotate)) skewX(var(--tw-skew-x)) skewY(var(--tw-skew-y)) scaleX(var(--tw-scale-x)) scaleY(var(--tw-scale-y))}.-translate-y-1\/2{--tw-translate-y:-50%}.transform{transform:translate(var(--tw-translate-x),var(--tw-translate-y)) rotate(var(--tw-rotate)) skewX(var(--tw-skew-x)) skewY(var(--tw-skew-y)) scaleX(var(--tw-scale-x)) scaleY(var(--tw-scale-y))}.cursor-pointer{cursor:pointer}.list-disc{list-style-type:disc}.grid-cols-1{grid-template-columns:repeat(1,minmax(0,1fr))}.grid-cols-2{grid-template-columns:repeat(2,minmax(0,1fr))}.grid-cols-3{grid-template-columns:repeat(3,minmax(0,1fr))}.flex-col{flex-direction:column}.flex-wrap{flex-wrap:wrap}.items-start{align-items:flex-start}.items-end{align-items:flex-end}.items-center{align-items:center}.justify-end{justify-content:flex-end}.justify-center{justify-content:center}.justify-between{justify-content:space-between}.gap-1{gap:.25rem}.gap-1\.5{gap:.375rem}.gap-2{gap:.5rem}.gap-3{gap:.75rem}.gap-4{gap:1rem}.gap-6{gap:1.5rem}.gap-x-4{-moz-column-gap:1rem;column-gap:1rem}.gap-y-1{row-gap:.25rem}.space-y-1>:not([hidden])~:not([hidden]){--tw-space-y-reverse:0;margin-top:calc(.25rem*(1 - var(--tw-space-y-reverse)));margin-bottom:calc(.25rem*var(--tw-space-y-reverse))}.space-y-2>:not([hidden])~:not([hidden]){--tw-space-y-reverse:0;margin-top:calc(.5rem*(1 - var(--tw-space-y-reverse)));margin-bottom:calc(.5rem*var(--tw-space-y-reverse))}.space-y-3>:not([hidden])~:not([hidden]){--tw-space-y-reverse:0;margin-top:calc(.75rem*(1 - var(--tw-space-y-reverse)));margin-bottom:calc(.75rem*var(--tw-space-y-reverse))}.space-y-5>:not([hidden])~:not([hidden]){--tw-space-y-reverse:0;margin-top:calc(1.25rem*(1 - var(--tw-space-y-reverse)));margin-bottom:calc(1.25rem*var(--tw-space-y-reverse))}.space-y-6>:not([hidden])~:not([hidden]){--tw-space-y-reverse:0;margin-top:calc(1.5rem*(1 - var(--tw-space-y-reverse)));margin-bottom:calc(1.5rem*var(--tw-space-y-reverse))}.divide-y>:not([hidden])~:not([hidden]){--tw-divide-y-reverse:0;border-top-width:calc(1px*(1 - var(--tw-divide-y-reverse)));border-bottom-width:calc(1px*var(--tw-divide-y-reverse))}.divide-slate-800>:not([hidden])~:not([hidden]){--tw-divide-opacity:1;border-color:rgb(30 41 59/var(--tw-divide-opacity,1))}.overflow-x-auto{overflow-x:auto}.overflow-y-auto{overflow-y:auto}.whitespace-nowrap{white-space:nowrap}.rounded{border-radius:.25rem}.rounded-2xl{border-radius:1rem}.rounded-full{border-radius:9999px}.rounded-lg{border-radius:.5rem}.rounded-xl{border-radius:.75rem}.rounded-b-lg{border-bottom-right-radius:.5rem;border-bottom-left-radius:.5rem}.rounded-t-lg{border-top-left-radius:.5rem;border-top-right-radius:.5rem}.border{border-width:1px}.border-2{border-width:2px}.border-b{border-bottom-width:1px}.border-l{border-left-width:1px}.border-l-4{border-left-width:4px}.border-r{border-right-width:1px}.border-t{border-top-width:1px}.border-t-4{border-top-width:4px}.border-dashed{border-style:dashed}.border-amber-500{--tw-border-opacity:1;border-color:rgb(245 158 11/var(--tw-border-opacity,1))}.border-amber-500\/30{border-color:rgba(245,158,11,.3)}.border-amber-500\/40{border-color:rgba(245,158,11,.4)}.border-amber-700\/50{border-color:rgba(180,83,9,.5)}.border-cyan-500{--tw-border-opacity:1;border-color:rgb(6 182 212/var(--tw-border-opacity,1))}.border-emerald-500{--tw-border-opacity:1;border-color:rgb(16 185 129/var(--tw-border-opacity,1))}.border-emerald-500\/30{border-color:rgba(16,185,129,.3)}.border-orange-400\/30{border-color:rgba(251,146,60,.3)}.border-purple-500{--tw-border-opacity:1;border-color:rgb(168 85 247/var(--tw-border-opacity,1))}.border-purple-500\/30{border-color:rgba(168,85,247,.3)}.border-red-500\/30{border-color:rgba(239,68,68,.3)}.border-rose-500\/30{border-color:rgba(244,63,94,.3)}.border-sky-500\/30{border-color:rgba(14,165,233,.3)}.border-slate-500{--tw-border-opacity:1;border-color:rgb(100 116 139/var(--tw-border-opacity,1))}.border-slate-600{--tw-border-opacity:1;border-color:rgb(71 85 105/var(--tw-border-opacity,1))}.border-slate-700{--tw-border-opacity:1;border-color:rgb(51 65 85/var(--tw-border-opacity,1))}.border-slate-700\/50{border-color:rgba(51,65,85,.5)}.border-slate-800{--tw-border-opacity:1;border-color:rgb(30 41 59/var(--tw-border-opacity,1))}.border-slate-800\/50{border-color:rgba(30,41,59,.5)}.border-l-amber-500{--tw-border-opacity:1;border-left-color:rgb(245 158 11/var(--tw-border-opacity,1))}.border-l-cyan-500{--tw-border-opacity:1;border-left-color:rgb(6 182 212/var(--tw-border-opacity,1))}.border-t-purple-500{--tw-border-opacity:1;border-top-color:rgb(168 85 247/var(--tw-border-opacity,1))}.bg-amber-500\/10{background-color:rgba(245,158,11,.1)}.bg-amber-500\/20{background-color:rgba(245,158,11,.2)}.bg-amber-600{--tw-bg-opacity:1;background-color:rgb(217 119 6/var(--tw-bg-opacity,1))}.bg-amber-900\/40{background-color:rgba(120,53,15,.4)}.bg-cyan-500\/20{background-color:rgba(6,182,212,.2)}.bg-emerald-500\/20{background-color:rgba(16,185,129,.2)}.bg-emerald-600{--tw-bg-opacity:1;background-color:rgb(5 150 105/var(--tw-bg-opacity,1))}.bg-emerald-900\/40{background-color:rgba(6,78,59,.4)}.bg-green-500\/20{background-color:rgba(34,197,94,.2)}.bg-purple-500\/20{background-color:rgba(168,85,247,.2)}.bg-red-500\/20{background-color:rgba(239,68,68,.2)}.bg-red-900\/40{background-color:rgba(127,29,29,.4)}.bg-rose-600{--tw-bg-opacity:1;background-color:rgb(225 29 72/var(--tw-bg-opacity,1))}.bg-sky-900\/40{background-color:rgba(12,74,110,.4)}.bg-slate-700{--tw-bg-opacity:1;background-color:rgb(51 65 85/var(--tw-bg-opacity,1))}.bg-slate-800{--tw-bg-opacity:1;background-color:rgb(30 41 59/var(--tw-bg-opacity,1))}.bg-slate-800\/60{background-color:rgba(30,41,59,.6)}.bg-slate-900{--tw-bg-opacity:1;background-color:rgb(15 23 42/var(--tw-bg-opacity,1))}.bg-slate-900\/50{background-color:rgba(15,23,42,.5)}.bg-slate-900\/60{background-color:rgba(15,23,42,.6)}.bg-slate-900\/80{background-color:rgba(15,23,42,.8)}.bg-slate-950\/80{background-color:rgba(2,6,23,.8)}.bg-gradient-to-r{background-image:linear-gradient(to right,var(--tw-gradient-stops))}.from-amber-600{--tw-gradient-from:#d97706 var(--tw-gradient-from-position);--tw-gradient-to:rgba(217,119,6,0) var(--tw-gradient-to-position);--tw-gradient-stops:var(--tw-gradient-from),var(--tw-gradient-to)}.to-orange-500{--tw-gradient-to:#f97316 var(--tw-gradient-to-position)}.p-1{padding:.25rem}.p-2{padding:.5rem}.p-2\.5{padding:.625rem}.p-3{padding:.75rem}.p-4{padding:1rem}.p-5{padding:1.25rem}.p-8{padding:2rem}.px-1{padding-left:.25rem;padding-right:.25rem}.px-1\.5{padding-left:.375rem;padding-right:.375rem}.px-2{padding-left:.5rem;padding-right:.5rem}.px-3{padding-left:.75rem;padding-right:.75rem}.px-4{padding-left:1rem;padding-right:1rem}.px-5{padding-left:1.25rem;padding-right:1.25rem}.py-0\.5{padding-top:.125rem;padding-bottom:.125rem}.py-1{padding-top:.25rem;padding-bottom:.25rem}.py-1\.5{padding-top:.375rem;padding-bottom:.375rem}.py-2{padding-top:.5rem;padding-bottom:.5rem}.py-2\.5{padding-top:.625rem;padding-bottom:.625rem}.py-3{padding-top:.75rem;padding-bottom:.75rem}.py-8{padding-top:2rem;padding-bottom:2rem}.pb-0{padding-bottom:0}.pb-1{padding-bottom:.25rem}.pb-12{padding-bottom:3rem}.pb-2{padding-bottom:.5rem}.pb-4{padding-bottom:1rem}.pl-1{padding-left:.25rem}.pl-5{padding-left:1.25rem}.pr-1{padding-right:.25rem}.pt-0{padding-top:0}.pt-1{padding-top:.25rem}.pt-2{padding-top:.5rem}.pt-3{padding-top:.75rem}.pt-5{padding-top:1.25rem}.text-left{text-align:left}.text-center{text-align:center}.text-right{text-align:right}.text-2xl{font-size:1.5rem;line-height:2rem}.text-\[10px\]{font-size:10px}.text-\[11px\]{font-size:11px}.text-\[9px\]{font-size:9px}.text-base{font-size:1rem;line-height:1.5rem}.text-lg{font-size:1.125rem;line-height:1.75rem}.text-sm{font-size:.875rem;line-height:1.25rem}.text-xl{font-size:1.25rem;line-height:1.75rem}.text-xs{font-size:.75rem;line-height:1rem}.font-bold{font-weight:700}.font-medium{font-weight:500}.font-normal{font-weight:400}.font-semibold{font-weight:600}.italic{font-style:italic}.leading-relaxed{line-height:1.625}.leading-tight{line-height:1.25}.text-amber-200{--tw-text-opacity:1;color:rgb(253 230 138/var(--tw-text-opacity,1))}.text-amber-200\/90{color:hsla(48,97%,77%,.9)}.text-amber-300{--tw-text-opacity:1;color:rgb(252 211 77/var(--tw-text-opacity,1))}.text-amber-400{--tw-text-opacity:1;color:rgb(251 191 36/var(--tw-text-opacity,1))}.text-amber-400\/70{color:rgba(251,191,36,.7)}.text-amber-400\/80{color:rgba(251,191,36,.8)}.text-amber-500{--tw-text-opacity:1;color:rgb(245 158 11/var(--tw-text-opacity,1))}.text-blue-400{--tw-text-opacity:1;color:rgb(96 165 250/var(--tw-text-opacity,1))}.text-cyan-300{--tw-text-opacity:1;color:rgb(103 232 249/var(--tw-text-opacity,1))}.text-cyan-400{--tw-text-opacity:1;color:rgb(34 211 238/var(--tw-text-opacity,1))}.text-cyan-400\/70{color:rgba(34,211,238,.7)}.text-emerald-300{--tw-text-opacity:1;color:rgb(110 231 183/var(--tw-text-opacity,1))}.text-emerald-400{--tw-text-opacity:1;color:rgb(52 211 153/var(--tw-text-opacity,1))}.text-emerald-500{--tw-text-opacity:1;color:rgb(16 185 129/var(--tw-text-opacity,1))}.text-green-400{--tw-text-opacity:1;color:rgb(74 222 128/var(--tw-text-opacity,1))}.text-orange-300{--tw-text-opacity:1;color:rgb(253 186 116/var(--tw-text-opacity,1))}.text-purple-300{--tw-text-opacity:1;color:rgb(216 180 254/var(--tw-text-opacity,1))}.text-purple-400{--tw-text-opacity:1;color:rgb(192 132 252/var(--tw-text-opacity,1))}.text-red-400{--tw-text-opacity:1;color:rgb(248 113 113/var(--tw-text-opacity,1))}.text-rose-300{--tw-text-opacity:1;color:rgb(253 164 175/var(--tw-text-opacity,1))}.text-rose-300\/70{color:rgba(253,164,175,.7)}.text-sky-300{--tw-text-opacity:1;color:rgb(125 211 252/var(--tw-text-opacity,1))}.text-slate-100{--tw-text-opacity:1;color:rgb(241 245 249/var(--tw-text-opacity,1))}.text-slate-200{--tw-text-opacity:1;color:rgb(226 232 240/var(--tw-text-opacity,1))}.text-slate-300{--tw-text-opacity:1;color:rgb(203 213 225/var(--tw-text-opacity,1))}.text-slate-400{--tw-text-opacity:1;color:rgb(148 163 184/var(--tw-text-opacity,1))}.text-slate-500{--tw-text-opacity:1;color:rgb(100 116 139/var(--tw-text-opacity,1))}.text-white{--tw-text-opacity:1;color:rgb(255 255 255/var(--tw-text-opacity,1))}.text-yellow-400{--tw-text-opacity:1;color:rgb(250 204 21/var(--tw-text-opacity,1))}.underline{text-decoration-line:underline}.accent-amber-500{accent-color:#f59e0b}.accent-cyan-500{accent-color:#06b6d4}.accent-rose-500{accent-color:#f43f5e}.shadow-2xl{--tw-shadow:0 25px 50px -12px rgba(0,0,0,.25);--tw-shadow-colored:0 25px 50px -12px var(--tw-shadow-color)}.shadow-2xl,.shadow-lg{box-shadow:var(--tw-ring-offset-shadow,0 0 #0000),var(--tw-ring-shadow,0 0 #0000),var(--tw-shadow)}.shadow-lg{--tw-shadow:0 10px 15px -3px rgba(0,0,0,.1),0 4px 6px -4px rgba(0,0,0,.1);--tw-shadow-colored:0 10px 15px -3px var(--tw-shadow-color),0 4px 6px -4px var(--tw-shadow-color)}.shadow-xl{--tw-shadow:0 20px 25px -5px rgba(0,0,0,.1),0 8px 10px -6px rgba(0,0,0,.1);--tw-shadow-colored:0 20px 25px -5px var(--tw-shadow-color),0 8px 10px -6px var(--tw-shadow-color);box-shadow:var(--tw-ring-offset-shadow,0 0 #0000),var(--tw-ring-shadow,0 0 #0000),var(--tw-shadow)}.shadow-orange-900\/50{--tw-shadow-color:rgba(124,45,18,.5);--tw-shadow:var(--tw-shadow-colored)}.brightness-125{--tw-brightness:brightness(1.25)}.brightness-125,.filter{filter:var(--tw-blur) var(--tw-brightness) var(--tw-contrast) var(--tw-grayscale) var(--tw-hue-rotate) var(--tw-invert) var(--tw-saturate) var(--tw-sepia) var(--tw-drop-shadow)}.backdrop-blur-sm{--tw-backdrop-blur:blur(4px);-webkit-backdrop-filter:var(--tw-backdrop-blur) var(--tw-backdrop-brightness) var(--tw-backdrop-contrast) var(--tw-backdrop-grayscale) var(--tw-backdrop-hue-rotate) var(--tw-backdrop-invert) var(--tw-backdrop-opacity) var(--tw-backdrop-saturate) var(--tw-backdrop-sepia);backdrop-filter:var(--tw-backdrop-blur) var(--tw-backdrop-brightness) var(--tw-backdrop-contrast) var(--tw-backdrop-grayscale) var(--tw-backdrop-hue-rotate) var(--tw-backdrop-invert) var(--tw-backdrop-opacity) var(--tw-backdrop-saturate) var(--tw-backdrop-sepia)}.transition{transition-property:color,background-color,border-color,text-decoration-color,fill,stroke,opacity,box-shadow,transform,filter,-webkit-backdrop-filter;transition-property:color,background-color,border-color,text-decoration-color,fill,stroke,opacity,box-shadow,transform,filter,backdrop-filter;transition-property:color,background-color,border-color,text-decoration-color,fill,stroke,opacity,box-shadow,transform,filter,backdrop-filter,-webkit-backdrop-filter;transition-timing-function:cubic-bezier(.4,0,.2,1);transition-duration:.15s}.transition-all{transition-property:all;transition-timing-function:cubic-bezier(.4,0,.2,1);transition-duration:.15s}.duration-200{transition-duration:.2s}.placeholder\:font-normal::-moz-placeholder{font-weight:400}.placeholder\:font-normal::placeholder{font-weight:400}.placeholder\:text-slate-600::-moz-placeholder{--tw-text-opacity:1;color:rgb(71 85 105/var(--tw-text-opacity,1))}.placeholder\:text-slate-600::placeholder{--tw-text-opacity:1;color:rgb(71 85 105/var(--tw-text-opacity,1))}.hover\:border-amber-500\/50:hover{border-color:rgba(245,158,11,.5)}.hover\:border-cyan-500\/50:hover{border-color:rgba(6,182,212,.5)}.hover\:border-rose-500\/50:hover{border-color:rgba(244,63,94,.5)}.hover\:border-slate-400:hover{--tw-border-opacity:1;border-color:rgb(148 163 184/var(--tw-border-opacity,1))}.hover\:bg-amber-500:hover{--tw-bg-opacity:1;background-color:rgb(245 158 11/var(--tw-bg-opacity,1))}.hover\:bg-amber-900\/40:hover{background-color:rgba(120,53,15,.4)}.hover\:bg-cyan-900\/40:hover{background-color:rgba(22,78,99,.4)}.hover\:bg-emerald-500:hover{--tw-bg-opacity:1;background-color:rgb(16 185 129/var(--tw-bg-opacity,1))}.hover\:bg-rose-500:hover{--tw-bg-opacity:1;background-color:rgb(244 63 94/var(--tw-bg-opacity,1))}.hover\:bg-rose-900\/40:hover{background-color:rgba(136,19,55,.4)}.hover\:bg-slate-700:hover{--tw-bg-opacity:1;background-color:rgb(51 65 85/var(--tw-bg-opacity,1))}.hover\:bg-slate-800:hover{--tw-bg-opacity:1;background-color:rgb(30 41 59/var(--tw-bg-opacity,1))}.hover\:bg-slate-800\/60:hover{background-color:rgba(30,41,59,.6)}.hover\:from-amber-500:hover{--tw-gradient-from:#f59e0b var(--tw-gradient-from-position);--tw-gradient-to:rgba(245,158,11,0) var(--tw-gradient-to-position);--tw-gradient-stops:var(--tw-gradient-from),var(--tw-gradient-to)}.hover\:to-orange-400:hover{--tw-gradient-to:#fb923c var(--tw-gradient-to-position)}.hover\:text-amber-300:hover{--tw-text-opacity:1;color:rgb(252 211 77/var(--tw-text-opacity,1))}.hover\:text-amber-400:hover{--tw-text-opacity:1;color:rgb(251 191 36/var(--tw-text-opacity,1))}.hover\:text-blue-300:hover{--tw-text-opacity:1;color:rgb(147 197 253/var(--tw-text-opacity,1))}.hover\:text-emerald-200:hover{--tw-text-opacity:1;color:rgb(167 243 208/var(--tw-text-opacity,1))}.hover\:text-emerald-300:hover{--tw-text-opacity:1;color:rgb(110 231 183/var(--tw-text-opacity,1))}.hover\:text-red-400:hover{--tw-text-opacity:1;color:rgb(248 113 113/var(--tw-text-opacity,1))}.hover\:text-red-500:hover{--tw-text-opacity:1;color:rgb(239 68 68/var(--tw-text-opacity,1))}.hover\:text-slate-200:hover{--tw-text-opacity:1;color:rgb(226 232 240/var(--tw-text-opacity,1))}.hover\:text-white:hover{--tw-text-opacity:1;color:rgb(255 255 255/var(--tw-text-opacity,1))}.focus\:border-amber-500:focus{--tw-border-opacity:1;border-color:rgb(245 158 11/var(--tw-border-opacity,1))}.focus\:border-cyan-500:focus{--tw-border-opacity:1;border-color:rgb(6 182 212/var(--tw-border-opacity,1))}.focus\:border-emerald-500:focus{--tw-border-opacity:1;border-color:rgb(16 185 129/var(--tw-border-opacity,1))}.focus\:border-purple-500:focus{--tw-border-opacity:1;border-color:rgb(168 85 247/var(--tw-border-opacity,1))}.focus\:border-rose-500:focus{--tw-border-opacity:1;border-color:rgb(244 63 94/var(--tw-border-opacity,1))}.focus\:border-slate-400:focus{--tw-border-opacity:1;border-color:rgb(148 163 184/var(--tw-border-opacity,1))}.focus\:outline-none:focus{outline:2px solid transparent;outline-offset:2px}.disabled\:cursor-not-allowed:disabled{cursor:not-allowed}.disabled\:opacity-30:disabled{opacity:.3}.disabled\:opacity-40:disabled{opacity:.4}@media (min-width:640px){.sm\:absolute{position:absolute}.sm\:right-6{right:1.5rem}.sm\:top-\[-15px\]{top:-15px}.sm\:mb-0{margin-bottom:0}.sm\:mt-0{margin-top:0}.sm\:w-auto{width:auto}.sm\:w-max{width:-moz-max-content;width:max-content}.sm\:min-w-0{min-width:0}.sm\:flex-1{flex:1 1 0%}.sm\:grid-cols-2{grid-template-columns:repeat(2,minmax(0,1fr))}.sm\:grid-cols-3{grid-template-columns:repeat(3,minmax(0,1fr))}.sm\:flex-row{flex-direction:row}.sm\:items-center{align-items:center}.sm\:gap-2{gap:.5rem}.sm\:whitespace-nowrap{white-space:nowrap}.sm\:py-2{padding-top:.5rem;padding-bottom:.5rem}.sm\:py-2\.5{padding-top:.625rem;padding-bottom:.625rem}.sm\:text-3xl{font-size:1.875rem;line-height:2.25rem}.sm\:text-lg{font-size:1.125rem;line-height:1.75rem}.sm\:text-sm{font-size:.875rem;line-height:1.25rem}.sm\:text-xs{font-size:.75rem;line-height:1rem}}@media (min-width:768px){.md\:mt-0{margin-top:0}.md\:flex-row{flex-direction:row}.md\:items-center{align-items:center}}@media (min-width:1280px){.xl\:col-span-5{grid-column:span 5/span 5}.xl\:col-span-7{grid-column:span 7/span 7}.xl\:w-64{width:16rem}.xl\:grid-cols-12{grid-template-columns:repeat(12,minmax(0,1fr))}.xl\:flex-row{flex-direction:row}.xl\:items-start{align-items:flex-start}.xl\:items-end{align-items:flex-end}}</style>
     <!-- Subresource Integrity on every cross-origin script. The browser hashes what the
          CDN actually sent and refuses to run it if the digest differs, so a compromised or
          silently re-published CDN file cannot execute in a visitor's browser. Every digest
@@ -85,7 +85,7 @@
             #sim-hm-trad, #sim-hm-gbm, #sim-hm-volcluster,
             #view-type-line, #view-type-bar, #tt-type-amt, #tt-type-pct,
             #hm-wd-immediate, #hm-wd-planned,
-            #global-wd-mode-yield, #global-wd-mode-constant, #global-wd-mode-fixed { min-height: 36px; }
+            #global-wd-mode-yield, #global-wd-mode-constant, #global-wd-mode-fixed, #global-wd-mode-pct { min-height: 36px; }
             .optimizer-btn { min-height: 40px; }
         }
 
@@ -127,6 +127,7 @@
         .mdr-kpi-label { font-size: 10px; color: #64748b; }
         .mdr-kpi-value { font-size: 17px; font-weight: 700; color: #0f172a; margin-top: 2px; font-variant-numeric: tabular-nums; }
         .mdr-kpi-value.good { color: #047857; } .mdr-kpi-value.warn { color: #b45309; } .mdr-kpi-value.bad { color: #b91c1c; }
+        .mdr-kpi-sub { font-size: 9px; color: #64748b; margin-top: 2px; }
         .mdr-grid2 { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; }
         .mdr-chip { display: inline-flex; align-items: center; gap: 5px; font-weight: 700; }
         .mdr-dot { width: 9px; height: 9px; border-radius: 50%; display: inline-block; }
@@ -245,11 +246,13 @@
                         ระบบจะรวม <b class="text-slate-200">Yield ทั้งหมด</b> จากทุกพอร์ตย่อยมาจ่ายก่อน หากไม่พอจ่ายจึงจะดึงส่วนขาดจากเงินต้นตาม <b class="text-slate-200">ลำดับความสำคัญ (Bucket Priority)</b>
                     </p>
 
-                    <!-- Withdrawal Mode Toggles -->
-                    <div class="grid grid-cols-3 gap-1 mb-2">
+                    <!-- Withdrawal Mode Toggles. Four modes in a 2x2 grid rather than one row of
+                         four: at four across each button is narrower than its own label on a phone. -->
+                    <div class="grid grid-cols-2 gap-1 mb-2">
                         <button id="global-wd-mode-yield" class="p-2 rounded border text-center transition duration-200 bg-amber-500/20 border-amber-500 text-amber-300 text-[10px] font-bold">ดึงเฉพาะ Total Yield</button>
                         <button id="global-wd-mode-constant" class="p-2 rounded border text-center transition duration-200 bg-slate-900 border-slate-700 text-slate-400 text-[10px] font-bold">Yield ตั้งต้น +เงินเฟ้อ</button>
                         <button id="global-wd-mode-fixed" class="p-2 rounded border text-center transition duration-200 bg-slate-900 border-slate-700 text-slate-400 text-[10px] font-bold">ระบุยอด +เงินเฟ้อ</button>
+                        <button id="global-wd-mode-pct" class="p-2 rounded border text-center transition duration-200 bg-slate-900 border-slate-700 text-slate-400 text-[10px] font-bold">% ของพอร์ต</button>
                     </div>
                     <!-- The buttons carry a short label so they fit; the rule each mode actually
                          follows is spelled out here, from WD_MODE_NOTES. Filled by updateGlobalWdMode. -->
@@ -272,6 +275,14 @@
                                 </select>
                             </div>
                         </div>
+                    </div>
+
+                    <!-- Percent-of-portfolio settings. No frequency control here on purpose: the
+                         annual amount is set once a year and paid in twelve equal parts, so a
+                         frequency would only change how the same money is spaced out. -->
+                    <div id="global-wd-pct-settings" class="hidden mb-4 bg-slate-900/80 p-3 rounded-xl border border-slate-700">
+                        <label class="block text-[10px] text-slate-400 mb-1">ถอนปีละ (% ของมูลค่าพอร์ต ณ ต้นปีนั้น)</label>
+                        <input type="number" step="0.1" min="0" max="100" id="global-wd-pct" value="4" class="w-full bg-slate-800 border border-slate-600 rounded px-2 py-1 text-xs text-amber-300 font-bold focus:outline-none focus:border-amber-500">
                     </div>
 
                     <div class="grid grid-cols-2 gap-3 mb-4 bg-slate-900/50 p-2.5 rounded-xl border border-slate-700">
@@ -564,9 +575,13 @@
                                     <span class="text-[10px] text-slate-400 block">Max Drawdown (กลาง / แย่ 10%)</span>
                                     <span id="metric-max-drawdown" class="text-xs font-bold text-rose-300">-- / --</span>
                                 </div>
+                                <!-- The label is a span, not fixed text, because two withdrawal rules
+                                     need two different headline measures. It is repainted by the run,
+                                     never by the mode buttons: see the note where it is written. -->
                                 <div class="text-right">
-                                    <span class="text-[10px] text-slate-400 block">โอกาสพอร์ตรวมอยู่รอด</span>
+                                    <span id="metric-survival-label" class="text-[10px] text-slate-400 block">โอกาสพอร์ตรวมอยู่รอด</span>
                                     <span id="metric-survival-rate" class="text-xs font-bold text-cyan-400">-- %</span>
+                                    <span id="metric-survival-floor" class="text-[9px] text-slate-500 block leading-tight"></span>
                                 </div>
                             </div>
                         </div>
@@ -771,6 +786,11 @@
                             <h2 class="text-lg font-bold text-amber-400 flex items-center gap-2">
                                 <i class="fa-solid fa-fire"></i> Withdrawal Sustainability Heatmap
                             </h2>
+                            <!-- Shown only while the main page is set to "% of portfolio". This table
+                                 has its own withdrawal rule -- a rate locked at the start and raised
+                                 by inflation -- and does not read the mode at all, so without this it
+                                 reads as a verdict on a plan it is not testing. -->
+                            <p id="hm-mode-mismatch" class="hidden mt-2 text-[10px] leading-relaxed bg-amber-500/10 border border-amber-500/40 text-amber-200 rounded-lg px-3 py-2"></p>
                             <p class="text-xs text-slate-400 mt-2 leading-relaxed">
                                 ทดสอบ Stress Test: หากบังคับถอนยอดนี้ผ่านกลไก Global Waterfall ทันทีตั้งแต่ปีแรก ภายใต้แผน DCA และ Rebalance ปัจจุบัน โอกาสรอดคือเท่าใด (พร้อมเทียบกับกรณีเงินก้อนเดียวกันฝากอัตราคงที่แทนการลงทุน)
                             </p>
@@ -917,8 +937,10 @@
         <h3 class="text-xs font-semibold text-slate-300 mb-2">คำอธิบายตัวเลขความเสี่ยง</h3>
         <ul class="list-disc pl-5 text-[11px] text-slate-400 leading-relaxed">
             <li id="risk-note-survival" class="mb-1"></li>
+            <li id="risk-note-survival-pct" class="mb-1"></li>
             <li id="risk-note-var" class="mb-1"></li>
             <li id="risk-note-maxdd" class="mb-1"></li>
+            <li id="risk-note-dca" class="mb-1"></li>
         </ul>
     </section>
 
@@ -936,7 +958,7 @@
         // Single source of truth for the version string. Shown in the page header, written
         // into the _meta sheet of every saved case file, printed on the PDF cover, and logged
         // to the console -- so a bug report from a stranger can always be tied to a build.
-        const APP_VERSION = '1.6.0';
+        const APP_VERSION = '1.7.0';
 
         // Single source of truth for the disclaimer. The page footer and every PDF page print
         // the same wording; changing it here changes both. Keeping two copies would let one
@@ -968,6 +990,25 @@
         // specific ways, and both of them flatter the result: the check happens once, at the
         // end of year 30, and any balance above zero passes it.
         const DISCLAIMER_SURVIVAL = 'โอกาสพอร์ตรวมอยู่รอด คำนวณจากการจำลอง 1,000 เส้นทาง แล้วนับสัดส่วนของเส้นทางที่ "สิ้นปีที่ 30 ยังมีมูลค่าพอร์ตเหลือมากกว่า 0" · วัดที่ปลายทางเท่านั้น ไม่ได้แปลว่าไม่เคยหมดระหว่างทาง (ถ้าตั้ง DCA ไว้ เงินที่เติมเข้ามาทีหลังทำให้เส้นทางนั้นกลับมามีมูลค่าได้) และ "เหลือมากกว่า 0" ไม่ได้แปลว่าเหลือพอใช้';
+        // Every number on this page assumes the DCA plan is followed to the letter, including in
+        // the years the simulated market falls hardest. Real contributions stop in those years, and
+        // the income that funds them is itself at risk in a downturn, so the bias is not spread
+        // evenly: the middle of the distribution barely moves, while the worst paths -- the ones
+        // this tool exists to show -- come out better than they would in life.
+        const DISCLAIMER_DCA_DISCIPLINE = 'ทุกตัวเลขบนหน้านี้ตั้งอยู่บนสมมติฐานว่าท่านจะเติมเงินตามแผน DCA ได้ครบทุกงวดจนจบ รวมถึงในปีที่ตลาดพังหนักที่สุด · ในความเป็นจริงคนมักหยุดเติมในปีแบบนั้น และวิกฤตตลาดมักมาพร้อมความเสี่ยงต่อรายได้ · ผลคือ "ฉากที่แย่ที่สุด" ในแบบจำลองนี้ดูดีกว่าที่ควรจะเป็น ขณะที่ค่ากลางแทบไม่เปลี่ยน';
+
+        // The second survival definition, used only by the "% of portfolio" mode. Kept as a named
+        // constant because it appears in the metric label, in the note under it, in the report and
+        // in the tests -- four places that must never drift apart.
+        const SURVIVAL_PV_FLOOR = 0.25;
+        const SURVIVAL_LABELS = {
+            standard: 'โอกาสพอร์ตรวมอยู่รอด',
+            pv_floor: 'โอกาสเหลือกำลังซื้อ ≥ 25%'
+        };
+        const SURVIVAL_NOTES = {
+            standard: DISCLAIMER_SURVIVAL,
+            pv_floor: 'โอกาสเหลือกำลังซื้อ ≥ 25% คำนวณจากการจำลอง 1,000 เส้นทาง แล้วนับสัดส่วนของเส้นทางที่ "สิ้นปีที่ 30 ยังมีมูลค่าพอร์ตหลังหักเงินเฟ้อแล้ว ไม่น้อยกว่า 25% ของเงินที่ใส่เข้าไปทั้งหมด (เงินตั้งต้น + DCA ทุกงวด หักเงินเฟ้อแล้วเช่นกัน)" · โหมด % ของพอร์ตใช้เกณฑ์นี้แทน "เหลือมากกว่า 0" เพราะขนาดการถอนเปลี่ยนแปลงตามมูลค่าพอร์ตที่เหลืออยู่ พอร์ตจึงแทบไม่มีทางหมดเกลี้ยง และ "เหลือมากกว่า 0" จะตอบ 100% เสมอไม่ว่าแผนจะดีหรือแย่ · เกณฑ์นี้ขยับตามแผน DCA ใส่เงินมากขึ้นก็ถูกวัดด้วยมาตรฐานที่สูงขึ้น'
+        };
 
         // Data Templates
         // Public default set: generic asset-class names, not real funds. Putting expected-return
@@ -1021,16 +1062,24 @@
         // inflation -- which is a true warning, not a bug, and is invisible in nominal.
         const DISCLAIMER_CASHFLOW = 'ตัวเลขแต่ละปีคือค่ากลาง (Median) ของเส้นทางจำลอง 1,000 เส้นทาง ไม่ใช่ค่าเฉลี่ย · "Cashflow สะสม" คือผลบวกของค่ากลางรายปี ซึ่งไม่เท่ากับค่ากลางของผลรวม และอาจไม่ได้มาจากเส้นทางเดียวกัน · ในโหมดถอนเฉพาะ Yield ตัวเลขแบบหักเงินเฟ้อจะลดลงตามปี หากการเติบโตของพอร์ตต่ำกว่าเงินเฟ้อ ซึ่งเป็นภาพที่ถูกต้องของกำลังซื้อที่หายไป';
 
+        // Two separate things are wrong when the page is in "% of portfolio" and the reader looks
+        // at the heatmap, and the banner has to say both: the mode cannot really run out of money,
+        // so a survival percentage is not the question to ask of it; and the table is testing a
+        // different withdrawal rule anyway, because its own "%" means a rate fixed at the start.
+        const HEATMAP_MODE_MISMATCH = 'ขณะนี้เลือกโหมด "% ของพอร์ต" — โหมดนี้จะมีโอกาสพอร์ตหมดยาก เนื่องจากขนาดการถอนเปลี่ยนแปลงตามมูลค่าพอร์ตที่เหลืออยู่ "โอกาสรอด" จึงไม่ใช่คำถามที่ใช้ตัดสินแผนแบบนี้ได้ · อีกทั้งตารางด้านล่างทดสอบกติกาคนละแบบกับโหมดที่เลือกอยู่ คือล็อกยอดถอนตั้งแต่ต้นแล้วปรับขึ้นตามเงินเฟ้อ ไม่ได้คิดใหม่ทุกปีจากมูลค่าพอร์ต — ใช้ดูเป็น Stress Test ของกติกานั้นได้ แต่ไม่ใช่ผลของแผนที่ตั้งไว้';
+
         const WD_MODE_NOTES = {
             yield_only: 'ถอนเท่ากับ Yield ที่เกิดจริงในเดือนนั้น ยอดจึงขึ้นลงตามมูลค่าพอร์ต',
             constant: 'คิดยอดตั้งต้นจาก Yield ณ วันเริ่มถอน แล้วปรับขึ้นตามเงินเฟ้อทุกปี — กำลังซื้อคงที่',
-            fixed_baht: 'ใช้ยอดที่กรอก แล้วปรับขึ้นตามเงินเฟ้อในระยะยาว — ไม่อิงกับ Yield ของพอร์ต'
+            fixed_baht: 'ใช้ยอดที่กรอก แล้วปรับขึ้นตามเงินเฟ้อในระยะยาว — ไม่อิงกับ Yield ของพอร์ต',
+            pct_portfolio: 'กระแสเงินสดเป็น % ของพอร์ต: คิดยอดทั้งปีจากมูลค่าพอร์ต ณ ต้นปีนั้น แล้วจ่ายเท่ากันทุกเดือน ตั้งยอดใหม่ทุกต้นปี · ไม่บวกเงินเฟ้อเพิ่ม เพราะฐานที่ใช้คิดโตตามพอร์ตอยู่แล้ว'
         };
 
         let globalWithdrawal = {
-            mode: "yield_only", // "yield_only", "constant", "fixed_baht"
+            mode: "yield_only", // "yield_only", "constant", "fixed_baht", "pct_portfolio"
             fixedAmt: 50000,
             freq: 1,
+            pct: 4,
             startY: 11,
             startM: 1,
             priorityOrder: [1, 2] // Default liquidation priority: Port 1 then Port 2
@@ -1076,7 +1125,7 @@
         let hasRunOnce = false;
 
         // Stores
-        let globalExportData = { resultsByYear: {}, randomPaths: {}, cashflows: [], cashflowsNominal: [], infMonthly: null, allActivePhaseMaps: {} };
+        let globalExportData = { resultsByYear: {}, randomPaths: {}, cashflows: [], cashflowsNominal: [], infMonthly: null, allActivePhaseMaps: {}, survivalKind: 'standard', headlineRate: null, pvFloorAmount: null, totalCapitalInjectedPV: null, wdMode: null, wdPct: null };
         let globalDriftData = { total: [], ports: {} };
 
         // Optimizer state
@@ -1518,7 +1567,14 @@
             const riskPointer = document.getElementById('stats-risk-pointer');
             if (riskPointer) riskPointer.textContent = 'คำอธิบายของ VaR 95%, Max Drawdown และโอกาสรอด อยู่ที่หัวข้อ "คำอธิบายตัวเลขความเสี่ยง" ท้ายหน้า';
             const rnSurvival = document.getElementById('risk-note-survival');
-            if (rnSurvival) rnSurvival.textContent = DISCLAIMER_SURVIVAL;
+            if (rnSurvival) rnSurvival.textContent = SURVIVAL_NOTES.standard;
+            // Both survival definitions are explained here at all times, even though only one is
+            // ever on screen: a reader who saved a report in the other mode still needs to be able
+            // to look up what its headline counted.
+            const rnSurvivalPct = document.getElementById('risk-note-survival-pct');
+            if (rnSurvivalPct) rnSurvivalPct.textContent = SURVIVAL_NOTES.pv_floor;
+            const rnDca = document.getElementById('risk-note-dca');
+            if (rnDca) rnDca.textContent = DISCLAIMER_DCA_DISCIPLINE;
             const rnVar = document.getElementById('risk-note-var');
             if (rnVar) rnVar.textContent = DISCLAIMER_RISK_METRICS;
             const rnMaxdd = document.getElementById('risk-note-maxdd');
@@ -1615,6 +1671,17 @@
 
         // Heatmap has its own Run button, so it needs its own "results no longer match the
         // inputs" badge -- the main chart's badge says nothing about the Heatmap.
+        // Driven by the live mode, not by the last run -- unlike the survival label. This one
+        // describes the SETTING ("you have chosen a mode this table does not test"), which is true
+        // the moment the button is clicked, and stays true whether or not anything has been run.
+        function updateHeatmapModeBanner() {
+            const el = document.getElementById('hm-mode-mismatch');
+            if (!el) return;
+            const show = globalWithdrawal.mode === 'pct_portfolio';
+            el.textContent = show ? HEATMAP_MODE_MISMATCH : '';
+            el.classList.toggle('hidden', !show);
+        }
+
         function updateHeatmapStatusBadge(state) {
             const badge = document.getElementById('heatmap-status-badge');
             if (!badge) return;
@@ -1721,15 +1788,23 @@
             const btnWdYield = document.getElementById("global-wd-mode-yield");
             const btnWdConst = document.getElementById("global-wd-mode-constant");
             const btnWdFixed = document.getElementById("global-wd-mode-fixed");
+            const btnWdPct = document.getElementById("global-wd-mode-pct");
             const fixedSettings = document.getElementById("global-wd-fixed-settings");
+            const pctSettings = document.getElementById("global-wd-pct-settings");
 
             function updateGlobalWdMode(mode) {
                 globalWithdrawal.mode = mode;
                 btnWdYield.className = mode === "yield_only" ? "p-2 rounded border text-center transition duration-200 bg-amber-500/20 border-amber-500 text-amber-300 text-[10px] font-bold" : "p-2 rounded border text-center transition duration-200 bg-slate-900 border-slate-700 text-slate-400 text-[10px] font-bold";
                 btnWdConst.className = mode === "constant" ? "p-2 rounded border text-center transition duration-200 bg-cyan-500/20 border-cyan-500 text-cyan-300 text-[10px] font-bold" : "p-2 rounded border text-center transition duration-200 bg-slate-900 border-slate-700 text-slate-400 text-[10px] font-bold";
                 btnWdFixed.className = mode === "fixed_baht" ? "p-2 rounded border text-center transition duration-200 bg-purple-500/20 border-purple-500 text-purple-300 text-[10px] font-bold" : "p-2 rounded border text-center transition duration-200 bg-slate-900 border-slate-700 text-slate-400 text-[10px] font-bold";
-                
+                if (btnWdPct) btnWdPct.className = mode === "pct_portfolio" ? "p-2 rounded border text-center transition duration-200 bg-emerald-500/20 border-emerald-500 text-emerald-300 text-[10px] font-bold" : "p-2 rounded border text-center transition duration-200 bg-slate-900 border-slate-700 text-slate-400 text-[10px] font-bold";
+
                 fixedSettings.style.display = mode === "fixed_baht" ? "block" : "none";
+                if (pctSettings) pctSettings.style.display = mode === "pct_portfolio" ? "block" : "none";
+                // The heatmap tests a different withdrawal rule from this one, so it gets a banner
+                // rather than a silent mismatch. Painted here because this is the only place the
+                // mode changes.
+                updateHeatmapModeBanner();
                 const modeNote = document.getElementById("global-wd-mode-note");
                 if (modeNote) modeNote.textContent = WD_MODE_NOTES[mode] || "";
                 markDirty();
@@ -1738,6 +1813,7 @@
             btnWdYield.addEventListener("click", () => updateGlobalWdMode("yield_only"));
             btnWdConst.addEventListener("click", () => updateGlobalWdMode("constant"));
             btnWdFixed.addEventListener("click", () => updateGlobalWdMode("fixed_baht"));
+            if (btnWdPct) btnWdPct.addEventListener("click", () => updateGlobalWdMode("pct_portfolio"));
             // Paint the mode once at start-up. Until the mode note was added, the markup alone
             // looked right on load (the correct button is pre-highlighted in the HTML), so this
             // call was never needed -- but the note is filled only in here, and without this the
@@ -1746,6 +1822,15 @@
             updateGlobalWdMode(globalWithdrawal.mode);
 
             document.getElementById("global-wd-fixed-amt").addEventListener("input", (e) => { globalWithdrawal.fixedAmt = parseFloat(e.target.value)||0; markDirty(); });
+            // Clamped in code, not only by min/max: those attributes govern the spinner arrows,
+            // and a typed or pasted -5 goes straight through them. A negative percentage would
+            // pay money INTO the portfolio every month and quietly flatter every figure.
+            const pctInput = document.getElementById("global-wd-pct");
+            if (pctInput) pctInput.addEventListener("input", (e) => {
+                const v = parseFloat(e.target.value);
+                globalWithdrawal.pct = isFinite(v) ? Math.min(100, Math.max(0, v)) : 0;
+                markDirty();
+            });
             document.getElementById("global-wd-freq").addEventListener("change", (e) => { globalWithdrawal.freq = parseInt(e.target.value)||1; markDirty(); });
             document.getElementById("global-wd-start-y").addEventListener("input", (e) => { globalWithdrawal.startY = Math.max(1, parseInt(e.target.value)||1); markDirty(); });
             document.getElementById("global-wd-start-m").addEventListener("input", (e) => { globalWithdrawal.startM = Math.max(1, parseInt(e.target.value)||1); markDirty(); });
@@ -2389,18 +2474,33 @@
             const yearlyCashflowsNominal = Array.from({length: 30}, () => []);
             const pathDrawdowns = [];   // worst peak-to-trough of each path's market index
             let successfulPaths = 0;
+            let pathsAbovePvFloor = 0;  // the "% of portfolio" headline; see the counter below
             const randomIndexToCapture = Math.floor(Math.random() * numPaths); 
 
             let expectedTotalCapitalInjected = initPrincipal;
-            
+            // Same figure with every DCA top-up discounted to today, which is the only version that
+            // can be compared against a year-30 PV portfolio value. The initial principal is already
+            // at time 0, so it enters undiscounted. DCA is a fixed schedule -- amount, dates,
+            // frequency and growth never depend on returns -- so this is one deterministic number
+            // for the whole run, not something that varies by path. That is also why the nominal
+            // accumulator below only counts path 0.
+            let expectedTotalCapitalInjectedPV = initPrincipal;
+
             const choleskyCache = {}; // memoized per-month cross-portfolio correlation structure
 
             for (let p = 0; p < numPaths; p++) {
                 let currentVals = {};
                 let pathTotalCapital = initPrincipal;
+                let pathTotalCapitalPV = initPrincipal;
                 let currentVar = {};
                 let constantWdBaseAnnual = 0;
                 let hasSetConstantBase = false;
+                // "% of portfolio" mode: the annual amount is fixed at the start of each simulation
+                // year off that moment's total value, then paid in twelve equal parts. Re-reading the
+                // balance every month would make the payment fall as the portfolio falls within the
+                // year, which is not what anyone means by "I take 4% a year".
+                let pctWdBaseAnnual = 0;
+                let pctBaseSetForYear = -1;
                 
                 let startTotalVal = 0;
                 portfolios.forEach(pt => {
@@ -2496,7 +2596,10 @@
                             let yearsPassed = Math.floor((m - 1) / 12);
                             if (yearsPassed > 0) currentTopupAmt *= Math.pow(1 + pt.topup.growth/100, yearsPassed);
                             currentVals[pt.id] += currentTopupAmt;
-                            if (p === 0) pathTotalCapital += currentTopupAmt; 
+                            if (p === 0) {
+                                pathTotalCapital += currentTopupAmt;
+                                pathTotalCapitalPV += currentTopupAmt / Math.pow(1 + infMonthly, m);
+                            }
                         }
                     });
 
@@ -2521,6 +2624,20 @@
                             if (monthsSinceWdStart % globalWithdrawal.freq === 0) {
                                 targetWithdrawal = globalWithdrawal.fixedAmt * Math.pow(1 + infMonthly, monthsSinceWdStart);
                             }
+                        } else if (globalWithdrawal.mode === "pct_portfolio") {
+                            // Re-locked at the top of each simulation year (months 1, 13, 25 ...), with
+                            // the very first lock happening on the month withdrawals start even when
+                            // that is mid-year. Anchoring to the simulation year rather than to the
+                            // withdrawal start keeps one row of the yearly cashflow table paid out of
+                            // one base instead of two.
+                            const simYear = Math.ceil(m / 12);
+                            if (pctBaseSetForYear !== simYear) {
+                                pctWdBaseAnnual = totalCurrentPortVal * (globalWithdrawal.pct / 100);
+                                pctBaseSetForYear = simYear;
+                            }
+                            // No inflation factor here on purpose: the base is re-read from a portfolio
+                            // that has already grown, so escalating it as well would compound twice.
+                            targetWithdrawal = pctWdBaseAnnual / 12;
                         }
 
                         // --- WATERFALL EXECUTION ---
@@ -2596,10 +2713,19 @@
                     }
                 }
                 
-                if (p === 0) expectedTotalCapitalInjected = pathTotalCapital;
+                if (p === 0) {
+                    expectedTotalCapitalInjected = pathTotalCapital;
+                    expectedTotalCapitalInjectedPV = pathTotalCapitalPV;
+                }
                 pathDrawdowns.push(ddWorst);
                 let endTotal = portfolios.reduce((s, p) => s + currentVals[p.id], 0);
                 if (endTotal > 0) successfulPaths++;
+                // Second headline, used only by "% of portfolio". That mode withdraws a share of
+                // what is left, so the balance approaches zero without reaching it and "ended above
+                // zero" comes back 100% however bad the plan was -- a green number on a portfolio
+                // that kept 2% of its purchasing power. This counts paths that kept at least a
+                // quarter of the money actually put in, measured in today's baht on both sides.
+                if (endTotal / Math.pow(1 + infMonthly, numMonths) >= SURVIVAL_PV_FLOOR * expectedTotalCapitalInjectedPV) pathsAbovePvFloor++;
             }
 
             // Reported as two numbers, in the same 10th/50th-percentile language the chart
@@ -2621,11 +2747,33 @@
                 document.getElementById("metric-total-capital").textContent = `${expectedTotalCapitalInjected.toLocaleString('th-TH', {maximumFractionDigits:0})} บาท`;
             }
 
+            // Two definitions, one per mode, never both on screen at once -- and the name changes
+            // with the definition so the same words never mean two things. Which one applies is
+            // decided here, by the run, and stored; painting it from the live mode buttons instead
+            // would relabel a number the previous mode produced the instant somebody clicks, since
+            // changing the mode marks the results stale but deliberately leaves them on screen.
+            const survivalKind = globalWithdrawal.mode === 'pct_portfolio' ? 'pv_floor' : 'standard';
             const survivalRate = (successfulPaths / numPaths) * 100;
+            const pvFloorRate = (pathsAbovePvFloor / numPaths) * 100;
+            const headlineRate = survivalKind === 'pv_floor' ? pvFloorRate : survivalRate;
+            const pvFloorAmount = SURVIVAL_PV_FLOOR * expectedTotalCapitalInjectedPV;
             if (!silent) {
                 const srElement = document.getElementById("metric-survival-rate");
-                srElement.textContent = `${survivalRate.toFixed(1)}%`;
-                srElement.className = survivalRate > 90 ? "text-xs font-bold text-emerald-400" : (survivalRate > 60 ? "text-xs font-bold text-yellow-400" : "text-xs font-bold text-red-400");
+                srElement.textContent = `${headlineRate.toFixed(1)}%`;
+                // The green/yellow/red bands were calibrated against "ended above zero", where a
+                // sound plan scores in the nineties. Under the 25% floor a perfectly reasonable plan
+                // lands near 80, so the same colours would quietly change meaning. No colour here.
+                srElement.className = survivalKind === 'pv_floor'
+                    ? "text-xs font-bold text-slate-200"
+                    : (survivalRate > 90 ? "text-xs font-bold text-emerald-400" : (survivalRate > 60 ? "text-xs font-bold text-yellow-400" : "text-xs font-bold text-red-400"));
+                const srLabel = document.getElementById("metric-survival-label");
+                if (srLabel) srLabel.textContent = SURVIVAL_LABELS[survivalKind];
+                // Spelling the bar out in baht is what stops anyone having to work out what 25% is
+                // 25% OF -- and keeps it clear of "ทุนที่ใส่ไปจริง", which stays nominal on purpose.
+                const srFloor = document.getElementById("metric-survival-floor");
+                if (srFloor) srFloor.textContent = survivalKind === 'pv_floor'
+                    ? `เกณฑ์: ${pvFloorAmount.toLocaleString('th-TH', {maximumFractionDigits:0})} บาท (หักเงินเฟ้อแล้ว)`
+                    : '';
             }
 
             const processedResults = { 'total': [] };
@@ -2662,6 +2810,14 @@
                 // live input would quietly redraw the old run against a rate it never saw.
                 globalExportData.infMonthly = infMonthly;
                 globalExportData.maxDrawdown = maxDrawdown;
+                // Which headline THIS run produced, for the same reason as the rate above: the
+                // report and the on-screen label must describe the number that is actually there.
+                globalExportData.survivalKind = survivalKind;
+                globalExportData.headlineRate = headlineRate;
+                globalExportData.pvFloorAmount = pvFloorAmount;
+                globalExportData.totalCapitalInjectedPV = expectedTotalCapitalInjectedPV;
+                globalExportData.wdMode = globalWithdrawal.mode;
+                globalExportData.wdPct = globalWithdrawal.pct;
 
                 // After the export data is in place, never before: the panel reads from it.
                 renderCashflowPanel();
@@ -2677,7 +2833,8 @@
             // Always returned (even on a normal, non-silent call) so the Optimizer's
             // comparison-run caller can read results directly -- nothing in the existing
             // codebase uses runSimulation()'s return value, so this is additive only.
-            return { resultsByYear: processedResults, randomPaths, cashflows: cfByYear, survivalRate, totalCapitalInjected: expectedTotalCapitalInjected, maxDrawdown };
+            return { resultsByYear: processedResults, randomPaths, cashflows: cfByYear, survivalRate, totalCapitalInjected: expectedTotalCapitalInjected, maxDrawdown,
+                     survivalKind, headlineRate, pvFloorRate, pvFloorAmount, totalCapitalInjectedPV: expectedTotalCapitalInjectedPV };
         }
 
         // =========================================================================
@@ -2721,6 +2878,8 @@
                 let currentFundVals = {};
                 let constantWdBaseAnnual = 0;
                 let hasSetConstantBase = false;
+                let pctWdBaseAnnual = 0;
+                let pctBaseSetForYear = -1;
 
                 portfolios.forEach(pt => {
                     const portW = totalPortWeight > 0 ? (pt.allocWeight / totalPortWeight) : 0;
@@ -2838,6 +2997,16 @@
                             if (monthsSinceWdStart % globalWithdrawal.freq === 0) {
                                 targetWithdrawal = globalWithdrawal.fixedAmt * Math.pow(1 + infMonthly, monthsSinceWdStart);
                             }
+                        } else if (globalWithdrawal.mode === "pct_portfolio") {
+                            // Must stay identical to the rule in runSimulation: same anchor (the
+                            // simulation year), same base (total value at that moment), no inflation
+                            // factor. The two engines draw the same plan on the same screen.
+                            const simYear = Math.ceil(m / 12);
+                            if (pctBaseSetForYear !== simYear) {
+                                pctWdBaseAnnual = totalCurrentPortVal * (globalWithdrawal.pct / 100);
+                                pctBaseSetForYear = simYear;
+                            }
+                            targetWithdrawal = pctWdBaseAnnual / 12;
                         }
 
                         if (targetWithdrawal > 0 && totalCurrentPortVal > 0) {
@@ -3587,9 +3756,15 @@
                 ['inflationRate', 'เงินเฟ้อทั่วไป (% ต่อปี)', caseNum(g('inflation-rate').value, 0)],
                 ['globalRebalanceFreq', 'ความถี่ Auto-Rebalance (เดือน, 0 = ปล่อยไหล)', parseInt(g('global-rebalance').value) || 0],
                 ['chartSimMethod', 'วิธีจำลองกราฟหลัก (traditional / gbm / volcluster)', chartSimMethod],
-                ['wdMode', 'โหมดถอนเงิน (yield_only / constant / fixed_baht)', globalWithdrawal.mode],
+                ['wdMode', 'โหมดถอนเงิน (yield_only / constant / fixed_baht / pct_portfolio)', globalWithdrawal.mode],
                 ['wdFixedAmt', 'ยอดถอนต่อครั้ง (บาท)', globalWithdrawal.fixedAmt],
                 ['wdFreq', 'ความถี่การถอน (เดือน)', globalWithdrawal.freq],
+                // Safe to sit next to its siblings rather than at the end: this sheet is one row per
+                // setting, keyed by column 1, and every loader reads it into an object by that key.
+                // (The column-position rule applies to the ports and funds sheets, not this one.)
+                // An older build opens a file containing this row, finds no `wdPct` in its own
+                // reader, and ignores it.
+                ['wdPct', 'ถอนปีละ (% ของมูลค่าพอร์ต ณ ต้นปี)', globalWithdrawal.pct],
                 ['wdStartY', 'เริ่มถอนปีที่', globalWithdrawal.startY],
                 ['wdStartM', 'เริ่มถอนเดือนที่', globalWithdrawal.startM],
                 ['priorityOrder', 'ลำดับขายเงินต้น (รหัสพอร์ต คั่นด้วยจุลภาค)', globalWithdrawal.priorityOrder.join(',')],
@@ -3903,7 +4078,7 @@
             let priority = String(settings.priorityOrder || '').split(',').map(s => parseInt(s.trim())).filter(n => isFinite(n) && byId[n]);
             newPorts.forEach(p => { if (!priority.includes(p.id)) priority.push(p.id); });
 
-            const wdMode = ['yield_only', 'constant', 'fixed_baht'].includes(String(settings.wdMode).trim()) ? String(settings.wdMode).trim() : 'yield_only';
+            const wdMode = ['yield_only', 'constant', 'fixed_baht', 'pct_portfolio'].includes(String(settings.wdMode).trim()) ? String(settings.wdMode).trim() : 'yield_only';
             if (settings.wdMode && wdMode !== String(settings.wdMode).trim()) warnings.push(`โหมดถอนเงิน "${settings.wdMode}" ไม่รู้จัก ใช้ "yield_only" แทน`);
             const pickMethod = (v, fallback) => ['traditional', 'gbm', 'volcluster'].includes(String(v).trim()) ? String(v).trim() : fallback;
 
@@ -3921,6 +4096,9 @@
                         mode: wdMode,
                         fixedAmt: caseNum(settings.wdFixedAmt, 50000),
                         freq: Math.max(1, parseInt(caseNum(settings.wdFreq, 1)) || 1),
+                        // Clamped on the way in as well as in the input handler. A case file is an
+                        // ordinary spreadsheet anyone can edit by hand, so it is an untrusted source.
+                        pct: Math.min(100, Math.max(0, caseNum(settings.wdPct, 4))),
                         startY: Math.max(1, parseInt(caseNum(settings.wdStartY, 11)) || 11),
                         startM: Math.max(1, parseInt(caseNum(settings.wdStartM, 1)) || 1),
                         priorityOrder: priority
@@ -3947,10 +4125,20 @@
             const on = 'p-2 rounded border text-center transition duration-200 bg-amber-500/20 border-amber-500 text-amber-300 text-[10px] font-bold';
             const onCyan = 'p-2 rounded border text-center transition duration-200 bg-cyan-500/20 border-cyan-500 text-cyan-300 text-[10px] font-bold';
             const onPurple = 'p-2 rounded border text-center transition duration-200 bg-purple-500/20 border-purple-500 text-purple-300 text-[10px] font-bold';
+            const onEmerald = 'p-2 rounded border text-center transition duration-200 bg-emerald-500/20 border-emerald-500 text-emerald-300 text-[10px] font-bold';
             const off = 'p-2 rounded border text-center transition duration-200 bg-slate-900 border-slate-700 text-slate-400 text-[10px] font-bold';
             document.getElementById('global-wd-mode-yield').className = globalWithdrawal.mode === 'yield_only' ? on : off;
             document.getElementById('global-wd-mode-constant').className = globalWithdrawal.mode === 'constant' ? onCyan : off;
             document.getElementById('global-wd-mode-fixed').className = globalWithdrawal.mode === 'fixed_baht' ? onPurple : off;
+            const btnPctSync = document.getElementById('global-wd-mode-pct');
+            if (btnPctSync) btnPctSync.className = globalWithdrawal.mode === 'pct_portfolio' ? onEmerald : off;
+            const pctBox = document.getElementById('global-wd-pct-settings');
+            if (pctBox) pctBox.style.display = globalWithdrawal.mode === 'pct_portfolio' ? 'block' : 'none';
+            const pctVal = document.getElementById('global-wd-pct');
+            if (pctVal) pctVal.value = globalWithdrawal.pct;
+            // Opening a case sets the mode without going through the buttons, so the banner has to
+            // be repainted here too or a case saved in % mode loads with no warning above the table.
+            updateHeatmapModeBanner();
             document.getElementById('global-wd-fixed-settings').style.display = globalWithdrawal.mode === 'fixed_baht' ? 'block' : 'none';
             document.getElementById('global-wd-fixed-amt').value = globalWithdrawal.fixedAmt;
             document.getElementById('global-wd-freq').value = String(globalWithdrawal.freq);
@@ -3984,6 +4172,7 @@
             heatmapWithdrawalMode = s.heatmap.withdrawalMode;
             globalWithdrawal = {
                 mode: s.withdrawal.mode, fixedAmt: s.withdrawal.fixedAmt, freq: s.withdrawal.freq,
+                pct: s.withdrawal.pct,
                 startY: s.withdrawal.startY, startM: s.withdrawal.startM, priorityOrder: s.withdrawal.priorityOrder.slice()
             };
             portfolios = s.portfolios;
@@ -3994,12 +4183,18 @@
             hasRunOnce = false;
             simResultsStale = false;
             lastHeatmapResult = null;
-            globalExportData = { resultsByYear: {}, randomPaths: {}, cashflows: [], cashflowsNominal: [], infMonthly: null, allActivePhaseMaps: {} };
+            globalExportData = { resultsByYear: {}, randomPaths: {}, cashflows: [], cashflowsNominal: [], infMonthly: null, allActivePhaseMaps: {}, survivalKind: 'standard', headlineRate: null, pvFloorAmount: null, totalCapitalInjectedPV: null, wdMode: null, wdPct: null };
             globalDriftData = { total: [], ports: {} };
             if (portfolioChartInstance) { portfolioChartInstance.destroy(); portfolioChartInstance = null; }
             hideOptimizerSection();
             document.getElementById('metric-survival-rate').textContent = '-- %';
             document.getElementById('metric-survival-rate').className = 'text-xs font-bold text-cyan-400';
+            // Reset the headline's name and its threshold line with the number itself. Leaving the
+            // previous run's label above a "-- %" would describe a measurement that is no longer there.
+            const srLabelReset = document.getElementById('metric-survival-label');
+            if (srLabelReset) srLabelReset.textContent = SURVIVAL_LABELS.standard;
+            const srFloorReset = document.getElementById('metric-survival-floor');
+            if (srFloorReset) srFloorReset.textContent = '';
             // The per-year cells are built by renderCashflowPanel now, so clearing them means
             // redrawing from the export data that was just emptied -- one path instead of a list
             // of ids that has to be kept in step with the table.
@@ -4312,7 +4507,7 @@
         const PDF_BRAND_LINK_URL = 'https://www.facebook.com/themoneydirector';
         const PDF_PAGE_W_PX = 1123, PDF_PAGE_H_PX = 794;      // A4 landscape @ 96 dpi
         const PDF_PAGE_W_PT = 841.89, PDF_PAGE_H_PT = 595.28; // A4 landscape in pt (jsPDF unit 'pt')
-        const PDF_WD_MODE_LABELS = { yield_only: 'ดึงเฉพาะ Total Yield', constant: 'Yield ตั้งต้น เพิ่มตามเงินเฟ้อ', fixed_baht: 'ระบุยอด (ระยะยาวปรับด้วยเงินเฟ้อ)' };
+        const PDF_WD_MODE_LABELS = { yield_only: 'ดึงเฉพาะ Total Yield', constant: 'Yield ตั้งต้น เพิ่มตามเงินเฟ้อ', fixed_baht: 'ระบุยอด (ระยะยาวปรับด้วยเงินเฟ้อ)', pct_portfolio: 'กระแสเงินสดเป็น % ของพอร์ต' };
         const PDF_SIM_METHOD_LABELS = { traditional: 'แบบปกติ (Normal)', gbm: 'GBM (Geometric Brownian Motion)', volcluster: 'Vol. Cluster (GARCH 1,1)' };
         const PDF_FREQ_LABELS = { 1: 'รายเดือน', 3: 'รายไตรมาส', 6: 'ทุก 6 เดือน', 12: 'รายปี' };
         const PDF_HEAT_CLASS = { 'heat-green': 'mdr-heat-g', 'heat-yellow': 'mdr-heat-y', 'heat-red': 'mdr-heat-r' };
@@ -4590,19 +4785,34 @@
                 : globalExportData.cashflows) || [];
             const survText = document.getElementById('metric-survival-rate').textContent;
             const survNum = parseFloat(survText);
-            const survCls = survNum > 90 ? 'good' : (survNum > 60 ? 'warn' : 'bad');
+            // Which headline the run produced, from the run itself -- the same rule the page follows.
+            // Falling back to 'standard' keeps a report built from an older stored run intact.
+            const survKind = globalExportData.survivalKind === 'pv_floor' ? 'pv_floor' : 'standard';
+            // No colour on the 25% measure: its bands would not be the ones these classes encode,
+            // and a green that means something different from the green next to it is worse than none.
+            const survCls = survKind === 'pv_floor' ? '' : (survNum > 90 ? 'good' : (survNum > 60 ? 'warn' : 'bad'));
+            const survLabel = survKind === 'pv_floor'
+                ? `${SURVIVAL_LABELS.pv_floor} ณ สิ้นปีที่ 30`
+                : 'โอกาสพอร์ตรวมอยู่รอดครบ 30 ปี';
+            const survFloorLine = (survKind === 'pv_floor' && isFinite(globalExportData.pvFloorAmount))
+                ? `<div class="mdr-kpi-sub">เกณฑ์: ${pdfFmtBaht(globalExportData.pvFloorAmount)} (หักเงินเฟ้อแล้ว)</div>`
+                : '';
             const totalWithdrawn = cfs.reduce((s, v) => s + (v || 0), 0);
             const capitalText = document.getElementById('metric-total-capital').textContent;
 
             const kpis = pdfEl('div', 'mdr-kpis mdr-block', `
-                <div class="mdr-kpi"><div class="mdr-kpi-label">โอกาสพอร์ตรวมอยู่รอดครบ 30 ปี</div><div class="mdr-kpi-value ${survCls}">${escapeHtml(survText)}</div></div>
+                <div class="mdr-kpi"><div class="mdr-kpi-label">${escapeHtml(survLabel)}</div><div class="mdr-kpi-value ${survCls}">${escapeHtml(survText)}</div>${survFloorLine}</div>
                 <div class="mdr-kpi"><div class="mdr-kpi-label">มูลค่าพอร์ตรวมปีที่ 30 (มัธยฐาน, ${basisTag})</div><div class="mdr-kpi-value">${pdfFmtBaht(toView(res[30] ? res[30].median : 0, 30))}</div></div>
                 <div class="mdr-kpi"><div class="mdr-kpi-label">Cashflow สะสม 30 ปี (มัธยฐาน, ${basisTag})</div><div class="mdr-kpi-value">${pdfFmtBaht(totalWithdrawn)}</div></div>
                 <div class="mdr-kpi"><div class="mdr-kpi-label">ทุนที่ใส่ไปจริง (รวม DCA)</div><div class="mdr-kpi-value">${escapeHtml(capitalText)}</div></div>`);
             // The survival headline is the first number a reader sees on this page, so what
             // it counts is printed directly beneath it rather than in a footnote, from the
             // same constant the page uses.
-            const survivalNote = pdfEl('div', 'mdr-block', `<div class="mdr-note">${DISCLAIMER_SURVIVAL}</div>`);
+            // Two notes, because the report must stand alone: the one for the headline it actually
+            // printed, plus the DCA-discipline caveat, which applies to every number on the page.
+            const survivalNote = pdfEl('div', 'mdr-block',
+                `<div class="mdr-note">${SURVIVAL_NOTES[survKind]}</div>` +
+                `<div class="mdr-note">${DISCLAIMER_DCA_DISCIPLINE}</div>`);
 
             const initPrincipal = parseFloat(document.getElementById('init-investment').value) || 0;
             const inflation = parseFloat(document.getElementById('inflation-rate').value) || 0;
@@ -4620,6 +4830,10 @@
             if (globalWithdrawal.mode === 'fixed_baht') {
                 wdRows.push(['ยอดถอนต่อครั้ง', `${pdfFmtBaht(globalWithdrawal.fixedAmt)} (ปรับตามเงินเฟ้อ)`]);
                 wdRows.push(['ความถี่การถอน', PDF_FREQ_LABELS[globalWithdrawal.freq] || `ทุก ${globalWithdrawal.freq} เดือน`]);
+            }
+            if (globalWithdrawal.mode === 'pct_portfolio') {
+                wdRows.push(['อัตราถอนต่อปี', `${globalWithdrawal.pct}% ของมูลค่าพอร์ต ณ ต้นปีนั้น`]);
+                wdRows.push(['การปรับตามเงินเฟ้อ', 'ไม่ปรับ — ฐานที่ใช้คิดเปลี่ยนตามมูลค่าพอร์ตอยู่แล้ว']);
             }
             wdRows.push(['เริ่มถอน', `ปีที่ ${globalWithdrawal.startY} เดือนที่ ${globalWithdrawal.startM}`]);
             wdRows.push(['ลำดับขายเงินต้นเมื่อ Yield ไม่พอ', globalWithdrawal.priorityOrder
